@@ -1,0 +1,9 @@
+aiogram
+sqlalchemy
+apscheduler
+asyncpg
+python-dotenv
+pytz
+uvloop
+coinaddrvalidator
+web3

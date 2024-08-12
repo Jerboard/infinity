@@ -1,0 +1,15 @@
+django
+pillow
+psycopg2
+python-decouple
+pytelegrambotapi
+emoji
+django-ckeditor-5
+aiogram
+sqlalchemy
+apscheduler
+asyncpg
+python-dotenv
+pytz
+coinaddrvalidator
+web3
