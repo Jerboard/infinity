@@ -1,0 +1,8 @@
+FROM python:3.11.5
+
+WORKDIR /app
+COPY /requirements/bot.txt .
+RUN pip install -r bot.txt
+COPY /bot .
+
+CMD ["python", "main.py"]

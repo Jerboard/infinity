@@ -1,0 +1,78 @@
+
+services:
+  db:
+    image: postgres:16
+    container_name: db_infinity
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+
+  pgadmin:
+    image: elestio/pgadmin
+    container_name: pgadmin_infinity
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    env_file:
+      - .env
+
+
+  bot:
+    build:
+      context: ..
+      dockerfile: docker/dockerfiles/DockerfileBot
+      args:
+        - --no-cache
+    container_name: bot_infinity
+    volumes:
+      - ../bot:/app
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+  web:
+    build:
+      context: ..
+      dockerfile: docker/dockerfiles/DockerfileAdmin
+      args:
+        - --no-cache
+    container_name: web
+    volumes:
+      - ../admin_infinity:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_infinity
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ../nginx/conf.d/base.conf:/etc/nginx/conf.d/base.conf
+      - ../admin_infinity/staticfiles:/var/html/static/
+      - ../admin_infinity/staticfiles:/var/html/staticfiles/
+      - ../admin_infinity/media:/var/html/media/
+      - ../nginx/logs:/var/log/nginx
+    depends_on:
+      - web
+
+
+volumes:
+  pgadmin_data:
+  postgres_data:
+  static_value:
+  media_value:
+
