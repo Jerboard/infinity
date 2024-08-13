@@ -1,8 +1,24 @@
 from aiogram.types import Message, InlineKeyboardMarkup, InputMediaPhoto, FSInputFile
+from random import choice
 
 import db
+import keyboards as kb
 from init import bot
 from config import Config
+from data import capcha_list
+
+
+# отправляет сообщение
+async def send_capcha(chat_id: int, first_name: str, referrer: str = None) -> None:
+    selected_capcha = [choice(capcha_list) for _ in range(6)]
+    match_char = choice(selected_capcha)
+    text = f'Привет {first_name}\n\nВыбери <b>{match_char[0]}</b>'
+    await bot.send_message(
+        chat_id=chat_id,
+        text=text,
+        reply_markup=kb.get_capcha_kb(items=selected_capcha, match=match_char, refferer=referrer)
+    )
+
 
 
 # отправляет сообщение
