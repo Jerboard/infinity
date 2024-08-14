@@ -1,1 +1,1 @@
-from users_kb import *
+from .users_kb import *

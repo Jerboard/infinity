@@ -8,9 +8,9 @@ def get_capcha_kb(items: list[list], match: dict, referrer) -> InlineKeyboardMar
     kb = InlineKeyboardBuilder()
     for item in items:
         if item == match:
-            kb.button(text=item[0], callback_data=f'{CB.CONTACTS.value}:{referrer}')
+            kb.button(text=item[1], callback_data=f'{CB.CONTACTS.value}:{referrer}')
         else:
-            kb.button(text=item[0], callback_data=f'{CB.CONTACTS.value}:0')
+            kb.button(text=item[1], callback_data=f'{CB.CONTACTS.value}:0')
 
     return kb.adjust(3).as_markup()
 

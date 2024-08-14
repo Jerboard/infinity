@@ -31,6 +31,7 @@ services:
     container_name: bot_infinity
     volumes:
       - ../bot:/app
+      - ../photo:/app/photo
     depends_on:
       - db
     env_file:
@@ -42,9 +43,10 @@ services:
       dockerfile: docker/dockerfiles/DockerfileAdmin
       args:
         - --no-cache
-    container_name: web
+    container_name: web_infinity
     volumes:
       - ../admin_infinity:/app
+      - ../photo:/app/media/photo
     ports:
       - "8000:8000"
     depends_on:

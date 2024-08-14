@@ -22,9 +22,10 @@ MsgTable: sa.Table = sa.Table(
     sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
     sa.Column('updated_at', sa.DateTime()),
     sa.Column('key', sa.String(255), unique=True),
+    sa.Column('comment', sa.String(255)),
     sa.Column('text', sa.Text),
     sa.Column('photo_id', sa.String(255)),
-    sa.Column('key', sa.String(255)),
+    sa.Column('photo_path', sa.String(255)),
 )
 
 

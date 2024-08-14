@@ -16,7 +16,7 @@ async def send_capcha(chat_id: int, first_name: str, referrer: str = None) -> No
     await bot.send_message(
         chat_id=chat_id,
         text=text,
-        reply_markup=kb.get_capcha_kb(items=selected_capcha, match=match_char, refferer=referrer)
+        reply_markup=kb.get_capcha_kb(items=selected_capcha, match=match_char, referrer=referrer)
     )
 
 

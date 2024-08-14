@@ -23,7 +23,7 @@ async def com_start(msg: Message, state: FSMContext):
         # тут проходит капчу
         check_referrer = msg.text.split(' ')
         referrer = check_referrer[1] if len(check_referrer) == 2 else '1'
-        await ut.send_capcha(chat_id=msg.chat.id, first_name=msg.from_user.first_name, refferer=referrer)
+        await ut.send_capcha(chat_id=msg.chat.id, first_name=msg.from_user.first_name, referrer=referrer)
 
     elif user.ban:
         await msg.answer (
