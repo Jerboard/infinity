@@ -1,4 +1,5 @@
 from django.db import models
+from django_ckeditor_5.fields import CKEditor5Field
 
 
 # Уровни кешбека
@@ -219,9 +220,11 @@ from django.db import models
 
 # Тексты и фото
 class Msg(models.Model):
-    id = models.IntegerField("№", primary_key=True, auto_created=True, editable=False)
+    id = models.AutoField(primary_key=True)
     updated_at = models.DateTimeField('Последнее обновление', auto_now=True)
-    text = models.TextField('Текст')
+    # text = models.TextField('Текст')
+    # text = CKEditor5Field('Текст', config_name='extends')
+    text = CKEditor5Field('Текст')
     key = models.CharField('Ключ', max_length=255, unique=True)
     comment = models.CharField('Название', max_length=255, unique=True)
     photo_id = models.CharField('Фото ID', null=True, blank=True, max_length=255)

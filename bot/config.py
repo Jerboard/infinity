@@ -8,7 +8,8 @@ DEBUG = bool(int(os.getenv('DEBUG')))
 
 class Config:
     if DEBUG:
-        token = os.getenv ("TOKEN_TEST")
+        # token = os.getenv ("TOKEN_TEST")
+        token = '7377609086:AAGDLKGKNTeruBfGNYOr4O-FO1kt7-9gtYI'
         access_chat = -1001669708234
     else:
         token = os.getenv ("TOKEN")

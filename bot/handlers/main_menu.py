@@ -18,22 +18,22 @@ async def com_start(msg: Message, state: FSMContext):
     if msg.from_user.is_bot:
         return
 
-    user = await db.get_user_info(msg.from_user.id)
-    if not user:
-        # тут проходит капчу
-        check_referrer = msg.text.split(' ')
-        referrer = check_referrer[1] if len(check_referrer) == 2 else '1'
-        await ut.send_capcha(chat_id=msg.chat.id, first_name=msg.from_user.first_name, referrer=referrer)
-
-    elif user.ban:
-        await msg.answer (
-            'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity',
-            reply_markup=ReplyKeyboardRemove ()
-        )
-        return
+    # user = await db.get_user_info(msg.from_user.id)
+    # if not user:
+    #     # тут проходит капчу
+    #     check_referrer = msg.text.split(' ')
+    #     referrer = check_referrer[1] if len(check_referrer) == 2 else '1'
+    #     await ut.send_capcha(chat_id=msg.chat.id, first_name=msg.from_user.first_name, referrer=referrer)
+    #
+    # elif user.ban:
+    #     await msg.answer (
+    #         'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity',
+    #         reply_markup=ReplyKeyboardRemove ()
+    #     )
+    #     return
 
     await db.add_user(user_id=msg.from_user.id, full_name=msg.from_user.full_name, username=msg.from_user.username)
-    await ut.send_msg(msg_key=Key.START.value, chat_id=msg.chat.id, kb=kb.get_start_kb())
+    await ut.send_msg(msg_key=Key.START.value, chat_id=msg.chat.id, keyboard=kb.get_start_kb())
 
 
 # проверяет капчу

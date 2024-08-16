@@ -20,9 +20,19 @@ async def send_capcha(chat_id: int, first_name: str, referrer: str = None) -> No
     )
 
 
+# обрабатывает текст. заменяет неподдерживаемые теги
+def parse_text(text: str) -> str:
+    return text.replace('<p>', '\n').replace('</p>', '\n').replace('<br>', '\n')
+
 
 # отправляет сообщение
-async def send_msg(msg_key: str, chat_id: int,  edit_msg: int = None, kb: InlineKeyboardMarkup = None) -> Message:
+async def send_msg(
+        msg_key: str,
+        chat_id: int,
+        text: str = None,
+        edit_msg: int = None,
+        keyboard: InlineKeyboardMarkup = None
+) -> Message:
     # если тест, чтоб возвращал тестовую картинку
     if Config.debug:
         msg_key = 'test'
@@ -40,21 +50,23 @@ async def send_msg(msg_key: str, chat_id: int,  edit_msg: int = None, kb: Inline
         photo_id = FSInputFile(msg_data.photo_path)
         update = True
 
+    text = parse_text(text) if text else parse_text(msg_data.text)
+
     if edit_msg:
-        photo = InputMediaPhoto(media=photo_id, caption=msg_data.text)
+        photo = InputMediaPhoto(media=photo_id, caption=text)
         sent = await bot.edit_message_media(
             chat_id=chat_id,
             message_id=edit_msg,
             media=photo,
-            reply_markup=kb
+            reply_markup=keyboard
         )
 
     else:
         sent = await bot.send_photo(
             chat_id=chat_id,
             photo=photo_id,
-            caption=msg_data.text,
-            reply_markup=kb
+            caption=text,
+            reply_markup=keyboard
         )
 
     if update:

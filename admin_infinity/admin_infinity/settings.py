@@ -18,7 +18,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'bot_manager'
+    'bot_manager',
+    'django_ckeditor_5',
 ]
 
 MIDDLEWARE = [
@@ -144,4 +145,69 @@ LOGGING = {
             'propagate': True,
         },
     },
+}
+
+
+DJANGO_CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 500,
+        'width': 'auto',
+        'remove_plugins': 'stylesheetparser',
+        'extra_plugins': ','.join([
+            'uploadimage',  # Для загрузки изображений
+            'basicstyles',  # Простые стили (жирный, курсив)
+            # Добавьте сюда дополнительные плагины, если нужно
+        ]),
+    },
+}
+
+
+# customColorPalette = [
+#     {
+#         'color': 'hsl(4, 90%, 58%)',
+#         'label': 'Red'
+#     },
+#     {
+#         'color': 'hsl(340, 82%, 52%)',
+#         'label': 'Pink'
+#     },
+#     {
+#         'color': 'hsl(291, 64%, 42%)',
+#         'label': 'Purple'
+#     },
+#     {
+#         'color': 'hsl(262, 52%, 47%)',
+#         'label': 'Deep Purple'
+#     },
+#     {
+#         'color': 'hsl(231, 48%, 48%)',
+#         'label': 'Indigo'
+#     },
+#     {
+#         'color': 'hsl(207, 90%, 54%)',
+#         'label': 'Blue'
+#     },
+#     ]
+# CK_EDITOR_5_UPLOAD_FILE_VIEW_NAME = "custom_upload_file"
+CKEDITOR_5_CUSTOM_CSS = 'path_to.css'  # optional
+# CKEDITOR_5_FILE_STORAGE = "path_to_storage.CustomStorage"  # optional
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar':
+            ['bold', 'italic', 'link', 'underline', 'strikethrough', 'code', ],
+        'htmlSupport': {
+            'allow': [{'name': 'strong'},],
+            'disallow': [
+                        {'name': 'p'}
+                    ]
+        }
+    },
+    'list': {
+        'properties': {
+            'styles': 'true',
+            'startIndex': 'true',
+            'reversed': 'true',
+        }
+    }
 }

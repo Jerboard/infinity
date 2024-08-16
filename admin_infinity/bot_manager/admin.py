@@ -68,18 +68,18 @@ from .models import Msg
 # админка новости
 @admin.register(Msg)
 class ViewAdminMsg(admin.ModelAdmin):
-    list_display = ['comment', 'text', 'cover_image_preview']
-    readonly_fields = ['updated_at', 'cover_image_preview_in']
+    list_display = ['key', 'comment', 'text', 'cover_image_preview']
+    readonly_fields = ['updated_at', 'cover_image_preview_in', 'photo_id']
     # list_editable = ['comment']
 
     def cover_image_preview(self, obj):
-        if obj.photo:
+        if obj.photo_path:
             return mark_safe(f'<img src="{obj.photo_path.url}" style="max-width:100px; max-height:100px;">')
         else:
             return "No image"
 
     def cover_image_preview_in(self, obj):
-        if obj.photo:
+        if obj.photo_path:
             return mark_safe(f'<img src="{obj.photo_path.url}" style="max-width:300px; max-height:300px;">')
         else:
             return "No image"
