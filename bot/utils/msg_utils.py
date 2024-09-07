@@ -23,6 +23,7 @@ async def send_capcha(chat_id: int, first_name: str, referrer: str = None) -> No
 # обрабатывает текст. заменяет неподдерживаемые теги
 def parse_text(text: str) -> str:
     return text.replace('<p>', '\n').replace('</p>', '\n').replace('<br>', '\n')
+    # return text
 
 
 # отправляет сообщение
@@ -35,13 +36,14 @@ async def send_msg(
 ) -> Message:
     # если тест, чтоб возвращал тестовую картинку
     if Config.debug:
+        # msg_key = Config.test_photo
         msg_key = 'test'
 
     msg_data = await db.get_msg(msg_key)
 
     # если фото обновлено и не имеет своего ключа
     if Config.debug:
-        photo_id = 'test'
+        photo_id = Config.test_photo
         update = False
     elif msg_data.photo_id:
         photo_id = msg_data.photo_id

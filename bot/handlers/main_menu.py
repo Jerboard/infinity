@@ -10,6 +10,12 @@ from data import capcha_list
 from enums import Key, CB
 
 
+# @dp.message()
+# async def temp(msg: Message):
+#     if msg.photo:
+#         print(msg.photo[-1].file_id)
+
+
 # Команда старт
 @dp.message(CommandStart())
 async def com_start(msg: Message, state: FSMContext):
@@ -18,19 +24,19 @@ async def com_start(msg: Message, state: FSMContext):
     if msg.from_user.is_bot:
         return
 
-    # user = await db.get_user_info(msg.from_user.id)
-    # if not user:
-    #     # тут проходит капчу
-    #     check_referrer = msg.text.split(' ')
-    #     referrer = check_referrer[1] if len(check_referrer) == 2 else '1'
-    #     await ut.send_capcha(chat_id=msg.chat.id, first_name=msg.from_user.first_name, referrer=referrer)
-    #
-    # elif user.ban:
-    #     await msg.answer (
-    #         'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity',
-    #         reply_markup=ReplyKeyboardRemove ()
-    #     )
-    #     return
+    user = await db.get_user_info(msg.from_user.id)
+    if not user:
+        # тут проходит капчу
+        check_referrer = msg.text.split(' ')
+        referrer = check_referrer[1] if len(check_referrer) == 2 else '1'
+        await ut.send_capcha(chat_id=msg.chat.id, first_name=msg.from_user.first_name, referrer=referrer)
+
+    elif user.ban:
+        await msg.answer (
+            'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity',
+            reply_markup=ReplyKeyboardRemove ()
+        )
+        return
 
     await db.add_user(user_id=msg.from_user.id, full_name=msg.from_user.full_name, username=msg.from_user.username)
     await ut.send_msg(msg_key=Key.START.value, chat_id=msg.chat.id, keyboard=kb.get_start_kb())
@@ -49,7 +55,7 @@ async def back_com_start(cb: CallbackQuery, state: FSMContext):
             username=cb.message.from_user.username,
             referrer=referrer if referrer != 1 else None
         )
-        await ut.send_msg(msg_key=Key.START.value, chat_id=cb.message.chat.id, kb=kb.get_start_kb())
+        await ut.send_msg(msg_key=Key.START.value, chat_id=cb.message.chat.id, keyboard=kb.get_start_kb())
     else:
         await cb.answer('⚠️ Вы не прошли проверку', show_alert=True)
         await ut.send_capcha(
@@ -65,7 +71,7 @@ async def back_com_start(cb: CallbackQuery, state: FSMContext):
         msg_key=Key.START.value,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
-        kb=kb.get_start_kb()
+        keyboard=kb.get_start_kb()
     )
 
 
@@ -86,11 +92,5 @@ async def back_com_start(cb: CallbackQuery, state: FSMContext):
 #     await msg.answer_photo(photo=photo_id, caption=text, reply_markup=get_support_kb())
 
 
-# удалить
-# @dp.message_handler(content_types=['photo'], state='*')
-# async def save_photo(msg: Message):
-#     # logging.warning(f'{msg.caption}: {msg.photo[-1].file_id}')
-#     print(msg.photo[-1].file_id)
 
 
-from init import dp

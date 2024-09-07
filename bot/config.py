@@ -24,6 +24,8 @@ class Config:
     tz = timezone('Asia/Tashkent')
     api_key_cm = os.getenv('API_KEY_COINMARKET')
 
+    test_photo = 'AgACAgIAAxkBAAMKZtwCcBYQoPHYC7QXVMDvHPk4TO0AAtHdMRtgheBKwXbCeNk2bWEBAAMCAAN4AAM2BA'  # @tushchkan_test_4_bot
+
     @property
     def debug(self) -> bool:
         return DEBUG

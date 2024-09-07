@@ -9,5 +9,13 @@ class CB(str, Enum):
     SETTINGS = 'settings'
     ANTISPAM = 'antispam'
     CONTACTS = 'contacts'
+    SELECT_PAYMENT = 'select_payment'
+    SEND_WALLET = 'send_wallet'
+    PAYMENT_ADD = 'payment_add'
+    ADD_PROMO = 'add_promo'
+    USE_CASHBACK = 'use_cashback'
+    BACK_CHECK_INFO = 'back_check_info'
+    PAYMENT_CONF = 'payment_conf'
+
 
 

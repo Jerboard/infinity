@@ -71,5 +71,3 @@ def log_error(message, with_traceback: bool = True):
         return msg
     else:
         logging.warning(f'{now}\n{message}\n\n---------------------------------\n')
-
-

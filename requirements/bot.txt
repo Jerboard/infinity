@@ -7,3 +7,4 @@ pytz
 uvloop
 coinaddrvalidator
 web3
+httpx
