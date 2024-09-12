@@ -1,6 +1,7 @@
 from .users import *
 from .msg import *
 from .orders import *
+from .cb_orders import *
 from .currency import *
 from .pay_methods import *
 from .checked_wallets import *

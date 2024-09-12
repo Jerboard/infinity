@@ -12,6 +12,8 @@ class Key(str, Enum):
     ADD_PROMO = 'add_promo'
     PAYMENT = 'payment'
     PAYMENT_CONF = 'payment_conf'
+    SUC_ORDER = 'suc_order'
+    FAIL_ORDER = 'fail_order'
 
 
 # действия
@@ -34,4 +36,8 @@ class Coin(str, Enum):
 class OrderStatus(str, Enum):
     NOT_CONF = 'not_conf'
     NEW = 'new'
+    PROC = 'processing'
+    CANCEL = 'cancel'
+    SUC = 'successful'
+    FAIL = 'failed'
 

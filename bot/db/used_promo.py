@@ -50,6 +50,16 @@ async def get_used_promo(promo: str, user_id: int) -> tuple[UsedPromoRow]:
     return result.all()
 
 
+# удаляет промо
+async def del_used_promo(promo: str, user_id: int) -> None:
+    query = UsedPromoTable.delete().where(
+        UsedPromoTable.c.promo == promo,
+        UsedPromoTable.c.user_id == user_id,
+    )
+    async with begin_connection() as conn:
+        await conn.execute(query)
+
+
 """
 	`id` INT(10) NOT NULL AUTO_INCREMENT,
 	`promo` VARCHAR(50) NULL DEFAULT NULL COLLATE 'utf8mb4_0900_ai_ci',

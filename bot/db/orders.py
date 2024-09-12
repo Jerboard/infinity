@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import typing as t
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as sa_postgresql
@@ -12,11 +12,11 @@ class OrderRow(t.Protocol):
     id: int
     created_at: datetime
     updated_at: datetime
-    user_id: str
+    user_id: int
     status: str
     coin: str
     pay_method: str
-    coin_sum: str
+    coin_sum: float
     wallet: str
     promo: str
     promo_rate: int
@@ -111,19 +111,38 @@ async def add_order(
 
 
 # возвращает заказы
-async def get_orders(user_id: int, check: bool = False, amount: float = None) -> tuple[OrderRow]:
-    query = OrderTable.select().where(OrderTable.c.user_id == user_id)
+async def get_orders(
+        user_id: int = None,
+        for_done: bool = False,
+        check: bool = False,
+        old_orders: bool = False,
+        amount: float = None
+) -> tuple[OrderRow]:
+    query = OrderTable.select()
+
+    if user_id:
+        query = query.where(OrderTable.c.user_id == user_id)
 
     if check:
         query = query.where(sa.or_(
-            OrderTable.c.status == OrderStatus.NOT_CONF,
-            OrderTable.c.status == OrderStatus.NEW
+            OrderTable.c.status == OrderStatus.NOT_CONF.value,
+            OrderTable.c.status == OrderStatus.NEW.value
         ))
 
-    if amount:
+    if for_done:
         query = query.where(sa.or_(
-            OrderTable.c.amount == amount
+            OrderTable.c.status == OrderStatus.PROC.value,
+            OrderTable.c.status == OrderStatus.CANCEL.value
         ))
+
+    if old_orders:
+        thirty_minutes_ago = datetime.utcnow() - timedelta(minutes=30)
+        query = query.where(sa.and_(
+            OrderTable.c.status == OrderStatus.CANCEL.value,
+            OrderTable.c.created_at < thirty_minutes_ago
+        ))
+    if amount:
+        query = query.where(OrderTable.c.amount == amount)
 
     async with begin_connection() as conn:
         result = await conn.execute(query)
@@ -131,7 +150,7 @@ async def get_orders(user_id: int, check: bool = False, amount: float = None) ->
     return result.all()
 
 
-# возвращает текст и фото
+# обновляет заявку
 async def update_orders(order_id: int, status: str = None) -> None:
     query = OrderTable.update().where(OrderTable.c.id == order_id)
 
