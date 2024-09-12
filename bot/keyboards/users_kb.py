@@ -75,3 +75,11 @@ def get_payment_conf_kb(order_id: int) -> InlineKeyboardMarkup:
     kb.button(text=f'🔙 Назад', callback_data=f'{CB.BACK_CHECK_INFO.value}')
 
     return kb.adjust(1).as_markup()
+
+
+# админская кб отправки сообщений
+def get_sending_kb() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(text='📲Отправить всем пользователям', callback_data=f'{CB.SENDING_MESSAGE.value}:{Action.SEND.value}')
+    kb.button(text='🗑Удалить сообщение', callback_data=f'{CB.SENDING_MESSAGE.value}:{Action.DEL.value}')
+    return kb.adjust(1).as_markup()

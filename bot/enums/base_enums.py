@@ -21,6 +21,7 @@ class Action(str, Enum):
     ADD = 'add'
     DEL = 'del'
     BACK = 'back'
+    SEND = 'send'
 
 
 # монеты

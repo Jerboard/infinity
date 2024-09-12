@@ -16,6 +16,7 @@ class CB(str, Enum):
     USE_CASHBACK = 'use_cashback'
     BACK_CHECK_INFO = 'back_check_info'
     PAYMENT_CONF = 'payment_conf'
+    SENDING_MESSAGE = 'sending_message'
 
 
 
