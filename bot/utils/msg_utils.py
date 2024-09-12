@@ -1,4 +1,5 @@
 from aiogram.types import Message, InlineKeyboardMarkup, InputMediaPhoto, FSInputFile
+from aiogram.fsm.context import FSMContext
 from random import choice
 
 import db
@@ -6,6 +7,8 @@ import keyboards as kb
 from init import bot
 from config import Config
 from data import capcha_list
+import utils as ut
+from enums import Key
 
 
 # отправляет сообщение
@@ -75,3 +78,28 @@ async def send_msg(
         await db.update_msg(msg_data.id, photo_id=sent.photo[-1].file_id)
 
     return sent
+
+
+# считает сумму
+async def check_info_output(state: FSMContext, del_msg: bool = False):
+    data = await state.get_data()
+    currency = await db.get_currency(data['currency_id'])
+
+    text = ut.get_check_info_text(data=data, currency=currency)
+    if del_msg:
+        await bot.delete_message(chat_id=data['user_id'], message_id=data['message_id'])
+        sent = await ut.send_msg(
+            msg_key=Key.CHECK_WALLET.value,
+            chat_id=data['user_id'],
+            text=text,
+            keyboard=kb.get_check_info_kb(use_points=data['used_points'], points=data['points'], promo=data.get('promo'))
+        )
+        await state.update_data(data={'message_id': sent.message_id})
+    else:
+        await ut.send_msg(
+            msg_key=Key.CHECK_WALLET.value,
+            chat_id=data['user_id'],
+            edit_msg=data['message_id'],
+            text=text,
+            keyboard=kb.get_check_info_kb(use_points=data['used_points'], points=data['points'], promo=data.get('promo'))
+        )

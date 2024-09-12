@@ -11,7 +11,7 @@ import keyboards as kb
 from config import Config
 from init import dp, bot
 import utils as ut
-from functions.async_utilits import del_order
+# from functions.async_utilits import del_order
 from enums import CB, Key, UserStatus, Action, OrderStatus
 
 
@@ -97,6 +97,7 @@ async def sum_exchange(msg: Message, state: FSMContext):
 
     else:
         input_sum = float(input_sum)
+        print(f'input_sum: {input_sum}')
         data = await state.get_data()
         # await state.set_state('exchange_send_sum')
 
@@ -104,18 +105,21 @@ async def sum_exchange(msg: Message, state: FSMContext):
 
         # зачем тут +1
         currency_rate = round(currency.rate * ((currency.ratio / 100) + 1))
+        print(f'currency_rate: {currency_rate}')
 
-        if input_sum <= currency.max:
+        # if input_sum <= currency.max:
+        if input_sum <= 200:
             sum_coin = input_sum
             sum_rub = round((sum_coin * currency_rate)) + currency.commission
         else:
             sum_rub = input_sum
             sum_coin = (sum_rub - currency.commission) / currency_rate
 
-        min_rub = round(currency_rate * currency.min)
-        max_rub = round(currency_rate * currency.max)
+        print(f'sum_coin: {sum_coin}')
+        print(f'sum_rub: {sum_rub}')
 
         if sum_coin < currency.min:
+            min_rub = round(currency_rate * currency.min)
             text = (f'❌ Некорректная сумма\n'
                     f'Сумма должна быть больше:\n'
                     f'{currency.min} {currency.code}\n'
@@ -124,6 +128,7 @@ async def sum_exchange(msg: Message, state: FSMContext):
             reply_markup = None
 
         elif sum_coin > currency.max:
+            max_rub = round(currency_rate * currency.max)
             text = f'❌ Некорректная сумма\n' \
                    f'Сумма должна быть меньше:\n' \
                    f'{currency.max} {currency.code}\n' \
@@ -139,7 +144,8 @@ async def sum_exchange(msg: Message, state: FSMContext):
                 'sum_exchange': sum_coin,
                 'rate': currency_rate,
                 'start_time': datetime.now(),
-                'commission': currency.commission
+                'commission': currency.commission,
+                'percent': currency.ratio,
 })
 
             user_data = await db.get_user_info(msg.from_user.id)
@@ -153,15 +159,15 @@ async def sum_exchange(msg: Message, state: FSMContext):
             reply_markup = kb.get_pay_method_kb(sum_rub=sum_rub, pay_methods=pay_methods)
 
         try:
-            # await state.update_data(data={'chat_id': sent.chat.id, 'message_id': sent.message_id})
-
-            await ut.send_msg(
+            await bot.delete_message(chat_id=msg.chat.id, message_id=data['message_id'])
+            sent = await ut.send_msg(
                 msg_key=Key.SUM_EXCHANGE.value,
                 chat_id=msg.chat.id,
-                edit_msg=data['chat_id'],
+                # edit_msg=data['message_id'],
                 text=text,
                 keyboard=reply_markup
             )
+            await state.update_data(data={'message_id': sent.message_id})
 
         except TelegramBadRequest as ex:
             pass
@@ -185,24 +191,9 @@ async def save_pay_method(cb: CallbackQuery, state: FSMContext):
     await ut.send_msg(
         msg_key=Key.SAVE_PAY_METHOD.value,
         chat_id=cb.message.chat.id,
-        edit_msg=cb.message.chat.id,
+        edit_msg=cb.message.message_id,
         text=text,
         keyboard=kb.get_back_kb(CB.SELECT_PAYMENT.value)
-    )
-
-
-# ===========================================================================================
-# считает сумму
-async def check_info_output(data: dict):
-    currency = await db.get_currency(data['currency_id'])
-
-    text = ut.get_check_info_text(data=data, currency=currency)
-    await ut.send_msg(
-        msg_key=Key.CHECK_WALLET.value,
-        chat_id=data['user_id'],
-        edit_msg=data['message_id'],
-        text=text,
-        keyboard=kb.get_check_info_kb(data['use_points'], data['points'], data['promo'])
     )
 
 
@@ -218,7 +209,8 @@ async def check_wallet(msg: Message, state: FSMContext):
     if not checked_wallet:
         check = await ut.check_wallet(coin_code=currency.code, wallet=msg.text)
         if check:
-            await db.add_wallet(user_id=msg.from_user.id, code=currency.code, wallet=msg.text)
+            if not Config.debug:
+                await db.add_wallet(user_id=msg.from_user.id, code=currency.code, wallet=msg.text)
 
         else:
             await msg.answer('❌ Некорректный адрес кошелька')
@@ -239,13 +231,12 @@ async def check_wallet(msg: Message, state: FSMContext):
     # await state.set_state('exchange')
     await state.update_data(data={
         'wallet': msg.text,
-        'use_points': False,
+        'used_points': False,
         'points': user_data.balance,
         'user_id': msg.from_user.id
     })
-    data = await state.get_data()
 
-    await check_info_output(data)
+    await ut.check_info_output(state, del_msg=True)
 
     # await bot.delete_message(chat_id=msg.from_user.id, message_id=data['message_id'])
     # text = ut.get_check_info_text(data=data, currency=currency)
@@ -253,7 +244,7 @@ async def check_wallet(msg: Message, state: FSMContext):
     #     msg_key=Key.CHECK_WALLET.value,
     #     chat_id=msg.chat.id,
     #     text=text,
-    #     keyboard=kb.get_check_info_kb(data['use_points'], data['points'], data['promo'])
+    #     keyboard=kb.get_check_info_kb(data['used_points'], data['points'], data['promo'])
     # )
     #
     # await state.update_data(data={'message_id': sent.message_id})
@@ -262,8 +253,7 @@ async def check_wallet(msg: Message, state: FSMContext):
 # назад к чекинфо
 @dp.callback_query(lambda cb: cb.data.startswith(CB.BACK_CHECK_INFO.value))
 async def back_check_info(cb: CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    await check_info_output(data)
+    await ut.check_info_output(state)
 
 
 # Введите промокод
@@ -274,7 +264,7 @@ async def add_promo(cb: CallbackQuery, state: FSMContext):
 
     await ut.send_msg(
         msg_key=Key.ADD_PROMO.value,
-        chat_id=cb.chat.id,
+        chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         text=text,
         keyboard=kb.get_back_kb(CB.BACK_CHECK_INFO.value)
@@ -314,8 +304,7 @@ async def check_info_promo(msg: Message, state: FSMContext):
             'total_amount': promo_amount
         })
 
-        data = await state.get_data()
-        await check_info_output(data)
+        await ut.check_info_output(state)
 
 
 # Использовать баллы
@@ -331,20 +320,17 @@ async def use_cashback(cb: CallbackQuery, state: FSMContext):
         total_amount = 1
         used_balance = (user.balance - data['total_amount']) + 1
 
-    await db.update_user_info(user_id=cb.from_user.id, add_balance=0 - used_balance)
+    # await db.update_user_info(user_id=cb.from_user.id, add_balance=0 - used_balance)
 
     # total_amount = check_unique_amount(total_amount)
     # update_balance(cb.from_user.id, return_points)
 
     await state.update_data(data={
-        'use_points': True,
-        # 'spent_points': use_points,
-        'return_points': used_balance,
+        'used_points': used_balance,
         'total_amount': total_amount
     })
 
-    data = await state.get_data()
-    await check_info_output(data)
+    await ut.check_info_output(state)
 
 
 # подтверждение суммы
@@ -357,6 +343,8 @@ async def payment(cb: CallbackQuery, state: FSMContext):
 
     # await state.update_data(data={'total_amount': total_amount})
     data = await state.get_data()
+    # for k, v in data.items():
+    #     print(f'{k}: {v}')
 
     if data.get('promo'):
         promo_used_id = await db.add_used_promo(user_id=cb.from_user.id, promo=data['promo'])
@@ -367,11 +355,11 @@ async def payment(cb: CallbackQuery, state: FSMContext):
         user_id=cb.from_user.id,
         coin=currency.code,
         pay_method=data['pay_method'],
-        coin_sum=data['coin_sum'],
+        coin_sum=data['sum_exchange'],
         wallet=data['wallet'],
         promo=data.get('promo'),
         promo_rate=data.get('promo_rate', 0),
-        exchange_rate=data['exchange_rate'],
+        exchange_rate=data['rate'],
         percent=data['percent'],
         amount=data['amount'],
         used_points=data.get('used_point', 0),
@@ -380,14 +368,18 @@ async def payment(cb: CallbackQuery, state: FSMContext):
         promo_used_id=promo_used_id,
         commission=data['commission'],
     )
-    
+    # списываем баллы
+    if data.get('used_points'):
+        await db.update_user_info(user_id=cb.from_user.id, add_balance=0 - data['used_points'])
+
     pay_method_info = await db.get_pay_method(method_id=data['pay_method_id'])
     await state.update_data(data={'order_id': order_id})
 
-    await cb.answer(text='При переводе денег не на тот банк - возврат невозможен. '
-                         'По остальным вопросам претензии принимаются в течение 24 часов.',
-                    show_alert=True
-                    )
+    await cb.answer(
+        text='При переводе денег не на тот банк - возврат невозможен. '
+             'По остальным вопросам претензии принимаются в течение 24 часов.',
+        show_alert=True
+    )
 
     text = f'<b>Номер заявки</b> {order_id}\n' \
            f'<b>Перевод на:</b> {data["pay_method"]}\n' \
@@ -399,7 +391,7 @@ async def payment(cb: CallbackQuery, state: FSMContext):
 
     await ut.send_msg(
         msg_key=Key.PAYMENT.value,
-        chat_id=cb.chat.id,
+        chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         text=text,
         keyboard=kb.get_payment_conf_kb(order_id)
@@ -414,10 +406,13 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
 
     data = await state.get_data()
     await state.clear()
+    # for k, v in data.items():
+    #     print(f'{k}: {v}')
 
     if action == Action.DEL:
-        await del_order(order_id, 'not_conf', cb.from_user.id, data['spent_points'], data['promo_used_id'],
-                        data['chat_id'], data['message_id'], data['promo'])
+        pass
+        # await del_order(order_id, 'not_conf', cb.from_user.id, data['spent_points'], data['promo_used_id'],
+        #                 data['chat_id'], data['message_id'], data['promo'])
 
     else:
         await db.update_orders(order_id=order_id, status=OrderStatus.NEW.value)
@@ -428,24 +423,12 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
 
         await ut.send_msg(
             msg_key=Key.PAYMENT_CONF.value,
-            chat_id=cb.chat.id,
+            chat_id=cb.message.chat.id,
             edit_msg=cb.message.message_id,
-            text=text,
-            keyboard=kb.get_payment_conf_kb(order_id)
+            text=text
         )
 
         username = f'@{cb.from_user.username}' if cb.from_user.username is not None else ''
-        # text = f'<b>Новая заявка:</b>\n' \
-        #        f'<b>Номер заявки:</b> {cb_data[1]}\n' \
-        #        f'<b>От:</b> {cb.from_user.full_name} {username}\n' \
-        #        f'<b>Валюта:</b> {data["currency_name"]}\n' \
-        #        f'<b>Сумма валюты:</b> {data["sum_exchange"]}\n' \
-        #        f'<b>На кошелёк:</b> {data["wallet"]}\n' \
-        #        f'<b>Перевод на:</b> {data["pay_method"]}\n' \
-        #        f'<b>Сумма рублей:</b> {data["total_amount"]} '
-
-        # await cb.message.answer(text, parse_mode='html')
-
         text = f'<b>Новая заявка:</b>\n' \
                f'<b>Номер заявки:</b> {order_id}\n' \
                f'<b>От:</b> {cb.from_user.full_name} {username}\n' \
@@ -454,17 +437,8 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
                f'<b>На кошелёк:</b> <code>{data["wallet"]}</code>\n' \
                f'<b>Перевод на:</b> {data["pay_method"]}\n' \
                f'<b>Сумма рублей:</b> <code>{data["total_amount"]}</code>'
-        try:
-            await bot.send_message(Config.access_chat, text, parse_mode='html')
-        except:
-            text = f'<b>Новая заявка:</b>\n' \
-                   f'<b>Номер заявки:</b> {order_id}\n' \
-                   f'<b>От:</b> {cb.from_user.full_name} {username}\n' \
-                   f'<b>Валюта:</b> {data["currency_name"]}\n' \
-                   f'<b>Сумма валюты:</b> {data["sum_exchange"]}\n' \
-                   f'<b>На кошелёк:</b> {data["wallet"]}\n' \
-                   f'<b>Перевод на:</b> {data["pay_method"]}\n' \
-                   f'<b>Сумма рублей:</b> {data["total_amount"]} '
-            await bot.send_message(Config.access_chat, text, parse_mode='html')
+
+        await bot.send_message(Config.access_chat, text)
+
 
 

@@ -37,7 +37,7 @@ def get_back_kb(cb: str, arg: str = Action.BACK.value):
 def get_currency_list_kb(currencies: tuple[db.CurrencyRow]) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     for currency in currencies:
-        kb.button(text=f'{currency.name} ({currency.code})', callback_data=f'{CB.SELECT_PAYMENT}:{currency.id}')
+        kb.button(text=f'{currency.name} ({currency.code})', callback_data=f'{CB.SELECT_PAYMENT.value}:{currency.id}')
 
     back_bt = InlineKeyboardBuilder()
     back_bt.button(text='🔙 Назад', callback_data=CB.BACK_START.value)

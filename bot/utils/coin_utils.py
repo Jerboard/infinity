@@ -68,6 +68,9 @@ def update_currency_rate_binance():
 
 # проверяет биткоин кошелёк
 async def check_wallet(coin_code, wallet):
+    if Config.debug:
+        return True
+
     correct = False
 
     if coin_code == Coin.BTC:

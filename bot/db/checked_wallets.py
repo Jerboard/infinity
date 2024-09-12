@@ -22,7 +22,7 @@ WalletTable: sa.Table = sa.Table(
     sa.Column('created_at', sa.DateTime),
     sa.Column('user_id', sa.BigInteger),
     sa.Column('coin_code', sa.String(255)),
-    sa.Column('wallet', sa.Boolean),
+    sa.Column('wallet', sa.String(255)),
 
 )
 

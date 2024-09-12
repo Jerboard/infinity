@@ -31,7 +31,7 @@ UserTable: sa.Table = sa.Table(
     sa.Column('last_visit', sa.DateTime(timezone=True)),
     sa.Column('referrer', sa.BigInteger),
     sa.Column('balance', sa.Integer, default=0),
-    sa.Column('custom_refferal_lvl_id', sa.Integer, default=0),
+    sa.Column('custom_referral_lvl_id', sa.Integer, default=0),
     sa.Column('ban', sa.Boolean, default=False),
 )
 
