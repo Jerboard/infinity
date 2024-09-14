@@ -71,8 +71,8 @@ class RefLvlTable(admin.ModelAdmin):
 # админка новости
 @admin.register(Msg)
 class ViewAdminMsg(admin.ModelAdmin):
-    list_display = ['key', 'comment', 'text', 'cover_image_preview']
-    readonly_fields = ['updated_at', 'cover_image_preview_in', 'photo_id', 'bot_id']
+    list_display = ['comment', 'text', 'cover_image_preview']
+    readonly_fields = ['updated_at', 'cover_image_preview_in', 'photo_id', 'bot_id', 'key']
     # list_editable = ['comment']
 
     def cover_image_preview(self, obj):
