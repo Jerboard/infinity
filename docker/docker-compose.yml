@@ -67,6 +67,7 @@ services:
       - ../admin_infinity/staticfiles:/var/html/static/
       - ../admin_infinity/staticfiles:/var/html/staticfiles/
       - ../admin_infinity/media:/var/html/media/
+      - ../photo:/var/html/photo/
       - ../nginx/logs:/var/log/nginx
     depends_on:
       - web
