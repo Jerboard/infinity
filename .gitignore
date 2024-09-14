@@ -8,3 +8,4 @@
 **/media/
 **/staticfiles/
 nginx/logs
+/data/

@@ -27,15 +27,17 @@ class User(models.Model):
     username = models.CharField('Юзернейм', max_length=255, null=True, blank=True)
     first_visit = models.DateTimeField('Дата первого визита')
     last_visit = models.DateTimeField('Дата последнего визита')
-    referrer = models.BigIntegerField('Реферер')
-    balance = models.IntegerField('Баланс', default=0)
-    custom_referral_lvl = models.ForeignKey(
-        CashbackLevel,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        verbose_name='Уровень Рефферала',
-    )
+    referrer = models.BigIntegerField('Реферер', null=True, blank=True)
+    referral_points = models.IntegerField('Реф. баллы', default=0)
+    cashback = models.IntegerField('Кешбек', default=0)
+    custom_referral_lvl_id = models.IntegerField('Уровень рефералки', null=True, blank=True)
+    # custom_referral_lvl = models.ForeignKey(
+    #     CashbackLevel,
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     verbose_name='Уровень Рефферала',
+    # )
     ban = models.BooleanField('Забанить', default=False)
 
     objects: models.Manager = models.Manager()
@@ -158,15 +160,23 @@ class PayMethod(models.Model):
 
 # промокоды
 class Promo(models.Model):
+    # id = models.AutoField(primary_key=True)
+    # created_at = models.DateTimeField('Создан', auto_now_add=True)
+    # start_date = models.DateField('Дата начала', null=True, blank=True)
+    # end_date = models.DateField('Дата окончания', null=True, blank=True)
+    # rate = models.IntegerField('Скидка', null=True, blank=True)
+    # promo = models.CharField('Промокод', max_length=255, null=True, blank=True)
+    # many = models.IntegerField('Кратность')
+    # is_active = models.BooleanField('Активный', default=True)
+    # is_onetime = models.BooleanField('Одноразовый', default=False)
+
     id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField('Создан', auto_now_add=True)
-    start_date = models.DateField('Дата начала', null=True, blank=True)
-    end_date = models.DateField('Дата окончания', null=True, blank=True)
+    updated_at = models.DateTimeField('Использован', auto_now_add=True)
+    # user_id = models.IntegerField('Юзер ид', null=True, blank=True)
     rate = models.IntegerField('Скидка', null=True, blank=True)
     promo = models.CharField('Промокод', max_length=255, null=True, blank=True)
-    many = models.IntegerField('Кратность')
-    is_active = models.BooleanField('Активный', default=True)
-    is_onetime = models.BooleanField('Одноразовый', default=False)
+    is_active = models.BooleanField('Активен', default=True)
 
     objects: models.Manager = models.Manager()
 

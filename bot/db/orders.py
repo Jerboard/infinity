@@ -25,14 +25,16 @@ class OrderRow(t.Protocol):
     amount: int
     total_amount: int
     used_points: int
+    used_cashback: int
     message_id: int
     hash: str
     commission: int
     cashback: int
     profit: float
     referrer: int
-    user_key_id: str
     promo_used_id: int
+    user_key_id: str
+    referrer_id: int
 
 
 OrderTable: sa.Table = sa.Table(
@@ -54,6 +56,7 @@ OrderTable: sa.Table = sa.Table(
     sa.Column('amount', sa.Integer),
     sa.Column('total_amount', sa.Integer),
     sa.Column('used_points', sa.Integer, default=0),
+    sa.Column('used_cashback', sa.Integer, default=0),
     sa.Column('message_id', sa.Integer),
     sa.Column('hash', sa.String(255)),
     sa.Column('commission', sa.Integer),
@@ -62,6 +65,7 @@ OrderTable: sa.Table = sa.Table(
     sa.Column('referrer', sa.BigInteger),
     sa.Column('user_key_id', sa.Integer),
     sa.Column('promo_used_id', sa.Integer),
+    sa.Column('referrer_id', sa.BigInteger),
 )
 
 
@@ -78,6 +82,7 @@ async def add_order(
         percent: float,
         amount: int,
         used_points: int,
+        used_cashback: int,
         total_amount: int,
         message_id: int,
         promo_used_id: int,
@@ -99,6 +104,7 @@ async def add_order(
         percent=percent,
         amount=amount,
         used_points=used_points,
+        used_cashback=used_cashback,
         total_amount=total_amount,
         message_id=message_id,
         promo_used_id=promo_used_id,
@@ -113,15 +119,22 @@ async def add_order(
 # возвращает заказы
 async def get_orders(
         user_id: int = None,
+        status: str = None,
         for_done: bool = False,
         check: bool = False,
         old_orders: bool = False,
-        amount: float = None
+        amount: float = None,
+        referrer_id: int = None,
+        desc_order: bool = False
+
 ) -> tuple[OrderRow]:
     query = OrderTable.select()
 
     if user_id:
         query = query.where(OrderTable.c.user_id == user_id)
+
+    if status:
+        query = query.where(OrderTable.c.status == status)
 
     if check:
         query = query.where(sa.or_(
@@ -144,10 +157,26 @@ async def get_orders(
     if amount:
         query = query.where(OrderTable.c.amount == amount)
 
+    if referrer_id:
+        query = query.where(OrderTable.c.referrer_id == referrer_id)
+
+    if desc_order:
+        query = query.order_by(sa.desc(OrderTable.c.created_at))
+
     async with begin_connection() as conn:
         result = await conn.execute(query)
 
     return result.all()
+
+
+# возвращает заявку
+async def get_order(order_id: int) -> OrderRow:
+    query = OrderTable.update().where(OrderTable.c.id == order_id)
+
+    async with begin_connection() as conn:
+        result = await conn.execute(query)
+
+    return result.first()
 
 
 # обновляет заявку

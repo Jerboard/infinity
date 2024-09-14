@@ -20,7 +20,7 @@ class PromoRow(t.Protocol):
 
 
 PromoTable: sa.Table = sa.Table(
-    "promo",
+    "promo_old",
     METADATA,
     sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
     sa.Column('created_at', sa.DateTime),

@@ -16,7 +16,9 @@ class UserRow(t.Protocol):
     last_visit: datetime
     referrer: int
     balance: int
-    custom_refferal_lvl_id: int
+    referral_points: int
+    cashback: int
+    custom_referral_lvl_id: int
     ban: bool
 
 
@@ -31,6 +33,8 @@ UserTable: sa.Table = sa.Table(
     sa.Column('last_visit', sa.DateTime(timezone=True)),
     sa.Column('referrer', sa.BigInteger),
     sa.Column('balance', sa.Integer, default=0),
+    sa.Column('referral_points', sa.Integer, default=0),
+    sa.Column('cashback', sa.Integer, default=0),
     sa.Column('custom_referral_lvl_id', sa.Integer, default=0),
     sa.Column('ban', sa.Boolean, default=False),
 )
@@ -68,8 +72,10 @@ async def get_user_info(user_id: int) -> UserRow:
 
 
 # возвращает список пользователей
-async def get_users() -> tuple[UserRow]:
+async def get_users(referrer: int = None) -> tuple[UserRow]:
     query = UserTable.select()
+    if referrer:
+        query = query.where(UserTable.c.referrer == referrer)
     async with begin_connection() as conn:
         result = await conn.execute(query)
 
@@ -77,10 +83,21 @@ async def get_users() -> tuple[UserRow]:
 
 
 # обновляет данные пользователя
-async def update_user_info(user_id: int, add_balance: int = None) -> None:
+async def update_user_info(
+        user_id: int,
+        add_balance: int = None,
+        add_point: int = None,
+        add_cashback: int = None
+) -> None:
     query = UserTable.update().where(UserTable.c.user_id == user_id)
     if add_balance:
         query = query.values(balance=UserTable.c.balance + add_balance)
+
+    if add_point:
+        query = query.values(balance=UserTable.c.referral_points + add_point)
+
+    if add_cashback:
+        query = query.values(balance=UserTable.c.cashback + add_cashback)
+
     async with begin_connection() as conn:
         await conn.execute(query)
-

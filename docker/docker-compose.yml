@@ -6,7 +6,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ../data:/var/lib/postgresql/data
     env_file:
       - .env
 
@@ -74,7 +74,7 @@ services:
 
 volumes:
   pgadmin_data:
-  postgres_data:
+#  postgres_data:
   static_value:
   media_value:
 

@@ -10,16 +10,11 @@ from enums import OrderStatus, Key
 
 # Отменяет заявку
 async def del_order(order: db.OrderRow):
-    # return_points = 0 if return_points is None else return_points
-    if order.used_points > 0:
-        await db.update_user_info(user_id=order.user_id, add_balance=order.used_points)
+    if order.used_points > 0 or order.used_cashback > 0:
+        await db.update_user_info(user_id=order.user_id, add_point=order.used_points, add_cashback=order.used_cashback)
 
     if order.promo:
-        await db.del_used_promo(promo=order.promo, user_id=order.user_id)
-
-    # if is_onetime_promo(promo):
-    #     cur.execute('update bot_manager_promo set is_active = 1 where promo = %s', (promo[:-2],))
-    #     conn.commit()
+        await db.update_used_promo(promo_id=order.promo_used_id, used=False)
 
     await db.update_orders(order_id=order.id, status=OrderStatus.FAIL.value)
 

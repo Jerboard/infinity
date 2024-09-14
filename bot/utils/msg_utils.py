@@ -1,5 +1,6 @@
 from aiogram.types import Message, InlineKeyboardMarkup, InputMediaPhoto, FSInputFile
 from aiogram.fsm.context import FSMContext
+from asyncio import sleep
 from random import choice
 
 import db
@@ -21,6 +22,13 @@ async def send_capcha(chat_id: int, first_name: str, referrer: str = None) -> No
         text=text,
         reply_markup=kb.get_capcha_kb(items=selected_capcha, match=match_char, referrer=referrer)
     )
+
+
+# временное сообщение
+async def send_time_message(chat_id: int, text: str) -> None:
+    sent = await bot.send_message(chat_id=chat_id, text=text)
+    await sleep(3)
+    await sent.delete()
 
 
 # обрабатывает текст. заменяет неподдерживаемые теги
@@ -81,25 +89,61 @@ async def send_msg(
 
 
 # считает сумму
-async def check_info_output(state: FSMContext, del_msg: bool = False):
-    data = await state.get_data()
-    currency = await db.get_currency(data['currency_id'])
+# async def check_info_output(state: FSMContext, del_msg: bool = False):
+#     data = await state.get_data()
+#     currency = await db.get_currency(data['currency_id'])
+#
+#     text = ut.get_check_info_text(data=data, currency=currency)
+#     if del_msg:
+#         await bot.delete_message(chat_id=data['user_id'], message_id=data['message_id'])
+#         sent = await ut.send_msg(
+#             msg_key=Key.CHECK_WALLET.value,
+#             chat_id=data['user_id'],
+#             text=text,
+#             keyboard=kb.get_check_info_kb(use_points=data['used_points'], points=data['points'], promo=data.get('promo'))
+#         )
+#         await state.update_data(data={'message_id': sent.message_id})
+#     else:
+#         await ut.send_msg(
+#             msg_key=Key.CHECK_WALLET.value,
+#             chat_id=data['user_id'],
+#             edit_msg=data['message_id'],
+#             text=text,
+#             keyboard=kb.get_check_info_kb(use_points=data['used_points'], points=data['points'], promo=data.get('promo'))
+#         )
 
-    text = ut.get_check_info_text(data=data, currency=currency)
+
+async def main_exchange(state: FSMContext, del_msg: bool = False):
+    data = await state.get_data()
+    currency_rate = data['rate']
+    sum_coin = data['sum_exchange']
+    currency_code = data['currency_code']
+    sum_rub = data['amount']
+    balance = f'<s>{data["balance"]}</s>' if data.get('used_balance') else data['balance']
+    pay_string = data['pay_string']
+
+    # for k, v in data.items():
+    #     print(f'{k}: {v}')
+
+    text = (
+        f'Средний рыночный курс: {currency_rate}\n\n'
+        f'Данный курс не учитывает комиссии сервиса\n\n'
+        f'Вы получите: {sum_coin} {currency_code} ~ {sum_rub} RUB\n\n'
+        f'Внутренний баланс кошелька: {balance} RUB\n\n'
+        f'{pay_string}'
+    )
+
+    # print(f'text:\n{text}')
     if del_msg:
         await bot.delete_message(chat_id=data['user_id'], message_id=data['message_id'])
-        sent = await ut.send_msg(
-            msg_key=Key.CHECK_WALLET.value,
-            chat_id=data['user_id'],
-            text=text,
-            keyboard=kb.get_check_info_kb(use_points=data['used_points'], points=data['points'], promo=data.get('promo'))
-        )
-        await state.update_data(data={'message_id': sent.message_id})
+        edit_msg = None
     else:
-        await ut.send_msg(
-            msg_key=Key.CHECK_WALLET.value,
-            chat_id=data['user_id'],
-            edit_msg=data['message_id'],
-            text=text,
-            keyboard=kb.get_check_info_kb(use_points=data['used_points'], points=data['points'], promo=data.get('promo'))
-        )
+        edit_msg = data['message_id']
+    sent = await ut.send_msg(
+        msg_key=Key.EXCHANGE.value,
+        chat_id=data['user_id'],
+        edit_msg=edit_msg,
+        text=text,
+        keyboard=kb.get_main_exchange_kb(total_amount=data['total_amount'], promo_id=data.get('promo_id'))
+    )
+    await state.update_data(data={'message_id': sent.message_id})

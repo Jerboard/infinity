@@ -43,7 +43,7 @@ CurrencyTable: sa.Table = sa.Table(
 
 
 # возвращает валюту по id
-async def get_currency(currency_id: int ) -> CurrencyRow:
+async def get_currency(currency_id: int) -> CurrencyRow:
     query = CurrencyTable.select().where(CurrencyTable.c.id == currency_id)
 
     async with begin_connection() as conn:
@@ -62,6 +62,15 @@ async def get_all_currency(only_active: bool = True) -> tuple[CurrencyRow]:
         result = await conn.execute(query)
 
     return result.all()
+
+
+# обновляет курс
+async def update_currency(currency_code: str, rate: float) -> None:
+    query = CurrencyTable.update().where(CurrencyTable.c.code == currency_code).values(rate=rate)
+
+    async with begin_connection() as conn:
+        await conn.execute(query)
+
 
 
 """

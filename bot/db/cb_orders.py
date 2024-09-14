@@ -15,8 +15,10 @@ class OrderCBRow(t.Protocol):
     user_id: int
     status: str
     coin: str
-    card: str
+    wallet: str
     sum: int
+    points: int
+    cashback: int
     message_id: int
 
 
@@ -29,8 +31,10 @@ OrderCBTable: sa.Table = sa.Table(
     sa.Column('user_id', sa.BigInteger),
     sa.Column('status', sa.String(255)),
     sa.Column('coin', sa.String(255)),
-    sa.Column('card', sa.String(255)),
+    sa.Column('wallet', sa.String(255)),
     sa.Column('sum', sa.Integer),
+    sa.Column('points', sa.Integer),
+    sa.Column('cashback', sa.Integer),
     sa.Column('message_id', sa.Integer)
 )
 
@@ -39,8 +43,10 @@ OrderCBTable: sa.Table = sa.Table(
 async def add_cb_order(
         user_id: int,
         coin: str,
-        card: str,
-        amount: int,
+        wallet: str,
+        balance: int,
+        points: int,
+        cashback: int,
         message_id: int
 ) -> int:
     now = datetime.now()
@@ -50,8 +56,10 @@ async def add_cb_order(
         status=OrderStatus.NOT_CONF.value,
         user_id=user_id,
         coin=coin,
-        card=card,
+        wallet=wallet,
         sum=amount,
+        points=points,
+        cashback=cashback,
         message_id=message_id,
     )
     async with begin_connection() as conn:

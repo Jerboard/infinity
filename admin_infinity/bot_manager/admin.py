@@ -18,6 +18,7 @@ class ViewUserTable(admin.ModelAdmin):
     search_fields = ['user_id', 'username', 'referrer']
     ordering = ['-last_visit']
     list_filter = ['user_id', 'username']
+    readonly_fields = ['first_visit', 'last_visit']
 
     # def count_invited_users(self, obj):
     #     count_users = User.objects.filter(referrer=obj.user_id).count()
@@ -108,5 +109,5 @@ class ViewAdminMsg(admin.ModelAdmin):
 # способы оплаты
 @admin.register(Promo)
 class ViewAdminMsg(admin.ModelAdmin):
-    list_display = ['promo', 'rate', 'start_date', 'end_date', 'many', 'is_active']
-    list_editable = ['is_active']
+    list_display = ['promo', 'rate', 'created_at']
+    readonly_fields = ['created_at']

@@ -26,8 +26,8 @@ PayMethodTable: sa.Table = sa.Table(
 
 
 # возвращает метод оплаты по id
-async def get_pay_method(method_id: int) -> PayMethodRow:
-    query = PayMethodTable.select().where(PayMethodTable.c.id == method_id)
+async def get_pay_method() -> PayMethodRow:
+    query = PayMethodTable.select().where(PayMethodTable.c.is_active == True)
 
     async with begin_connection() as conn:
         result = await conn.execute(query)
