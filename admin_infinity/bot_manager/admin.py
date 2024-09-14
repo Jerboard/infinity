@@ -72,7 +72,7 @@ class RefLvlTable(admin.ModelAdmin):
 @admin.register(Msg)
 class ViewAdminMsg(admin.ModelAdmin):
     list_display = ['key', 'comment', 'text', 'cover_image_preview']
-    readonly_fields = ['updated_at', 'cover_image_preview_in', 'photo_id']
+    readonly_fields = ['updated_at', 'cover_image_preview_in', 'photo_id', 'bot_id']
     # list_editable = ['comment']
 
     def cover_image_preview(self, obj):

@@ -33,36 +33,41 @@ async def send_time_message(chat_id: int, text: str) -> None:
 
 # обрабатывает текст. заменяет неподдерживаемые теги
 def parse_text(text: str) -> str:
-    return text.replace('<p>', '\n').replace('</p>', '\n').replace('<br>', '\n')
+    return (text.replace('<br>', '\n')
+
+            )
     # return text
 
 
 # отправляет сообщение
 async def send_msg(
-        msg_key: str,
         chat_id: int,
+        msg_key: str = None,
+        msg_data: db.MsgRow = None,
         text: str = None,
         edit_msg: int = None,
         keyboard: InlineKeyboardMarkup = None
 ) -> Message:
     # если тест, чтоб возвращал тестовую картинку
-    if Config.debug:
+    # if Config.debug:
         # msg_key = Config.test_photo
-        msg_key = 'test'
+        # msg_key = 'test'
 
-    msg_data = await db.get_msg(msg_key)
+    if not msg_data:
+        msg_data = await db.get_msg(msg_key)
 
     # если фото обновлено и не имеет своего ключа
-    if Config.debug:
-        photo_id = Config.test_photo
-        update = False
-    elif msg_data.photo_id:
+    # if Config.debug:
+    #     photo_id = Config.test_photo
+    #     update = False
+    if msg_data.photo_id and msg_data.bot_id == Config.bot_id:
         photo_id = msg_data.photo_id
         update = False
     else:
         photo_id = FSInputFile(msg_data.photo_path)
         update = True
 
+    print(text)
     text = parse_text(text) if text else parse_text(msg_data.text)
 
     if edit_msg:
@@ -83,7 +88,7 @@ async def send_msg(
         )
 
     if update:
-        await db.update_msg(msg_data.id, photo_id=sent.photo[-1].file_id)
+        await db.update_msg(msg_data.id, photo_id=sent.photo[-1].file_id, bot_id=Config.bot_id)
 
     return sent
 
@@ -115,22 +120,31 @@ async def send_msg(
 
 async def main_exchange(state: FSMContext, del_msg: bool = False):
     data = await state.get_data()
-    currency_rate = data['rate']
-    sum_coin = data['sum_exchange']
-    currency_code = data['currency_code']
-    sum_rub = data['amount']
-    balance = f'<s>{data["balance"]}</s>' if data.get('used_balance') else data['balance']
-    pay_string = data['pay_string']
+    # currency_rate = data['rate']
+    # sum_coin = data['sum_exchange']
+    # currency_code = data['currency_code']
+    # sum_rub = data['amount']
+    # balance = f'<s>{data["balance"]}</s>' if data.get('used_balance') else data['balance']
+    # pay_string = data['pay_string']
 
     # for k, v in data.items():
     #     print(f'{k}: {v}')
 
-    text = (
-        f'Средний рыночный курс: {currency_rate}\n\n'
-        f'Данный курс не учитывает комиссии сервиса\n\n'
-        f'Вы получите: {sum_coin} {currency_code} ~ {sum_rub} RUB\n\n'
-        f'Внутренний баланс кошелька: {balance} RUB\n\n'
-        f'{pay_string}'
+    # text = (
+    #     f'Средний рыночный курс: {currency_rate}\n\n'
+    #     f'Данный курс не учитывает комиссии сервиса\n\n'
+    #     f'Вы получите: {sum_coin} {currency_code} ~ {sum_rub} RUB\n\n'
+    #     f'Внутренний баланс кошелька: {balance} RUB\n\n'
+    #     f'{pay_string}'
+    # )
+    msg_data = await db.get_msg(Key.EXCHANGE.value)
+    text = msg_data.text.format(
+        currency_rate=data['rate'],
+        sum_coin=data['sum_exchange'],
+        currency_code=data['currency_code'],
+        sum_rub=data['amount'],
+        balance=f'<s>{data["balance"]}</s>' if data.get('used_balance') else data['balance'],
+        pay_string=data['pay_string']
     )
 
     # print(f'text:\n{text}')
@@ -140,7 +154,7 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
     else:
         edit_msg = data['message_id']
     sent = await ut.send_msg(
-        msg_key=Key.EXCHANGE.value,
+        msg_data=msg_data,
         chat_id=data['user_id'],
         edit_msg=edit_msg,
         text=text,

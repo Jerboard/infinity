@@ -232,13 +232,18 @@ class UsedPromo(models.Model):
 class Msg(models.Model):
     id = models.AutoField(primary_key=True)
     updated_at = models.DateTimeField('Последнее обновление', auto_now=True)
-    # text = models.TextField('Текст')
-    # text = CKEditor5Field('Текст', config_name='extends')
-    text = CKEditor5Field('Текст')
+    text = models.TextField('Текст')
+    # text = CKEditor5Field('Текст', config_name='default')
     key = models.CharField('Ключ', max_length=255, unique=True)
     comment = models.CharField('Название', max_length=255, unique=True)
-    photo_id = models.CharField('Фото ID', null=True, blank=True, max_length=255)
+    photo_id = models.CharField('Фото ID', max_length=255, null=True, blank=True)
+    bot_id = models.IntegerField('Бот ID', null=True, blank=True, max_length=255)
     photo_path = models.FileField('Путь', upload_to='photo')
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            self.photo_id = None
+        super(Msg, self).save(*args, **kwargs)  # Сохраняем объект
 
     objects: models.Manager = models.Manager()
 

@@ -13,6 +13,7 @@ class MsgRow(t.Protocol):
     text: str
     photo_path: str
     photo_id: str
+    bot_id: int
     updated_at: datetime
 
 
@@ -25,6 +26,7 @@ MsgTable: sa.Table = sa.Table(
     sa.Column('comment', sa.String(255)),
     sa.Column('text', sa.Text),
     sa.Column('photo_id', sa.String(255)),
+    sa.Column('bot_id', sa.BigInteger),
     sa.Column('photo_path', sa.String(255)),
 )
 
@@ -39,11 +41,13 @@ async def get_msg(key: str) -> MsgRow:
 
 
 # обновляет данные сообщения
-async def update_msg(entry_id: int, photo_id: str = None) -> None:
+async def update_msg(entry_id: int, photo_id: str = None, bot_id: int = None) -> None:
     query = MsgTable.update().where(MsgTable.c.id == entry_id)
 
     if photo_id:
         query = query.values(photo_id=photo_id)
+    if bot_id:
+        query = query.values(bot_id=bot_id)
 
     async with begin_connection() as conn:
         await conn.execute(query)

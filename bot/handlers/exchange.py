@@ -17,12 +17,12 @@ from enums import CB, Key, UserStatus, Action, OrderStatus
 # кнопка продать
 @dp.callback_query(lambda cb: cb.data.startswith(CB.SELL.value))
 async def russian_rub(cb: CallbackQuery):
-    text = 'Продажа валюты через оператора'
+    # text = 'Продажа валюты через оператора'
     await ut.send_msg(
         msg_key=Key.SELL.value,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
-        text=text,
+        # text=text,
         keyboard=kb.get_sell_kb()
     )
 
@@ -36,17 +36,18 @@ async def select_currency(cb: CallbackQuery, state: FSMContext):
 
     if check_orders:
         text = 'У вас ещё осталась незакрытая заявка'
-        await cb.message.answer(text)
+        # await cb.message.answer(text)
+        await ut.send_time_message(chat_id=cb.message.chat.id, text=text)
     else:
         await state.set_state(UserStatus.EXCHANGE)
 
-        text = 'Выберите валюту, которую хотите получить '
+        # text = 'Выберите валюту, которую хотите получить '
         currency = await db.get_all_currency()
         await ut.send_msg(
             msg_key=Key.SELECT_CURRENCY.value,
             chat_id=cb.message.chat.id,
             edit_msg=cb.message.message_id,
-            text=text,
+            # text=text,
             keyboard=kb.get_currency_list_kb(currency)
         )
 
@@ -73,14 +74,19 @@ async def send_sum(cb: CallbackQuery, state: FSMContext):
         currency_name = data['currency_name']
 
     min_sum = currency.min if currency.min != 0 else 'Без ограничения'
-    text = (f'Введите нужную сумму в {currency_name} или в рублях (RUB)  \n\n'
-            f'Пример: {min_sum} или {str(min_sum).replace(".", ",")} или 5000\n\n')
+    msg_data = await db.get_msg(Key.SEND_SUM.value)
+    text = msg_data.text.format(
+        currency_name=currency_name,
+        min_sum=min_sum,
+        min_sum_str=str(min_sum).replace(".", ",")
+    )
+    # text = (f'Введите нужную сумму в {currency_name} или в рублях (RUB) Пример: {min_sum} или {min_sum_str} или 5000\n\n')
 
     await state.set_state(UserStatus.EXCHANGE_SEND_SUM)
     await ut.send_msg(
-        msg_key=Key.SEND_SUM.value,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
+        msg_data=msg_data,
         text=text,
         keyboard=kb.get_back_kb(CB.EXCHANGE.value)
     )
@@ -237,10 +243,11 @@ async def use_point(cb: CallbackQuery, state: FSMContext):
 async def send_wallet(cb: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     await state.set_state(UserStatus.EXCHANGE_SEND_WALLET)
+    msg_data = await db.get_msg(Key.SEND_WALLET.value)
 
-    text = f'<b>Укажи {data["currency_name"]}-Кошелек:</b>'
+    text = msg_data.text.format(currency_name=data["currency_name"])
     await ut.send_msg(
-        msg_key=Key.SEND_WALLET.value,
+        msg_data=msg_data,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         text=text,
@@ -319,19 +326,16 @@ async def check_wallet(msg: Message, state: FSMContext):
 
     await state.update_data(data={'order_id': order_id})
 
-    text = (
-        f'Номер заявки {order_id}\n'
-        f'Перевод на: {pay_method_info.name}\n'
-        f'Номер карты: {pay_method_info.card}\n'
-        f'Сумма: {data["total_amount"]} RUB\n\n'
-        f'Важно: Сумма должна быть точной, иначе заявка не будет выполнена. Все претензии по обмену '
-        f'принимаются в течении 24 часов.\n\n'
-        f'ВАЖНО, ПЕРЕВОД СТРОГО НА УКАЗАННЫЙ БАНК, ИНАЧЕ ВЫ ПОТЕРЯЕТЕ СВОИ СРЕДСТВА!'
+    msg_data = await db.get_msg(Key.PAYMENT.value)
+    text = msg_data.text.format(
+        pay_method_name=pay_method_info.name,
+        pay_method_card=pay_method_info.card,
+        total_amount=data["total_amount"]
     )
 
     await bot.delete_message(chat_id=msg.from_user.id, message_id=data['message_id'])
     sent = await ut.send_msg(
-        msg_key=Key.PAYMENT.value,
+        msg_data=msg_data,
         chat_id=msg.chat.id,
         text=text,
         keyboard=kb.get_payment_conf_kb(order_id)
@@ -357,13 +361,14 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
 
     else:
         await db.update_orders(order_id=order_id, status=OrderStatus.NEW.value)
-
-        text = f'Заявка номер {order_id}\n\n' \
-               f'Статус: Обрабатывается\n' \
-               f'Сумма внесения: {data["total_amount"]} RUB'
+        msg_data = await db.get_msg(Key.PAYMENT_CONF.value)
+        text = msg_data.text.format(
+            order_id=order_id,
+            total_amount=data["total_amount"]
+        )
 
         await ut.send_msg(
-            msg_key=Key.PAYMENT_CONF.value,
+            msg_data=msg_data,
             chat_id=cb.message.chat.id,
             edit_msg=cb.message.message_id,
             text=text

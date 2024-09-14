@@ -18,8 +18,8 @@ async def del_order(order: db.OrderRow):
 
     await db.update_orders(order_id=order.id, status=OrderStatus.FAIL.value)
 
-    text = (f'Ваш заказ № {order.id} ОТМЕНЕН.\n'
-            f'ВАЖНО: после отмены заказа реквизиты недействительны')
+    msg_data = await db.get_msg(Key.FAIL_ORDER.value)
+    text = msg_data.text.format(order_id=order.id)
 
     try:
         await bot.delete_message(chat_id=order.user_id, message_id=order.message_id)
@@ -27,7 +27,7 @@ async def del_order(order: db.OrderRow):
         pass
 
     await send_msg(
-        msg_key=Key.FAIL_ORDER.value,
+        msg_data=msg_data,
         chat_id=order.user_id,
         text=text
     )
@@ -45,20 +45,17 @@ async def hand_orders():
     orders = await db.get_orders(for_done=True)
     for order in orders:
         if order.status == OrderStatus.PROC:
-            # if is_onetime_promo(order[8]):
-            #     cur.execute('delete from bot_manager_promo where promo = %s', (order[8][:-2],))
-            #     conn.commit()
-
-            # cur.execute('update bot_manager_orders set status = "successful" where id = %s', (order[0],))
-            # conn.commit()
-
             await db.update_orders(order_id=order.id, status=OrderStatus.SUC.value)
-            text = f'Ваша заявка № {order.id} выполнена\n\n' \
-                   f'Хеш: {order.hash}'
+
+            msg_data = await db.get_msg(Key.SUC_ORDER.value)
+            text = msg_data.text.format(
+                order_id=order.id,
+                order_hash=order.hash
+            )
 
             # await bot.delete_message(chat_id=order.user_id, message_id=order.message_id)
             await send_msg(
-                msg_key=Key.SUC_ORDER.value,
+                msg_data=msg_data,
                 chat_id=order.user_id,
                 text=text
             )

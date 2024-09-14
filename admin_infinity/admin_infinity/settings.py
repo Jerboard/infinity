@@ -153,9 +153,9 @@ DJANGO_CKEDITOR_5_CONFIGS = {
         'toolbar': 'full',
         'height': 500,
         'width': 'auto',
+        # 'remove_plugins': 'stylesheetparser,FontColor,FontBackgroundColor',
         'remove_plugins': 'stylesheetparser',
         'extra_plugins': ','.join([
-            'uploadimage',  # Для загрузки изображений
             'basicstyles',  # Простые стили (жирный, курсив)
             # Добавьте сюда дополнительные плагины, если нужно
         ]),
@@ -190,12 +190,13 @@ DJANGO_CKEDITOR_5_CONFIGS = {
 #     },
 #     ]
 # CK_EDITOR_5_UPLOAD_FILE_VIEW_NAME = "custom_upload_file"
-CKEDITOR_5_CUSTOM_CSS = 'path_to.css'  # optional
+# CKEDITOR_5_CUSTOM_CSS = 'path_to.css'  # optional
 # CKEDITOR_5_FILE_STORAGE = "path_to_storage.CustomStorage"  # optional
 CKEDITOR_5_CONFIGS = {
     'default': {
         'toolbar':
-            ['bold', 'italic', 'link', 'underline', 'strikethrough', 'code', ],
+            ['bold', 'italic', 'link', 'underline', 'strikethrough', 'code'],
+        # 'removePlugins': ['FontColor', 'FontBackgroundColor'],  # Убираем плагины, отвечающие за цвет текста
         'htmlSupport': {
             'allow': [{'name': 'strong'},],
             'disallow': [
@@ -205,7 +206,7 @@ CKEDITOR_5_CONFIGS = {
     },
     'list': {
         'properties': {
-            'styles': 'true',
+            # 'styles': 'true',
             'startIndex': 'true',
             'reversed': 'true',
         }

@@ -38,9 +38,9 @@ async def com_start(msg: Message, state: FSMContext):
         )
         return
 
-    text = 'Выберите из кнопок ниже:'
+    # text = 'Выберите из кнопок ниже:'
     await db.add_user(user_id=msg.from_user.id, full_name=msg.from_user.full_name, username=msg.from_user.username)
-    await ut.send_msg(msg_key=Key.START.value, chat_id=msg.chat.id, text=text, keyboard=kb.get_start_kb())
+    await ut.send_msg(msg_key=Key.START.value, chat_id=msg.chat.id, keyboard=kb.get_start_kb())
 
 
 # проверяет капчу
@@ -68,12 +68,11 @@ async def capcha(cb: CallbackQuery, state: FSMContext):
 @dp.callback_query(lambda cb: cb.data.startswith(CB.BACK_START.value))
 async def back_com_start(cb: CallbackQuery, state: FSMContext):
     await state.clear()
-    text = 'Выберите из кнопок ниже:'
+    # text = 'Выберите из кнопок ниже:'
     await ut.send_msg(
         msg_key=Key.START.value,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
-        text=text,
         keyboard=kb.get_start_kb()
     )
 

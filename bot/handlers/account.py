@@ -2,6 +2,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import StateFilter
+from datetime import datetime
 
 from asyncio import sleep
 from datetime import datetime
@@ -21,24 +22,21 @@ async def start_account(cb: CallbackQuery, state: FSMContext):
 
     user = await db.get_user_info(cb.from_user.id)
     referrers = await db.get_users(referrer=cb.from_user.id)
-    count_ref = len(referrers)
     exchanges = await db.get_orders(user_id=cb.from_user.id, status=OrderStatus.SUC.value)
-    count_ex = len(exchanges)
-    sum_exchange = sum(exchange.total_amount for exchange in exchanges)
-    ref_lvl = user.custom_referral_lvl_id
-    balance = user.balance
 
-    text = (
-        f'ID пользователя: {cb.from_user.id}\n'
-        f'Кол-во обменов: {count_ex} ({sum_exchange} Руб)\n'
-        f'Приглашено пользователей: {count_ref}\n'
-        f'Уровень реферальной программы: {ref_lvl}\n'
-        f'Доступный баланс:  {balance} руб\n\n'
-        f'Реф ссылка: <code>{Config.bot_link}?start={cb.from_user.id}</code>'
+    msg_data = await db.get_msg(Key.ACCOUNT.value)
+    text = msg_data.text.format(
+        user_id=cb.from_user.id,
+        count_ex=len(exchanges),
+        sum_exchange=sum(exchange.total_amount for exchange in exchanges),
+        count_ref=len(referrers),
+        ref_lvl=user.custom_referral_lvl_id,
+        balance=user.referral_points + user.cashback,
+        ref_link=f'{Config.bot_link}?start={cb.from_user.id}'
     )
 
     await ut.send_msg(
-        msg_key=Key.ACCOUNT.value,
+        msg_data=msg_data,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         text=text,
@@ -51,17 +49,10 @@ async def start_account(cb: CallbackQuery, state: FSMContext):
 async def promo(cb: CallbackQuery, state: FSMContext):
     await state.set_state(UserStatus.ACC_PROMO)
     await state.update_data(data={'message_id': cb.message.message_id})
-    text = (
-        'Использование промокода позволяет вам получить скидку при обмене.\n'
-        'Он будет автоматически применен при создании заявки.\n'
-        'Скидка зависит от % вашего промо и прибыли сервиса.\n\n'
-        'Введите ваш промокод'
-    )
     await ut.send_msg(
         msg_key=Key.PROMO.value,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
-        text=text,
         keyboard=kb.get_back_kb(CB.ACCOUNT.value)
     )
 
@@ -90,27 +81,29 @@ async def acc_promo(msg: Message, state: FSMContext):
                 'new_promo': promo_data.promo,
             })
 
-            text = (
-                f'У вас уже активирован промокод {old_promo.promo} на скидку в {old_promo.rate}%\n'
-                f'Вы уверены, что хотите заменить его?\n'
-                f'Важно: при активации нового промокода - старый сгорает!'
+            msg_data = await db.get_msg(Key.REPLACE_PROMO_CONF.value)
+            text = msg_data.text.format(
+                active_promo=old_promo.promo,
+                rate=old_promo.promo
             )
             await ut.send_msg(
-                msg_key=Key.REPLACE_PROMO.value,
+                msg_data=msg_data,
                 chat_id=msg.chat.id,
                 edit_msg=data['message_id'],
                 text=text,
                 keyboard=kb.get_replace_promo_kb()
             )
-
         else:
             await db.add_used_promo(promo=promo_data.promo, user_id=msg.from_user.id, rate=promo_data.rate)
 
-            text = (f'Ваш промокод <b>{promo_data.promo}</b> успешно применен. Скидка составляет {promo_data.rate}% \n'
-                    f'Удачных обменов!')
+            msg_data = await db.get_msg(Key.REPLACE_PROMO.value)
+            text = msg_data.text.format(
+                promocode=promo_data.promo,
+                rate=promo_data.rate
+            )
             await state.clear()
             await ut.send_msg(
-                msg_key=Key.REPLACE_PROMO.value,
+                msg_data=msg_data,
                 chat_id=msg.chat.id,
                 edit_msg=data['message_id'],
                 text=text,
@@ -118,31 +111,26 @@ async def acc_promo(msg: Message, state: FSMContext):
             )
 
     else:
-        sent = await msg.answer('Промо не найден')
-        await sleep(3)
-        await sent.delete()
+        await ut.send_time_message(chat_id=msg.chat.id, text='Промо не найден')
 
 
 # Промокод меняем на новый
 @dp.callback_query(lambda cb: cb.data.startswith(CB.REPLACE_PROMO.value))
 async def replace_promo(cb: CallbackQuery, state: FSMContext):
-    # _, old_promo, new_promo = cb.data.split(':')
-    # old_promo_id = int(old_promo)
-    # new_promo_id = int(new_promo)
-
     data = await state.get_data()
-    print(f'data: {data}')
     await state.clear()
 
     await db.update_used_promo(user_id=cb.from_user.id, used=True)
     await db.add_used_promo(promo=data['new_promo'], user_id=cb.from_user.id, rate=data['new_promo_rate'])
 
-    # promo_data = await db.get_promo(promo_id=new_promo_id)
-    text = (f'Ваш промокод {data["new_promo"]} успешно применен. Скидка составляет {data["new_promo_rate"]}% \n'
-            f'Удачных обменов!')
+    msg_data = await db.get_msg(Key.REPLACE_PROMO.value)
+    text = msg_data.text.format(
+        promocode=data["new_promo"],
+        rate=data["new_promo_rate"]
+    )
 
     await ut.send_msg(
-        msg_key=Key.REPLACE_PROMO.value,
+        msg_data=msg_data,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         text=text,
@@ -155,34 +143,19 @@ async def replace_promo(cb: CallbackQuery, state: FSMContext):
 async def partner(cb: CallbackQuery, state: FSMContext):
     user = await db.get_user_info(cb.from_user.id)
     referrers = await db.get_users(referrer=cb.from_user.id)
-    count_ref = len(referrers)
     exchanges = await db.get_orders(referrer_id=cb.from_user.id, status=OrderStatus.SUC.value)
-    sum_ref_exchange = round(sum(exchange.total_amount for exchange in exchanges) * 0.03)
-    ref_lvl = user.custom_referral_lvl_id
-    cashback = user.cashback
 
-    text = (
-        f'Зарабатывай вместе с The Infinity Exchange\n'
-        f'Наша партнерская программа поможет тебе в этом.\n\n'
-        f'Для того, чтобы пригласить других пользователей '
-        f'отправь им свою ссылку, которая указана ниже:\n\n'
-        f'<code>{Config.bot_link}?start={cb.from_user.id}</code> \n\n'
-        f'Чем больше приглашенных людей, тем выше твой реферальный процент!\n\n'
-        f'от 1 до 20 приглашенных - уровень 1 (10% от прибыли со сделки)\n'
-        f'от 20 до 40 пользователей - уровень 2 (15% от прибыли со сделки)\n'
-        f'от 40 до 80 пользователей - уровень 3 (20% от прибыли со сделки)\n'
-        f'от 80 и выше - уровень 4 (25% от прибыли со сделки)\n\n'
-        f'Ваш уровень реферальной программы: {ref_lvl}\n'
-        f'Приглашено пользователей: {count_ref}\n'
-        f'Всего заработано с партнерами: {sum_ref_exchange} Руб.\n'
-        f'Доступный баланс: {cashback} Руб.\n\n'
-        f'Также, имеются индивидуальные условия для владельцев магазина и других источников трафика - '
-        f'уточняйте у менеджера\n'
-        f'(@manager_Infinity)'
+    msg_data = await db.get_msg(Key.PARTNER.value)
+    text = msg_data.text.format(
+        sum_ref_exchange=round(sum(exchange.profit for exchange in exchanges) * 0.01),
+        count_ref=len(referrers),
+        ref_lvl=user.custom_referral_lvl_id,
+        cashback=user.cashback,
+        ref_link=f'{Config.bot_link}?start={cb.from_user.id}'
     )
 
     await ut.send_msg(
-        msg_key=Key.PARTNER.value,
+        msg_data=msg_data,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         text=text,
@@ -195,20 +168,15 @@ async def partner(cb: CallbackQuery, state: FSMContext):
 async def partner(cb: CallbackQuery, state: FSMContext):
     user = await db.get_user_info(cb.from_user.id)
     referrers = await db.get_orders(referrer_id=cb.from_user.id, status=OrderStatus.SUC.value)
-    ref_order_count = len(referrers)
-    cashback = user.cashback
 
-    text = (
-        f'При каждом совершенном обмене, вам будет начислено 3% от прибыли сервиса с обмена. \n\n'
-        f'Баланс кэшбека автоматически начисляется в "доступный баланс" - '
-        f'вы можете потратить эти бонусы как для скидки при обмене, так и вывести их себе на '
-        f'BTC кошелек по кнопке "вывод бонусов"\n\n'
-        f'• всего получено кэшбека: {cashback} RUB\n'
-        f'• совершено обменов: {ref_order_count}\n'
+    msg_data = await db.get_msg(Key.CASHBACK.value)
+    text = msg_data.text.format(
+        ref_order_count=len(referrers),
+        cashback=user.cashback
     )
 
     await ut.send_msg(
-        msg_key=Key.CASHBACK.value,
+        msg_data=msg_data,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         text=text,
@@ -225,16 +193,13 @@ async def partner(cb: CallbackQuery, state: FSMContext):
     await state.set_state(UserStatus.TAKE_CASHBACK)
     await state.update_data(data={'balance': balance, 'cashback': user.cashback, 'points': user.referral_points})
 
-    text = (
-        f'Минимальная сумма вывода - 1000 RUB\n'
-        f'Ваш баланс: {balance} RUB\n'
-        f'• выплата проводится на BTC кошелек\n'
-        f'• оформить вывод, можно в любой день недели!\n\n'
-        f'Укажите ваш BTC кошелек'
+    msg_data = await db.get_msg(Key.TAKE_BONUS.value)
+    text = msg_data.text.format(
+        balance=balance
     )
 
     await ut.send_msg(
-        msg_key=Key.TAKE_BONUS.value,
+        msg_data=msg_data,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         text=text,
@@ -264,15 +229,15 @@ async def take_cashback_step_2(msg: Message, state: FSMContext):
         return
 
     await state.update_data(data={'wallet': msg.text})
-    text = (
-        f'Вывод средств: {data["balance"]} руб.\n'
-        f'На реквизиты:\n\n'
-        f'{msg.text}\n\n'
-        f'Если всё верно нажмите "Подтвердить" или просто отправьте новые реквизиты'
+
+    msg_data = await db.get_msg(Key.TAKE_BONUS_CONF.value)
+    text = msg_data.text.format(
+        balance=data["balance"],
+        wallet=msg.text
     )
 
     await ut.send_msg(
-        msg_key=Key.TAKE_BONUS_CONF.value,
+        msg_data=msg_data,
         chat_id=msg.chat.id,
         edit_msg=msg.message_id,
         text=text,
@@ -302,14 +267,14 @@ async def take_bonus_end(cb: CallbackQuery, state: FSMContext):
         message_id=cb.from_user.id
     )
 
-    text = (
-        f'Заявка номер {cashback_id}\n\n'
-        f'Статус: Обрабатывается\n'
-        f'Сумма кешбека: {data["balance"]} RUB'
+    msg_data = await db.get_msg(Key.TAKE_BONUS_END.value)
+    text = msg_data.text.format(
+        balance=data["balance"],
+        cashback_id=cashback_id
     )
 
     await ut.send_msg(
-        msg_key=Key.TAKE_BONUS_END.value,
+        msg_data=msg_data,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         text=text,
@@ -341,19 +306,24 @@ async def take_bonus_end(cb: CallbackQuery, state: FSMContext):
             keyboard=kb.get_back_kb(CB.ACCOUNT.value)
         )
     else:
+        msg_data = await db.get_msg(Key.HISTORY.value)
+
         end_index = start_index + 3
         text = 'История обменов:\n'
         for order in orders[start_index:end_index]:
-            text += (
-                f'№{order.id} \n'
-                f'Дата обмена: 16.08.24\n'
-                f'Получено {order.coin_sum} {order.coin}\n'
-                f'Оплачено {order.total_amount} Руб\n'
-                f'Хэш транзакции: {order.hash}\n'
-                f'Кэшбек: {order.cashback} Руб\n\n'
+            text += msg_data.text.format(
+                order_id=order.id,
+                date=order.created_at.date().strftime('%d.%m.%y'),
+                coin_sum=order.coin_sum,
+                coin=order.coin,
+                total_amount=order.total_amount,
+                order_hash=order.hash,
+                cashback=order.cashback
             )
+            text += '\n\n'
+
         await ut.send_msg(
-            msg_key=Key.HISTORY.value,
+            msg_data=msg_data,
             chat_id=cb.message.chat.id,
             edit_msg=cb.message.message_id,
             text=text,
