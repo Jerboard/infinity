@@ -6,19 +6,14 @@ from handlers import dp
 from config import Config
 from init import set_main_menu, bot, log_error, scheduler
 from db.base import init_models
-# from db.events import add_events, close_old_events
-
-
-# async def start_schedulers():
-#     scheduler.add_job(close_old_events, 'cron', hour=0)
-#     scheduler.start()
+from utils.scheduler_utils import scheduler_start_async
 
 
 async def main() -> None:
     # await db_command()
     await init_models()
     await set_main_menu()
-    # await start_schedulers()
+    await scheduler_start_async()
     await bot.delete_webhook (drop_pending_updates=True)
     await dp.start_polling(bot)
 
