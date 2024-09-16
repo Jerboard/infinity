@@ -149,11 +149,19 @@ async def get_orders(
         ))
 
     if old_orders:
-        thirty_minutes_ago = datetime.utcnow() - timedelta(minutes=30)
-        query = query.where(sa.and_(
-            OrderTable.c.status == OrderStatus.CANCEL.value,
-            OrderTable.c.created_at < thirty_minutes_ago
-        ))
+        thirty_minutes_ago = datetime.now() - timedelta(minutes=30)
+        # query = query.where(sa.and_(
+        #     sa.or_(OrderTable.c.status == OrderStatus.CANCEL.value, OrderTable.c.status == OrderStatus.NOT_CONF.value),
+        #     OrderTable.c.created_at < thirty_minutes_ago
+        # ))
+        query = query.where(
+            sa.or_(
+                OrderTable.c.status == OrderStatus.CANCEL.value,
+                sa.and_(
+                    OrderTable.c.status == OrderStatus.NOT_CONF.value, OrderTable.c.created_at < thirty_minutes_ago
+                )
+            )
+        )
     if amount:
         query = query.where(OrderTable.c.amount == amount)
 
