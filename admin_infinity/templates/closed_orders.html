@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/html">
+<head>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/topbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+    <meta charset="UTF-8">
+    <title>Новые заявки</title>
+
+        <style>
+html {
+    background-image: url({% static 'images\background_main.jpg' %});
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.export-filter {
+    border: 1px solid blue;
+    background-color: white;
+  width: 95%;
+  height: 5%;
+  position: fixed;
+  top: 7%;
+  left: 0;
+  margin-left: 10px;
+  border-radius: 5px;
+  text-align: center;
+  }
+
+.order-container {
+   background-color: white;
+  width: 100%;
+  height: 85%;
+  position: fixed;
+  top: 15%;
+  left: 0;
+  margin-left: 10px;
+  overflow-x: auto;
+  overflow-y: auto;
+  white-space: nowrap;
+    }
+
+.order-block {
+    padding: 5px;
+    }
+
+.item {
+    display: inline-block;
+    padding: 5px;
+    font-size: 10pt;
+    text-align: center;
+
+  }
+
+        </style>
+</head>
+<body>
+    <div class="main-topbar">
+        {% for page in pages %}
+                {% if page.name == this_page %}
+                    <a href="{{ page.page }}" class="tab-active">{{ page.name }}</a>
+                {% else %}
+                    <a href="{{ page.page }}" class="tab-passive">{{ page.name }}</a>
+                {% endif %}
+        {% endfor %}
+    </div>
+    <div class="export-filter">
+        <form method="POST" id="old_orders">
+            {% csrf_token %}
+            <span class="item" >Фильтр:</span>
+            <input type="hidden" name="type" value="orders_filter">
+            <span class="item" >C </span>
+            <input type="date" name="from" value="{{ fFrom|date:'Y-m-d' }}" class="item">
+            <span class="item" >По </span>
+            <input type="date" name="to" value="{{ today|date:'Y-m-d' }}" class="item">
+            <input type="text" name="user" value="{{ fUser }}" placeholder="ID или имя пользователя" class="item">
+            <input type="text" name="coin" value="{{ fCoin }}" placeholder="Валюта" class="item">
+            <input type="text" name="wallet" value="{{ fWallet }}" placeholder="Кошелёк" class="item">
+            <input type="text" name="promo" value="{{ fPromo }}" placeholder="Промокод" class="item">
+            <input type="text" name="hash" value="{{ fHash }}" placeholder="Хеш" class="item">
+            <button type="submit" class="btn" name="button" value="filter" title="Применить" style="overflow: hidden;">
+                <img class="icon" src="{% static 'icons/filter.png' %}" alt="ok"></button>
+            <button type="submit" class="btn" name="button" value="export" title="Экспорт" style="overflow: hidden;">
+                <img class="icon" src="{% static 'icons/export.png' %}" alt="del"></button>
+            <button type="submit" class="btn" name="button" value="refresh" title="Обновить" style="overflow: hidden;">
+                <img class="icon" src="{% static 'icons/refresh.png' %}" alt="Сбросить фильтры"></button>
+        </form>
+        </div>
+    </div>
+    <div class="order-container">
+        <div class="order-block">
+            <span class="item" style="max-width: 2%; overflow: hidden;">ID</span>
+            <span class="item" style="width: 5%; white-space: normal;">Время</span>
+            <span class="item" style="width: 2%; overflow: hidden;">Статус</span>
+            <span class="item" style="width: 5%; overflow: hidden;">Пользователь</span>
+            <span class="item" style="width: 5%; overflow: hidden;">ID Пользователя</span>
+            <span class="item" style="width: 3%; overflow: hidden;">Валюта</span>
+            <span class="item" style="width: 4%; overflow: hidden;">Оплата</span>
+            <span class="item" style="width: 3%; overflow: hidden;">Сумма</span>
+            <span class="item" style="width: 15%; overflow: hidden;">Кошелёк</span>
+            <span class="item" style="width: 5%; overflow: hidden;">Промокод</span>
+            <span class="item" style="width: 3%; overflow: hidden;">Скидка</span>
+            <span class="item" style="width: 5%; overflow: hidden;">Курс</span>
+            <span class="item" style="width: 3%; overflow: hidden;">Наценка</span>
+            <span class="item" style="width: 5%; overflow: hidden;">Сумма</span>
+            <span class="item" style="width: 5%; overflow: hidden;">Сумма со скидкой</span>
+            <span class="item" style="width: 5%; overflow: hidden;">Итог</span>
+            <span class="item" style="width: 10%; overflow: hidden;">Хеш</span>
+            <span class="item" style="width: 5%; overflow: hidden;">Комиссия</span>
+            <span class="item" style="width: 5%; overflow: hidden;">Кешбэк</span>
+            <span class="item" style="width: 5%; overflow: hidden;">Прибыль</span>
+        </div>
+        {% for order in orders %}
+        <div class="order-block">
+            <span class="item" style="max-width: 2%; overflow: hidden;">{{ order.id }}</span>
+            <span class="item" style="width: 5%; white-space: normal;">{{ order.time }}</span>
+            <span class="item" style="width: 2%; overflow: hidden;">{{ order.status }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.name_user|default:"" }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.user_id|default:"" }}</span>
+            <span class="item" style="width: 3%; overflow: hidden;">{{ order.coin }}</span>
+            <span class="item" style="width: 4%; overflow: hidden;">{{ order.pay_method }}</span>
+            <span class="item" style="width: 3%; overflow: hidden;">{{ order.coin_sum }}</span>
+            <span class="item" style="width: 15%; overflow: hidden;">{{ order.wallet }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.promo|default:"-" }}</span>
+            <span class="item" style="width: 3%; overflow: hidden;">{{ order.promo_rate|default:"-" }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.exchange_rate }}</span>
+            <span class="item" style="width: 3%; overflow: hidden;">{{ order.percent }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.amount }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.promo_amount|default:"-" }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.total_amount }}</span>
+            <span class="item" style="width: 10%; overflow: hidden;">{{ order.hash|default:"-" }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.commission|default:"-" }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.cashback|default:"-" }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.profit|default:"-" }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+
+
+</body>
+</html>

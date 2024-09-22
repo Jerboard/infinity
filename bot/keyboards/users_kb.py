@@ -10,9 +10,9 @@ def get_capcha_kb(items: list[list], match: dict, referrer) -> InlineKeyboardMar
     kb = InlineKeyboardBuilder()
     for item in items:
         if item == match:
-            kb.button(text=item[1], callback_data=f'{CB.CONTACTS.value}:{referrer}')
+            kb.button(text=item[1], callback_data=f'{CB.CAPCHA.value}:1:{referrer}')
         else:
-            kb.button(text=item[1], callback_data=f'{CB.CONTACTS.value}:0')
+            kb.button(text=item[1], callback_data=f'{CB.CAPCHA.value}:0:{referrer}')
 
     return kb.adjust(3).as_markup()
 
@@ -149,3 +149,13 @@ def get_history_kb(start: int, end_page: bool) -> InlineKeyboardMarkup:
     kb.button(text=f'🔙 Назад', callback_data=f'{CB.ACCOUNT.value}')
     kb.adjust(2, 1) if btn_count == 2 else kb.adjust(1)
     return kb.as_markup()
+
+
+# Подтвердить замену промо
+def get_antispam_kb(user_id: int, on: bool = True) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    if on:
+        kb.button(text=f'📲 Ответить', callback_data=f'{CB.ADMIN_ANTISPAM.value}:1:{user_id}')
+    else:
+        kb.button(text=f'❌ Отмена', callback_data=f'{CB.ADMIN_ANTISPAM.value}:0:{user_id}')
+    return kb.adjust(1).as_markup()

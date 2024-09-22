@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/html">
+<head>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/topbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+    <meta charset="UTF-8">
+    <title>Новые заявки</title>
+
+        <style>
+
+html {
+    background-image: url({% static 'images\background_main.jpg' %});
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+
+.currency-container {
+    width: 70%;
+    height: 40%;
+    margin-top: 5%;
+    margin-left: 10px;
+    padding-top: 10px;
+    padding-left: 30px;
+    border-radius: 30px;
+    background-color: white;
+    flex-direction: column;
+    align-items: left;
+}
+
+
+
+.currency {
+    height: auto;
+    width: 100%;
+    display: inline-block;
+<!--    align-items: center;-->
+    justify-content: left;
+    white-space: nowrap;
+}
+
+.item {
+    display: inline-block;
+    margin: 5px;
+    font-size: 10pt;
+  }
+
+.pay_method-conteiner {
+    width: 40%;
+    height: auto;
+    background-color: white;
+    border-radius: 30px;
+    margin-top: 10px;
+    margin-left: 10px;
+    padding-left: 30px;
+    }
+
+.pay_method-conteiner .pay_methods {
+    padding: 10px;
+    }
+
+
+        </style>
+</head>
+<body>
+    <div class="main-topbar">
+        {% for page in pages %}
+                {% if page.name == this_page %}
+                    <a href="{{ page.page }}" class="tab-active">{{ page.name }}</a>
+                {% else %}
+                    <a href="{{ page.page }}" class="tab-passive">{{ page.name }}</a>
+                {% endif %}
+        {% endfor %}
+    </div>
+    <div class="content-data">
+        <div class="currency-container">
+            <div class="currency">
+                <span class="item" style="width: 8%">Валюта</span>
+                <span class="item" style="width: 8%">Код</span>
+                <span class="item" style="width: 8%">Курс</span>
+                <span class="item" style="width: 18%">Наценка</span>
+                <span class="item" style="width: 6%">Мин</span>
+                <span class="item" style="width: 5%">Макс</span>
+                <span class="item" style="width: 8%">Комиссия</span>
+                <span class="item" style="width: 7%">Закуп</span>
+                <span class="item" style="width: 7%">Округление</span>
+                <span class="item" style="width: 5%">Активна</span>
+            </div>
+            {% for currency in currencies %}
+            <div class="currency">
+                <span class="item" style="width: 8%">{{ currency.name }}</span>
+                <span class="item" style="width: 8%">{{ currency.code }}</span>
+                <span class="item" style="width: 8%">{{ currency.rate }}</span>
+            <form method="POST" id="currency-{{ currency.id }}" class="item">
+                {% csrf_token %}
+                <input type="hidden" name="type" value="currency">
+                <input type="hidden" name="id" value="{{ currency.id }}">
+                <input type="text" name="percent" placeholder="Процент" value="{{ currency.ratio }}" class="item" style="width: 15%">
+                <span class="item" style="width: 1%">%</span>
+                <input type="text" name="min_sum" placeholder="мин" value="{{ currency.min|default:0 }}" class="item" style="width: 5%">
+                <input type="text" name="max_sum" placeholder="макс" value="{{ currency.max|default:0 }}" class="item" style="width: 5%">
+                <input type="text" name="com" value="{{ currency.commission|default:0 }}" class="item" style="width: 5%">
+                <span class="item" style="width: 1%">р.</span>
+                <input type="text" name="buy" value="{{ currency.buy_price|default:0 }}" class="item" style="width: 7%">
+                <input type="text" name="round" value="{{ currency.round|default:0 }}" class="item" style="width: 5%">
+                <input type="checkbox" name="active" {% if currency.is_active %}checked{% endif %} class="item" style="width: 5%;">
+                <button type="submit" class="btn"><img class="icon" src="{% static 'icons/ok.png' %}" alt="ok"></button>
+
+            </form>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="pay_method-conteiner">
+            <div class="pay_methods">
+                <span class="item" style="width: 30%;">Банк</span>
+                <span class="item" style="width: 30%;">Карта</span>
+                <span class="item" style="width: 10%;">Активна</span>
+<!--                <span class="item" style="width: 10%; border: 1px solid red">Подтвердить</span>-->
+<!--                <span class="item" style="width: 10%; border: 1px solid red">Удалить</span>-->
+            </div>
+            {% for pay_method in pay_methods %}
+            <div class="pay_methods">
+                <form method="POST" id="pay-{{ pay_method.id }}">
+                    {% csrf_token %}
+                    <input type="hidden" name="type" value="pay_method">
+                    <input type="hidden" name="id" value="{{ pay_method.id }}">
+                    <input type="text" name="bank" value="{{ pay_method.name }}" class="item">
+                    <input type="text" name="card" value="{{ pay_method.card }}" class="item">
+                    <input type="checkbox" name="active" {% if pay_method.is_active %}checked{% endif %} class="item" style="width: 10%;">
+                    <button type="submit" class="btn" name="button" value="ok">
+                        <img class="icon" src="{% static 'icons/ok.png' %}" alt="ok"></button>
+                    <button type="submit" class="btn" name="button" value="del">
+                        <img class="icon" src="{% static 'icons/bin.png' %}" alt="del"></button>
+                </form>
+                </div>
+            {% endfor %}
+             <div class="pay_methods">
+                 <form method="POST" id="add_pay_method">
+                     {% csrf_token %}
+                     <input type="hidden" name="type" value="add">
+                     <button type="submit" class="btn" ><img class="icon" src="{% static 'icons/add.png' %}" alt="add"></button>
+                 </form>
+             </div>
+        </div>
+    </div>
+
+
+</body>
+</html>

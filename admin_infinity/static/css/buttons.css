@@ -1,0 +1,11 @@
+.btn {
+    display: inline-block;
+    margin-left: 5px;
+    border: none;
+    cursor: pointer;
+    }
+
+.btn .icon {
+    width: 20px;
+    height: 20px;
+    }

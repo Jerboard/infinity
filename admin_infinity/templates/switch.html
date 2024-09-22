@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/topbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+    <meta charset="UTF-8">
+    <title>Выключатель</title>
+
+        <style>
+
+html {
+    background-image: url({% static 'images\background_main.jpg' %});
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.switch-container {
+   background-color: white;
+  border-radius: 30px;
+  width: 30%;
+  height: auto;
+  position: fixed;
+  top: 15%;
+  left: 7%;
+    }
+
+
+.custom-button {
+background-color: white;
+  border-radius: 30px;
+    display: flex;
+    align-items: center;
+    border: none;
+    padding: 20px 20px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.custom-button img {
+    width: 60px; /* Пример ширины иконки */
+    height: 60px; /* Пример высоты иконки */
+    margin-right: 10px; /* Пример отступа между иконкой и текстом */
+}
+
+
+        </style>
+</head>
+<body>
+     <div class="main-topbar">
+        {% for page in pages %}
+                {% if page.name == this_page %}
+                    <a href="{{ page.page }}" class="tab-active">{{ page.name }}</a>
+                {% else %}
+                    <a href="{{ page.page }}" class="tab-passive">{{ page.name }}</a>
+                {% endif %}
+        {% endfor %}
+     </div>
+
+     <div class="switch-container">
+         <form method="POST" id="switch-button">
+             {% csrf_token %}
+             {% if position == 1 %}
+             <button class="custom-button" name="position" value="0">
+                 <img src="{% static 'icons/on-button.png' %}" alt="Выключить">
+                 <span>Выключить бот (включен)</span>
+             </button>
+             {% else %}
+             <button class="custom-button" name="position" value="1">
+                 <img src="{% static 'icons/off-button.png' %}" alt="Включить">
+                 <span>Включить бот (выключен)</span>
+             </button>
+             {% endif %}
+         </form>
+</div>
+
+
+</body>
+</html>

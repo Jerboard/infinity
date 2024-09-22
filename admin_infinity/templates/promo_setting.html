@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/html">
+<head>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/topbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+    <meta charset="UTF-8">
+    <title>Промокоды</title>
+
+        <style>
+
+html {
+    background-image: url({% static 'images\background_main.jpg' %});
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+.promo-conteiner {
+   background-color: white;
+  border-radius: 30px;
+  width: 60%;
+  height: 80%;
+  position: fixed;
+  top: 10%;
+  left: 0;
+  margin-left: 10px;
+  overflow-x: auto;
+  overflow-y: auto;
+  white-space: nowrap;
+    }
+
+
+.promo {
+    padding: 10px
+    }
+
+.item {
+    display: inline-block;
+    margin: 5px;
+    font-size: 10pt;
+  }
+
+
+.level-conteiner {
+   background-color: white;
+  border-radius: 30px;
+  width: 20%;
+<!--  margin-right: 10%;-->
+  height: auto;
+  position: fixed;
+  top: 10%;
+  right: 10%;
+  margin-right: 10px;
+    }
+
+.level {
+    padding: 10px;
+    margin-left: 30px;
+    }
+
+        </style>
+</head>
+<body>
+    <div class="main-topbar">
+        {% for page in pages %}
+                {% if page.name == this_page %}
+                    <a href="{{ page.page }}" class="tab-active">{{ page.name }}</a>
+                {% else %}
+                    <a href="{{ page.page }}" class="tab-passive">{{ page.name }}</a>
+                {% endif %}
+        {% endfor %}
+    </div>
+    <div class="promo-conteiner">
+        <div class="promo">
+            <span class="item" style="width: 21%;">Промокод</span>
+            <span class="item" style="width: 9%;">Скидка</span>
+            <span class="item" style="width: 12%;">C</span>
+            <span class="item" style="width: 12%;">До</span>
+            <span class="item" style="width: 7%;">Количество</span>
+            <span class="item" style="width: 7%;">Активный</span>
+            <span class="item" style="width: 10%;">Одноразовый</span>
+        </div>
+        {% for code in promo %}
+            <div class="promo">
+                <form method="POST" id="code-{{ code.id }}">
+                    {% csrf_token %}
+                    <input type="hidden" name="type" value="codes">
+                    <input type="hidden" name="id" value="{{ code.id }}">
+                    <input type="text" name="promo" value="{{ code.promo }}" class="item" style="width: 20%;">
+                    <input type="text" name="rate" value="{{ code.rate }}" class="item" style="width: 8%;">
+                    <input type="date" name="date_start" value="{{ code.start_date|date:'Y-m-d' }}" class="item" style="width: 12%;">
+                    <input type="date" name="date_end" value="{{ code.end_date|date:'Y-m-d' }}" class="item" style="width: 12%;">
+                    <input type="text" name="count" value="{{ code.many }}" class="item" style="width: 5%;">
+                    <input type="checkbox" name="active" {% if code.is_active %}checked{% endif %} class="item" style="width: 7%;">
+                    <input type="checkbox" name="onetime" {% if code.is_onetime %}checked{% endif %} class="item" style="width: 7%;">
+                    <button type="submit" class="btn" name="button" value="ok">
+                        <img class="icon" src="{% static 'icons/ok.png' %}" alt="ok"></button>
+                    <button type="submit" class="btn" name="button" value="del">
+                        <img class="icon" src="{% static 'icons/bin.png' %}" alt="del"></button>
+                </form>
+            </div>
+        {% endfor %}
+        <div class="promo">
+                 <form method="POST" id="add_promo">
+                     {% csrf_token %}
+                     <input type="hidden" name="type" value="add">
+                     <button type="submit" class="btn" ><img class="icon" src="{% static 'icons/add.png' %}" alt="add"></button>
+                 </form>
+             </div>
+    </div>
+<div class="level-conteiner">
+    <div class="level">
+        <span class="item" style="width: 25%;">Рефералов</span>
+        <span class="item" style="width: 9%;">Кешбек</span>
+    </div>
+    {% for level in levels %}
+    <div class="level">
+                <form method="POST" id="level-{{ level.id }}">
+                    {% csrf_token %}
+                    <input type="hidden" name="type" value="levels">
+                    <input type="hidden" name="id" value="{{ level.id }}">
+                    <input type="text" name="count" value="{{ level.count_users }}" class="item" style="width: 20%;">
+                    <input type="text" name="percent" value="{{ level.percent }}" class="item" style="width: 10%;">
+                    <span class="item" style="width: 0.5%;">%</span>
+                    <button type="submit" class="btn" name="button" value="ok">
+                        <img class="icon" src="{% static 'icons/ok.png' %}" alt="ok"></button>
+                </form>
+    </div>
+    {% endfor %}
+</div>
+
+
+</body>
+</html>

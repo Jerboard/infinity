@@ -4,9 +4,9 @@ from django_ckeditor_5.fields import CKEditor5Field
 
 # Уровни кешбека
 class CashbackLevel(models.Model):
-    id = models.IntegerField("№", primary_key=True, auto_created=True, editable=False)
-    count_users = models.IntegerField('Количество пользователей', null=True, blank=True)
-    percent = models.FloatField('Кешбек', null=True, blank=True)
+    id = models.AutoField(primary_key=True)
+    count_users = models.IntegerField('Количество пользователей')
+    percent = models.FloatField('Кешбек')
 
     objects: models.Manager = models.Manager()
 
@@ -204,28 +204,29 @@ class UsedPromo(models.Model):
 
 
 # заказы на кешбек
-# class CashbackOrder(models.Model):
-#     id = models.IntegerField("ID", primary_key=True, auto_created=True, editable=False)
-#     time = models.DateTimeField('Время', null=True, blank=True)
-#     status = models.CharField('Статус', max_length=50, null=True, blank=True)
-#     user_id = models.CharField('ID пользователя', max_length=100, null=True, blank=True)
-#     name_user = models.CharField('Имя', max_length=150, null=True, blank=True)
-#     username = models.CharField('Юзернейм', max_length=50, null=True, blank=True)
-#     card = models.CharField('Реквизиты', max_length=255, null=True, blank=True)
-#     sum = models.IntegerField('Сумма', null=True, blank=True)
-#     chat_id = models.CharField('Чат', max_length=50, null=True, blank=True)
-#     message_id = models.CharField('Сообщение', max_length=50, null=True, blank=True)
-#
-#     objects: models.Manager = models.Manager()
-#
-#     def __str__(self):
-#         return str(self.id)
-#
-#     class Meta:
-#         verbose_name = 'Заказ на кешбек'
-#         verbose_name_plural = 'Заказы на кешбек'
-#         db_table = 'cashback_orders'
-#         managed = False
+class CashbackOrder(models.Model):
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField('Создан', auto_now_add=True)
+    updated_at = models.DateTimeField('Использован', auto_now_add=True)
+    user_id = models.BigIntegerField('ID пользователя')
+    status = models.CharField('Статус', max_length=50)
+    coin = models.CharField('Валюта', max_length=10)
+    wallet = models.CharField('Кошелёк', max_length=255)
+    sum = models.IntegerField('Сумма')
+    points = models.IntegerField('Реферральные баллы')
+    cashback = models.IntegerField('Кешбек')
+    message_id = models.IntegerField('Сообщение')
+
+    objects: models.Manager = models.Manager()
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Заказ на кешбек'
+        verbose_name_plural = 'Заказы на кешбек'
+        db_table = 'cashback_orders'
+        managed = False
 
 
 # Тексты и фото

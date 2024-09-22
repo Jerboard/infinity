@@ -13,11 +13,13 @@ class Config:
         access_chat = -1001669708234
         bot_link = 'https://t.me/tushchkan_test_4_bot'
         bot_id = 7377609086
+        antispam_chat = 5772948261
     else:
         token = os.getenv ("TOKEN")
         access_chat = int(os.getenv('ACCESS_CHAT'))
         bot_link = 'https://t.me/tushchkan_test_4_bot'
         bot_id = 7377609086
+        antispam_chat = 575386391
 
     db_host = os.getenv('DB_HOST')
     db_port = os.getenv('DB_PORT')

@@ -330,7 +330,8 @@ async def check_wallet(msg: Message, state: FSMContext):
     text = msg_data.text.format(
         pay_method_name=pay_method_info.name,
         pay_method_card=pay_method_info.card,
-        total_amount=data["total_amount"]
+        total_amount=data["total_amount"],
+        order_id=order_id
     )
 
     await bot.delete_message(chat_id=msg.from_user.id, message_id=data['message_id'])

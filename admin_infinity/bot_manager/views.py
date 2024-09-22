@@ -1,3 +1,336 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, logout
 
-# Create your views here.
+import os
+import logging
+
+from datetime import datetime
+from .export_file import export
+from .models import Order, Currency, PayMethod, Promo, User, CashbackLevel, CashbackOrder
+
+
+page_list = [{'name': 'Новые', 'page': 'new_orders'},
+             {'name': 'Обработанные', 'page': 'closed_orders'},
+             {'name': 'Кошельки и оплата', 'page': 'pay_setting'},
+             {'name': 'Промокоды', 'page': 'promo_setting'},
+             {'name': 'Выключатель', 'page': 'switch'},
+             {'name': 'Выйти', 'page': 'logout'}]
+
+
+# первая страница
+def home_page_redirect(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    else:
+        return redirect('new_orders')
+
+
+# вход
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('new_orders')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'login.html', {'form': form})
+
+
+# выход
+def logout_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    else:
+        logout(request)
+        return redirect('login')
+
+
+# новые заказы
+def new_orders_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    else:
+        if request.method == 'POST':
+            data = request.POST
+            if data.get('action') == 'del':
+                edit_order = Order.objects.get(id=data['id'])
+                edit_order.status = 'hand:del'
+                edit_order.save()
+
+            elif data.get('action') == 'ok':
+                edit_order = Order.objects.get(id=data['id'])
+                currency = Currency.objects.get(code=edit_order.coin)
+
+                # считаем прибыль
+                buy_price = edit_order.coin_sum * currency.buy_price
+                profit = (edit_order.total_amount - edit_order.commission) - buy_price
+
+                # кешбек
+                user = User.objects.get(user_id=edit_order.user_id)
+                # ud = user.__dict__
+                # for k, v in ud.items():
+                #     print(f'{k}: {v}')
+
+                if user.referrer is not None and profit > 0:
+
+                    referrer_id = user.referrer
+                    count_referals = len(User.objects.filter(referrer=referrer_id))
+
+                    referrer_info = User.objects.filter (user_id=referrer_id).first ()
+
+                    if referrer_info.custom_refferal_lvl is not None:
+                        cashback_data = (CashbackLevel.objects.filter(id=referrer_info.custom_refferal_lvl.id).first())
+                    else:
+                        cashback_data = CashbackLevel.objects.filter(
+                            count_users__lte=count_referals
+                        ).order_by('-count_users').first()
+
+                    # print(cashback_data)
+                    if cashback_data is None:
+                        max_cashback = CashbackLevel.objects.order_by('-count_users').first()
+                        if max_cashback.count_users <= count_referals:
+                            cashback_data = max_cashback
+
+                    # print(cashback_data.percent)
+                    cashback = profit * (cashback_data.percent / 100)
+                    referrer = User.objects.get(user_id=referrer_id)
+
+                    referrer.balance = round(referrer.balance + cashback)
+                    referrer.save()
+
+                    logging.warning (f'User: {user.user_id}\n'
+                                     f'Username: {user.username}\n'
+                                     f'Cashback: {cashback}\n'
+                                     f'Cashback_data: {cashback_data.count_users} {cashback_data.percent}\n'
+                                     f'referrer_info: {referrer_info}')
+
+                edit_order.profit = profit
+                edit_order.hash = data['hash']
+                edit_order.status = 'processing'
+                edit_order.save()
+
+            elif data.get('action') == 'ok_cb':
+                order = CashbackOrder.objects.get(id=data.get('id'))
+                order.status = 'processing'
+                order.save()
+            elif data.get('action') == 'del_cb':
+                order = CashbackOrder.objects.get(id=data.get('id'))
+                order.status = 'cancel'
+                order.save()
+
+            return redirect('new_orders')
+        else:
+            orders = Order.objects.filter(status='new')
+            cashback_orders = CashbackOrder.objects.filter(status='new')
+
+            context = {
+                'pages': page_list,
+                'this_page': page_list[0]['name'],
+                'orders': orders,
+                'count_new_orders': len(orders),
+                'cashback_orders': cashback_orders,
+                'count_cashback': len(cashback_orders)
+            }
+            return render(request, 'new_orders.html', context)
+
+
+# закрытые заказы
+def old_orders_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    else:
+        if request.method == 'POST':
+            data = request.POST
+            # print(f'>>>>>data\t{data}')
+            if data['button'] == 'refresh':
+                return redirect('closed_orders')
+
+            orders = Order.objects.all()
+            dateFrom = ''
+            if data['from'] != '':
+                dateFrom = datetime.strptime(data['from'], "%Y-%m-%d")
+                orders = orders.filter(time__gt=data['from'])
+            if data['to'] != '':
+                orders = orders.filter(time__lt=data['to'])
+            if data['user'] != '':
+                if data['user'].isdigit() == True:
+                    orders = orders.filter(user_id=data['user'])
+                else:
+                    orders = orders.filter(name_user=data['user'])
+            if data['coin'] != '':
+                orders = orders.filter(coin=data['coin'].upper())
+            if data['wallet'] != '':
+                orders = orders.filter(wallet=data['wallet'])
+            if data['promo'] != '':
+                orders = orders.filter(promo=data['promo'])
+            if data['hash'] != '':
+                orders = orders.filter(hash=data['hash'])
+
+            if data['button'] == 'filter':
+                context = {
+                    'pages': page_list,
+                    'this_page': page_list[1]['name'],
+                    'orders': orders,
+                    'today': datetime.now().date(),
+                    'fFrom': dateFrom,
+                    'fUser': data['user'],
+                    'fCoin': data['coin'],
+                    'fWallet': data['wallet'],
+                    'fPromo': data['promo'],
+                    'fHash': data['hash']
+                }
+
+                return render(request, 'closed_orders.html', context)
+
+            if data['button'] == 'export':
+                export(orders)
+
+            return redirect('closed_orders')
+
+        else:
+            orders = Order.objects.all().order_by('-id')[:50]
+
+            context = {
+                'pages': page_list,
+                'this_page': page_list[1]['name'],
+                'orders': orders,
+                'today': datetime.now().date()
+            }
+            return render(request, 'closed_orders.html', context)
+
+
+# кошельки и способы оплаты
+def wallets_and_pay_methods_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    else:
+        if request.method == 'POST':
+            data = request.POST
+            if data.get("type") == 'currency':
+                currency = Currency.objects.get(id=data['id'])
+                currency.min = float(data['min_sum'].replace(',', '.')) if data['min_sum'] is not None else 0
+                currency.max = float(data['max_sum'].replace(',', '.')) if data['max_sum'] is not None else 0
+                currency.ratio = float(data['percent'].replace(',', '.')) if data['percent'] is not None else 0
+                currency.commission = float(data['com'].replace(',', '.')) if data['com'] is not None else 0
+                currency.buy_price = float(data['buy'].replace(',', '.')) if data['buy'] is not None else 0
+                is_active = int(data.get('active', 0)) if data.get('active', 0) != 'on' else 1
+                currency.is_active = is_active
+                currency.round = int(data['round'])
+                currency.save()
+
+            elif data.get("type") == 'pay_method':
+                pay_method = PayMethod.objects.get(id=data['id'])
+                if data['button'] == 'del':
+                    pay_method.delete()
+                else:
+                    pay_method.name = data['bank']
+                    pay_method.card = data['card']
+                    is_active = int(data.get('active', 0)) if data.get('active', 0) != 'on' else 1
+                    pay_method.is_active = is_active
+                    pay_method.save()
+
+            elif data.get("type") == 'add':
+                pay_method = PayMethod()
+                pay_method.name = ''
+                pay_method.card = ''
+                pay_method.is_active = 0
+                pay_method.save()
+
+
+            return redirect('pay_setting')
+
+        else:
+            currencies = Currency.objects.all()
+            pay_methods = PayMethod.objects.all()
+
+            context = {
+                'pages': page_list,
+                'this_page': page_list[2]['name'],
+                'currencies': currencies,
+                'pay_methods': pay_methods,
+            }
+
+            return render(request, 'pay_setting.html', context)
+
+
+# Промокоды
+def promo_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    else:
+        if request.method == 'POST':
+            data = request.POST
+            print(data)
+            if data['type'] == 'codes':
+                promo = Promo.objects.get(id=data['id'])
+                if data['button'] == 'del':
+                    promo.delete()
+                else:
+                    try:
+                        promo.promo = data['promo']
+                        promo.rate = data['rate']
+                        promo.start_date = data['date_start'] if data['date_start'] != '' else None
+                        promo.end_date = data['date_end'] if data['date_end'] != '' else None
+                        promo.many = data['count']
+                        is_active = int(data.get('active', 0)) if data.get('active', 0) != 'on' else 1
+                        promo.is_active = is_active
+                        is_onetime = int(data.get('onetime', 0)) if data.get('onetime', 0) != 'on' else 1
+                        promo.is_onetime = is_onetime
+                        promo.save()
+                    except:
+                        pass
+
+            elif data.get("type") == 'add':
+                promo = Promo()
+                promo.promo = ''
+                promo.rate = 0
+                promo.start_date = None
+                promo.end_date = None
+                promo.many = 0
+                promo.is_active = 0
+                promo.save()
+
+            elif data['type'] == 'levels':
+                level = CashbackLevel.objects.get(id=data['id'])
+                level.count_users = data['count']
+                level.percent = data['percent'].replace(',', '.')
+                level.save()
+
+            return redirect('promo_setting')
+
+        else:
+            promo = Promo.objects.all()
+            levels = CashbackLevel.objects.all()
+            context = {
+                'pages': page_list,
+                'this_page': page_list[3]['name'],
+                'promo': promo,
+                'levels': levels,
+            }
+            return render(request, 'promo_setting.html', context)
+
+
+# Выключатель
+def switch_view(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    else:
+        file_path = os.path.join('home', 'bot', 'data', 'is_active.txt')
+        # file_path = os.path.join('is_active.txt')
+        with open(file_path, "r") as file:
+            position = file.read()
+        if request.method == 'POST':
+            data = request.POST
+            position = int(data['position'])
+            with open(file_path, "w") as file:
+                file.write(data['position'])
+
+        context = {'pages': page_list,
+                   'this_page': page_list[4]['name'],
+                   'position': position
+                   }
+        return render(request, 'switch.html', context)
+

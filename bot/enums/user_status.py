@@ -9,3 +9,4 @@ class UserStatus(str, Enum):
     EXCHANGE_SEND_PROMO = 'exchange_send_promo'
     ACC_PROMO = 'acc_promo'
     TAKE_CASHBACK = 'take_cashback'
+    ANTISPAM = 'antispam'

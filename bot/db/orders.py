@@ -149,11 +149,10 @@ async def get_orders(
         ))
 
     if old_orders:
-        thirty_minutes_ago = datetime.now() - timedelta(minutes=30)
-        # query = query.where(sa.and_(
-        #     sa.or_(OrderTable.c.status == OrderStatus.CANCEL.value, OrderTable.c.status == OrderStatus.NOT_CONF.value),
-        #     OrderTable.c.created_at < thirty_minutes_ago
-        # ))
+        if Config.debug:
+            thirty_minutes_ago = datetime.now() - timedelta(minutes=1)
+        else:
+            thirty_minutes_ago = datetime.now() - timedelta(minutes=30)
         query = query.where(
             sa.or_(
                 OrderTable.c.status == OrderStatus.CANCEL.value,
@@ -179,7 +178,7 @@ async def get_orders(
 
 # возвращает заявку
 async def get_order(order_id: int) -> OrderRow:
-    query = OrderTable.update().where(OrderTable.c.id == order_id)
+    query = OrderTable.select().where(OrderTable.c.id == order_id)
 
     async with begin_connection() as conn:
         result = await conn.execute(query)

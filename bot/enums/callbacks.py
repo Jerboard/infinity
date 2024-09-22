@@ -9,6 +9,7 @@ class CB(str, Enum):
     SELL = 'sell'
     ACCOUNT = 'account'
     ANTISPAM = 'antispam'
+    ADMIN_ANTISPAM = 'admin_antispam'
     CONTACTS = 'contacts'
     SELECT_PAYMENT = 'select_payment'
     SEND_WALLET = 'send_wallet'

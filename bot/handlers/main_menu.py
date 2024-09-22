@@ -36,20 +36,19 @@ async def com_start(msg: Message, state: FSMContext):
             'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity',
             reply_markup=ReplyKeyboardRemove ()
         )
-        return
 
-    # text = 'Выберите из кнопок ниже:'
-    await db.add_user(user_id=msg.from_user.id, full_name=msg.from_user.full_name, username=msg.from_user.username)
-    await ut.send_msg(msg_key=Key.START.value, chat_id=msg.chat.id, keyboard=kb.get_start_kb())
+    else:
+        await db.add_user(user_id=msg.from_user.id, full_name=msg.from_user.full_name, username=msg.from_user.username)
+        await ut.send_msg(msg_key=Key.START.value, chat_id=msg.chat.id, keyboard=kb.get_start_kb())
 
 
 # проверяет капчу
 @dp.callback_query(lambda cb: cb.data.startswith(CB.CAPCHA.value))
 async def capcha(cb: CallbackQuery, state: FSMContext):
-    _, referrer_str = cb.data.split(':')
+    _, suc, referrer_str = cb.data.split(':')
     referrer = int(referrer_str)
     await cb.message.delete()
-    if referrer:
+    if suc == '1':
         await db.add_user(
             user_id=cb.message.from_user.id,
             full_name=cb.message.from_user.full_name,
@@ -60,7 +59,7 @@ async def capcha(cb: CallbackQuery, state: FSMContext):
     else:
         await cb.answer('⚠️ Вы не прошли проверку', show_alert=True)
         await ut.send_capcha(
-            chat_id=cb.message.chat.id, first_name=cb.message.from_user.first_name, referrer=referrer_str
+            chat_id=cb.message.chat.id, first_name=cb.from_user.first_name, referrer=referrer_str
         )
 
 

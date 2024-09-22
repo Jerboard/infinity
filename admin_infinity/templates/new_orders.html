@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+<head>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/topbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/orders_blocks.css' %}">
+    <link rel="stylesheet" href="{% static 'css/buttons.css' %}">
+    <meta charset="UTF-8">
+    <title>Новые заявки</title>
+
+        <style>
+
+html {
+    background-image: url({% static 'images\background_main.jpg' %});
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  justify-content: center;
+<!--  height: 100vh;-->
+}
+
+
+
+        </style>
+</head>
+<body>
+    <div class="main-topbar">
+        {% for page in pages %}
+                {% if page.name == this_page %}
+                    {% if count_new_orders > 0 %}
+                        <a href="{{ page.page }}" class="tab-active">{{ page.name }} ({{ count_new_orders }})</a>
+                    {% else %}
+                        <a href="{{ page.page }}" class="tab-active">{{ page.name }}</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ page.page }}" class="tab-passive">{{ page.name }}</a>
+                {% endif %}
+        {% endfor %}
+    </div>
+    <div class="content-data">
+        <div class="order">
+                <span class="item" style="width: 4%">Время</span>
+                <span class="item" style="width: 5%">ID</span>
+                <span class="item" style="width: 4%">Валюта</span>
+                <span class="item" style="width: 3%">Сумма к обмену</span>
+                <span class="item" style="width: 16%; word-wrap: break-word; margin: 20px">На кошелёк</span>
+                <span class="item" style="width: 4%; word-wrap: break-word">Оплата</span>
+                <span class="item" style="width: 4.5%; word-wrap: break-word">Промокод</span>
+                <span class="item" style="width: 4%">Сумма</span>
+                <span class="item" style="width: 3%; word-wrap: break-word">Коммиссия</span>
+                <span class="item" style="width: 3%">Баллы</span>
+                <span class="item" style="width: 3%">Скидка</span>
+                <span class="item" style="width: 5%">Итог</span>
+<!--                <span class="item">{{ order.id }}</span>-->
+            </div>
+        {% for order in orders %}
+            <div class="order">
+                <span class="item" style="width: 5%">{{ order.time }}</span>
+                <span class="item" style="width: 5%">{{ order.id }}</span>
+                <span class="item" style="width: 4%">{{ order.coin }}</span>
+                <span class="item" style="width: 5%"> {{ order.coin_sum }}</span>
+                <span class="item" style="width: 25%; word-wrap: break-word">{{ order.wallet }}</span>
+                <span class="item" style="width: 5%; word-wrap: break-word">{{ order.pay_method }}</span>
+                <span class="item" style="width: 5%; word-wrap: break-word">{{ order.promo|default:"" }}</span>
+                <span class="item" style="width: 5%">{{ order.amount }}</span>
+                <span class="item" style="width: 4%">{{ order.commission|default:0 }}</span>
+                <span class="item" style="width: 3%">{{ order.used_points|default:"" }}</span>
+                <span class="item" style="width: 3%">{{ order.promo_rate|default:"" }}</span>
+                <span class="item" style="width: 5%">{{ order.total_amount }}</span>
+                <form method="post" style="width: 40%" id="{{ order.id }}">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" value="{{ order.id }}">
+                    <input type="text" name="hash" placeholder="Хеш" class="item" style="width: 50%">
+<!--                    <input type="text" name="buy" placeholder="Покупка" class="item" value="1000" style="width: 10%">-->
+<!--                    <input type="text" name="com" placeholder="Комиссия" class="item" style="width: 10%">-->
+                    <button type="submit" class="btn" name="action" value="ok"><img class="icon" src="{% static 'icons/ok.png' %}" alt="ok"></button>
+                    <button type="submit" class="btn" name="action" value="del"><img class="icon" src="{% static 'icons/del.png' %}" alt="del"></button>
+                </form>
+
+            </div>
+        {% endfor %}
+        {% if count_cashback > 0 %}
+        <div class="content-data">
+            <div class="order">
+                <span class="item" style="width: 10%">Время</span>
+                <span class="item" style="width: 5%">ID</span>
+                <span class="item" style="width: 15%">Имя пользователя</span>
+                <span class="item" style="width: 30%">Реквизиты</span>
+                <span class="item" style="width: 5%">Сумма</span>
+            </div>
+            {% for order in cashback_orders %}
+            <div class="order">
+                <span class="item" style="width: 10%">{{ order.time }}</span>
+                <span class="item" style="width: 5%">{{ order.id }}</span>
+                <span class="item" style="width: 15%">{{ order.name_user }}</span>
+                <span class="item" style="width: 30%"> {{ order.card }}</span>
+                <span class="item" style="width: 5%"> {{ order.sum }}</span>
+                <form method="post">
+                    {% csrf_token %}
+                <input type="hidden" name="id" value="{{ order.id }}">
+                <button type="submit" class="btn" name="action" value="ok_cb">
+                    <img class="icon" src="{% static 'icons/ok.png' %}" alt="ok"></button>
+                <button type="submit" class="btn" name="action" value="del_cb">
+                        <img class="icon" src="{% static 'icons/del.png' %}" alt="del"></button>
+                </form>
+            </div>
+            {% endfor %}
+
+
+        </div>
+        {% endif %}
+        <script type="text/javascript" src="{% static 'js/input_order.js' %}"></script>
+    </div>
+
+</body>
+</html>

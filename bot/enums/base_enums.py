@@ -23,6 +23,7 @@ class Key(str, Enum):
     TAKE_BONUS_CONF = 'take_bonus_conf'
     TAKE_BONUS_END = 'take_bonus_end'
     HISTORY = 'history'
+    ANTISPAM = 'antispam'
 
     SUM_EXCHANGE = 'sum_exchange'
 

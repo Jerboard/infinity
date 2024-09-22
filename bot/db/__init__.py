@@ -5,6 +5,6 @@ from .cb_orders import *
 from .currency import *
 from .pay_methods import *
 from .checked_wallets import *
-# from .promo import *
+from .cd_levels import *
 from .promo_new import *
 from .used_promo import *

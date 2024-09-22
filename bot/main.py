@@ -4,7 +4,7 @@ import logging
 
 from handlers import dp
 from config import Config
-from init import set_main_menu, bot, log_error, scheduler
+from init import set_main_menu, bot, log_error
 from db.base import init_models
 from utils.scheduler_utils import scheduler_start_async
 
@@ -13,7 +13,9 @@ async def main() -> None:
     # await db_command()
     await init_models()
     await set_main_menu()
-    await scheduler_start_async()
+    if not Config.debug:
+        await scheduler_start_async()
+    # await scheduler_start_async()
     await bot.delete_webhook (drop_pending_updates=True)
     await dp.start_polling(bot)
 

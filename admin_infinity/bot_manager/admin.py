@@ -4,7 +4,7 @@ from django.db.models.functions import Cast
 from django.utils.html import mark_safe
 
 
-# Register your models here.
+from admin_infinity.settings import DEBUG
 from .models import Msg
 from .models import User, Order, CashbackLevel, Currency, PayMethod, Promo
 
@@ -65,14 +65,17 @@ class ViewOrderTable(admin.ModelAdmin):
 @admin.register(CashbackLevel)
 class RefLvlTable(admin.ModelAdmin):
     list_display = ['id', 'count_users', 'percent']
-    search_fields = ['user_id']
 
 
 # админка новости
 @admin.register(Msg)
 class ViewAdminMsg(admin.ModelAdmin):
-    list_display = ['comment', 'text', 'cover_image_preview']
-    readonly_fields = ['updated_at', 'cover_image_preview_in', 'photo_id', 'bot_id', 'key']
+    if DEBUG:
+        list_display = ['key', 'comment', 'text', 'cover_image_preview']
+        readonly_fields = ['updated_at', 'cover_image_preview_in', 'photo_id']
+    else:
+        list_display = ['comment', 'text', 'cover_image_preview']
+        readonly_fields = ['updated_at', 'cover_image_preview_in', 'photo_id', 'bot_id', 'key']
     # list_editable = ['comment']
 
     def cover_image_preview(self, obj):

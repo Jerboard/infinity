@@ -1,7 +1,8 @@
 from aiogram.types import Message, InlineKeyboardMarkup, InputMediaPhoto, FSInputFile
 from aiogram.fsm.context import FSMContext
+from aiogram.enums.content_type import ContentType
 from asyncio import sleep
-from random import choice
+from random import choice, sample
 
 import db
 import keyboards as kb
@@ -14,7 +15,8 @@ from enums import Key
 
 # отправляет сообщение
 async def send_capcha(chat_id: int, first_name: str, referrer: str = None) -> None:
-    selected_capcha = [choice(capcha_list) for _ in range(6)]
+    # selected_capcha = [choice(capcha_list) for _ in range(6)]
+    selected_capcha = sample(capcha_list, 6)  # выбираем 6 уникальных фруктов
     match_char = choice(selected_capcha)
     text = f'Привет {first_name}\n\nВыбери <b>{match_char[0]}</b>'
     await bot.send_message(
@@ -161,3 +163,76 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
         keyboard=kb.get_main_exchange_kb(total_amount=data['total_amount'], promo_id=data.get('promo_id'))
     )
     await state.update_data(data={'message_id': sent.message_id})
+
+
+# отправляет сообщение всех типов
+async def send_any_message(msg: Message, chat_id: int, keyboard: InlineKeyboardMarkup = None) -> Message:
+    if msg.content_type == ContentType.TEXT:
+        sent = await bot.send_message(
+            chat_id=chat_id,
+            text=msg.text,
+            entities=msg.entities,
+            reply_markup=keyboard
+        )
+
+    elif msg.content_type == ContentType.PHOTO:
+        sent = await bot.send_photo (
+            chat_id=chat_id,
+            photo=msg.photo[-1].file_id,
+            caption=msg.caption,
+            caption_entities=msg.caption_entities,
+            reply_markup=keyboard
+        )
+
+    elif msg.content_type == ContentType.VIDEO:
+        sent = await bot.send_video (
+            chat_id=chat_id,
+            video=msg.video.file_id,
+            caption=msg.caption,
+            caption_entities=msg.caption_entities,
+            reply_markup=keyboard
+        )
+
+    elif msg.content_type == ContentType.VIDEO_NOTE:
+        sent = await bot.send_video_note (
+            chat_id=chat_id,
+            video_note=msg.video_note.file_id,
+            reply_markup=keyboard
+        )
+
+    elif msg.content_type == ContentType.ANIMATION:
+        sent = await bot.send_animation (
+            chat_id=chat_id,
+            animation=msg.animation.file_id,
+            caption=msg.caption,
+            caption_entities=msg.caption_entities,
+            reply_markup=keyboard
+        )
+
+    elif msg.content_type == ContentType.VOICE:
+        sent = await bot.send_voice (
+            chat_id=chat_id,
+            voice=msg.voice.file_id,
+            reply_markup=keyboard
+        )
+
+    elif msg.content_type == ContentType.DOCUMENT:
+        sent = await bot.send_document (
+            chat_id=chat_id,
+            voice=msg.document.file_id,
+            caption=msg.caption,
+            caption_entities=msg.caption_entities,
+            reply_markup=keyboard
+        )
+
+    elif msg.content_type == ContentType.STICKER:
+        sent = await bot.send_voice (
+            chat_id=chat_id,
+            voice=msg.sticker.file_id,
+            reply_markup=keyboard
+        )
+
+    else:
+        sent = None
+
+    return sent
