@@ -10,7 +10,7 @@ class CB(str, Enum):
     ACCOUNT = 'account'
     ANTISPAM = 'antispam'
     ADMIN_ANTISPAM = 'admin_antispam'
-    CONTACTS = 'contacts'
+    INFO = 'info'
     SELECT_PAYMENT = 'select_payment'
     SEND_WALLET = 'send_wallet'
     PAYMENT_ADD = 'payment_add'
@@ -28,6 +28,5 @@ class CB(str, Enum):
     GAMBLING = 'gambling'
     REPLACE_PROMO = 'replace_promo'
     CANCEL = 'cancel'
-
-
-
+    FEEDBACK = 'feedback'
+    PUBLISH_FEEDBACK = 'publish_feedback'

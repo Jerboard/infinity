@@ -24,6 +24,7 @@ class Key(str, Enum):
     TAKE_BONUS_END = 'take_bonus_end'
     HISTORY = 'history'
     ANTISPAM = 'antispam'
+    INFO = 'info'
 
     SUM_EXCHANGE = 'sum_exchange'
 

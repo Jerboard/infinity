@@ -12,8 +12,14 @@ from enums import Key, CB
 
 # @dp.message()
 # async def temp(msg: Message):
-#     if msg.photo:
-#         print(msg.photo[-1].file_id)
+#     print(msg.chat.title)
+#     print(msg.chat.id)
+#
+#
+# @dp.channel_post()
+# async def temp(msg: Message):
+#     print(msg.chat.title)
+#     print(msg.chat.id)
 
 
 # Команда старт

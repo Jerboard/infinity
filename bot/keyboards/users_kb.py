@@ -24,7 +24,7 @@ def get_start_kb() -> InlineKeyboardMarkup:
     kb.button(text='ПРОДАТЬ', callback_data=CB.SELL.value)
     kb.button(text='ЛИЧНЫЙ КАБИНЕТ', callback_data=CB.ACCOUNT.value)
     kb.button(text='АНТИСПАМ БОТ', callback_data=CB.ANTISPAM.value)
-    kb.button(text='КОНТАКТЫ', callback_data=CB.CONTACTS.value)
+    kb.button(text='КОНТАКТЫ', callback_data=CB.INFO.value)
     return kb.adjust(2, 1, 2).as_markup()
 
 
@@ -180,3 +180,26 @@ def get_antispam_admin_kb(user_id: int, on: bool = True) -> InlineKeyboardMarkup
     return kb.adjust(1).as_markup()
 
 
+# клава поддержки
+def get_info_kb():
+    kb = InlineKeyboardBuilder()
+    kb.button(text='КАНАЛ', url='https://t.me/infinity_ex_channel')
+    kb.button(text='ЧАТ', url='https://t.me/+BmFoERnJl_JmOWUy')
+    kb.button(text='ОТЗЫВЫ', url='https://t.me/infinity_ex_comment')
+    kb.button(text='МЕНЕДЖЕР', url='https://t.me/manager_Infinity')
+    kb.button(text='ОПЕРАТОР', url='https://t.me/operator_Infinity')
+    kb.button(
+        text='ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ',
+        url='https://telegra.ph/Polzovatelskoe-soglashenie-The-Infinity-Exchange-12-25'
+    )
+    kb.button(text='ОСТАВИТЬ ОТЗЫВ', callback_data=CB.FEEDBACK.value)
+    kb.button(text='🔙 НАЗАД', callback_data=CB.BACK_START.value)
+    return kb.adjust(2, 1).as_markup()
+
+
+# продать валюту
+def get_feedback_kb() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(text=f'✅ Опубликовать', callback_data=CB.PUBLISH_FEEDBACK.value)
+    kb.button(text=f'❌ Удалить', callback_data=f'{CB.CANCEL.value}')
+    return kb.adjust(1).as_markup()

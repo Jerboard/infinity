@@ -10,3 +10,4 @@ class UserStatus(str, Enum):
     ACC_PROMO = 'acc_promo'
     TAKE_CASHBACK = 'take_cashback'
     ANTISPAM = 'antispam'
+    FEEDBACK = 'feedback'

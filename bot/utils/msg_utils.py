@@ -172,6 +172,7 @@ async def send_any_message(msg: Message, chat_id: int, keyboard: InlineKeyboardM
             chat_id=chat_id,
             text=msg.text,
             entities=msg.entities,
+            parse_mode=None,
             reply_markup=keyboard
         )
 
@@ -181,6 +182,7 @@ async def send_any_message(msg: Message, chat_id: int, keyboard: InlineKeyboardM
             photo=msg.photo[-1].file_id,
             caption=msg.caption,
             caption_entities=msg.caption_entities,
+            parse_mode=None,
             reply_markup=keyboard
         )
 
@@ -190,6 +192,7 @@ async def send_any_message(msg: Message, chat_id: int, keyboard: InlineKeyboardM
             video=msg.video.file_id,
             caption=msg.caption,
             caption_entities=msg.caption_entities,
+            parse_mode=None,
             reply_markup=keyboard
         )
 
@@ -206,6 +209,7 @@ async def send_any_message(msg: Message, chat_id: int, keyboard: InlineKeyboardM
             animation=msg.animation.file_id,
             caption=msg.caption,
             caption_entities=msg.caption_entities,
+            parse_mode=None,
             reply_markup=keyboard
         )
 
@@ -222,13 +226,7 @@ async def send_any_message(msg: Message, chat_id: int, keyboard: InlineKeyboardM
             voice=msg.document.file_id,
             caption=msg.caption,
             caption_entities=msg.caption_entities,
-            reply_markup=keyboard
-        )
-
-    elif msg.content_type == ContentType.STICKER:
-        sent = await bot.send_voice (
-            chat_id=chat_id,
-            voice=msg.sticker.file_id,
+            parse_mode=None,
             reply_markup=keyboard
         )
 
