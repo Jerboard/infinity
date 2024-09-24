@@ -3,9 +3,20 @@ from datetime import datetime, timedelta
 import os
 
 import db
-from init import bot, log_error
+from init import bot, log_error, redis_client, CHANNEL
 from .msg_utils import send_msg
 from enums import OrderStatus, Key
+
+
+# Создаём объект подписки
+pubsub = redis_client.pubsub()
+
+# Подписываемся на канал 'my_channel'
+pubsub.subscribe(CHANNEL)
+
+# Обрабатываем полученные сообщения
+for message in pubsub.listen():
+    print(f"Получено сообщение: {message['data'].decode('utf-8')}")
 
 
 # Отменяет заявку

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import os
+import redis
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,6 +53,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'admin_infinity.wsgi.application'
 
+# Подключаемся к Redis
+redis_client = redis.Redis(host=os.getenv('REDIS_HOST'), port=int(os.getenv('REDIS_PORT')), db=0)
+CHANNEL = os.getenv('CHANNEL')
 
 DATABASES = {
     'default': {

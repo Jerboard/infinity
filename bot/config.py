@@ -33,6 +33,7 @@ class Config:
     api_key_cm = os.getenv('API_KEY_COINMARKET')
     operator_url = os.getenv('OPERATOR')
     batch_size = 3
+    channel = os.getenv('CHANNEL')
 
     test_photo = 'AgACAgIAAxkBAAMKZtwCcBYQoPHYC7QXVMDvHPk4TO0AAtHdMRtgheBKwXbCeNk2bWEBAAMCAAN4AAM2BA'  # @tushchkan_test_4_bot
 

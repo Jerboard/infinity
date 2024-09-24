@@ -13,6 +13,7 @@ import traceback
 import os
 import asyncio
 import re
+import redis
 
 from config import Config
 
@@ -31,6 +32,8 @@ bot = Bot(Config.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
 scheduler = AsyncIOScheduler(timezone=Config.tz)
 ENGINE = create_async_engine(url=Config.db_url)
+
+redis_client = redis.Redis(host=os.getenv('REDIS_HOST'), port=int(os.getenv('REDIS_PORT')), db=0)
 
 
 async def set_main_menu():
