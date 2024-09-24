@@ -10,18 +10,31 @@ import keyboards as kb
 import utils as ut
 from config import Config
 from init import dp, bot, log_error
-from enums import CB, UserStatus, Key, Action
+from enums import CB, UserStatus, Key, MainButton
 
 
 # Раздел "О нас"
-@dp.callback_query(lambda cb: cb.data.startswith(CB.INFO.value))
-async def info(cb: CallbackQuery, state: FSMContext):
+async def info_send(msg: Message, edit_msg: int = None):
     await ut.send_msg(
         msg_key=Key.INFO.value,
-        chat_id=cb.message.chat.id,
-        edit_msg=cb.message.message_id,
+        chat_id=msg.chat.id,
+        edit_msg=edit_msg,
         keyboard=kb.get_info_kb()
     )
+
+
+# старт обмена инлайн
+@dp.callback_query(lambda cb: cb.data.startswith(CB.INFO.value))
+async def info_send_inline(cb: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await info_send(cb.message, edit_msg=cb.message)
+
+
+# старт обмена кнопка
+@dp.message(lambda msg: msg.text == MainButton.INFO.value)
+async def info_send_reply(msg: Message, state: FSMContext):
+    await state.clear()
+    await info_send(msg)
 
 
 # отправить отзыв

@@ -18,14 +18,14 @@ def get_capcha_kb(items: list[list], match: dict, referrer) -> InlineKeyboardMar
 
 
 # Стартовая клавиатура
-def get_start_kb() -> InlineKeyboardMarkup:
-    kb = InlineKeyboardBuilder()
-    kb.button(text='КУПИТЬ', callback_data=CB.EXCHANGE.value)
-    kb.button(text='ПРОДАТЬ', callback_data=CB.SELL.value)
-    kb.button(text='ЛИЧНЫЙ КАБИНЕТ', callback_data=CB.ACCOUNT.value)
-    kb.button(text='АНТИСПАМ БОТ', callback_data=CB.ANTISPAM.value)
-    kb.button(text='КОНТАКТЫ', callback_data=CB.INFO.value)
-    return kb.adjust(2, 1, 2).as_markup()
+# def get_start_kb() -> InlineKeyboardMarkup:
+#     kb = InlineKeyboardBuilder()
+#     kb.button(text='КУПИТЬ', callback_data=CB.EXCHANGE.value)
+#     kb.button(text='ПРОДАТЬ', callback_data=CB.SELL.value)
+#     kb.button(text='ЛИЧНЫЙ КАБИНЕТ', callback_data=CB.ACCOUNT.value)
+#     kb.button(text='АНТИСПАМ БОТ', callback_data=CB.ANTISPAM.value)
+#     kb.button(text='КОНТАКТЫ', callback_data=CB.INFO.value)
+#     return kb.adjust(2, 1, 2).as_markup()
 
 
 # клавиатура ЛК
@@ -74,33 +74,16 @@ def get_currency_list_kb(currencies: tuple[db.CurrencyRow]) -> InlineKeyboardMar
     return kb.adjust(2).attach(back_bt).as_markup()
 
 
-# клавиатура со способами оплаты
-# def get_pay_method_kb(sum_rub: float, pay_methods: tuple[db.PayMethodRow]) -> InlineKeyboardMarkup:
-#     kb = InlineKeyboardBuilder()
-#     for pay_method in pay_methods:
-#         kb.button(text=f'{pay_method.name} ({sum_rub} руб.)', callback_data=f'{CB.SEND_WALLET.value}:{pay_method.id}')
-#
-#     kb.button(text='🔙 Назад', callback_data=f'{CB.SELECT_PAYMENT.value}:{Action.BACK.value}')
-#     return kb.adjust(1).as_markup()
-
-
 # клавиатура проверки данный
-# def get_check_info_kb(use_points: bool, points: int, promo: str = None) -> InlineKeyboardMarkup:
-#     kb = InlineKeyboardBuilder()
-#     kb.button(text='✅ Все верно', callback_data=CB.PAYMENT_ADD.value)
-#     if not promo:
-#         kb.button(text='Есть промокод', callback_data=CB.USE_PROMO.value)
-#     if points and not use_points:
-#         kb.button(text=f'Использовать баллы ({points})', callback_data=CB.USE_CASHBACK.value)
-#     kb.button(text='🔙 Назад', callback_data=f'{CB.SEND_WALLET.value}:{Action.BACK.value}')
-#
-#     return kb.adjust(1).as_markup()
-
-
-# клавиатура проверки данный
-def get_main_exchange_kb(total_amount: int, promo_id: str = None) -> InlineKeyboardMarkup:
+def get_main_exchange_kb(
+        pay_methods: tuple[db.PayMethodRow],
+        total_amount: int,
+        promo_id: str = None
+) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
-    kb.button(text=f'ПЕРЕЙТИ К ОПЛАТЕ ({total_amount} РУБ)', callback_data=CB.SEND_WALLET.value)
+    for method in pay_methods:
+        kb.button(text=f'{method.name} ({total_amount} РУБ)', callback_data=f'{CB.SEND_WALLET.value}:{method.id}')
+
     if promo_id:
         kb.button(text='ИСП, ПРОМОКОД', callback_data=CB.USE_PROMO.value)
 
@@ -149,9 +132,9 @@ def get_history_kb(start: int, end_page: bool) -> InlineKeyboardMarkup:
     if start > 0:
         btn_count += 1
         kb.button(text=f'ПРЕД СТР.', callback_data=f'{CB.HISTORY.value}:{start - Config.batch_size}')
-    if not end_page:
+    if end_page:
         btn_count += 1
-        kb.button(text=f'СЛЕД СТР.', callback_data=f'{CB.ACCOUNT.value}:{start + Config.batch_size}')
+        kb.button(text=f'СЛЕД СТР.', callback_data=f'{CB.HISTORY.value}:{start + Config.batch_size}')
 
     kb.button(text=f'🔙 Назад', callback_data=f'{CB.ACCOUNT.value}')
     kb.adjust(2, 1) if btn_count == 2 else kb.adjust(1)

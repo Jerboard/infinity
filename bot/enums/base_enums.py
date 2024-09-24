@@ -60,3 +60,11 @@ class OrderStatus(str, Enum):
     SUC = 'successful'
     FAIL = 'failed'
 
+
+# статусы заказов
+class MainButton(str, Enum):
+    EXCHANGE = 'КУПИТЬ'
+    SELL = 'ПРОДАТЬ'
+    ACCOUNT = 'ЛИЧНЫЙ КАБИНЕТ'
+    ANTISPAM = 'АНТИСПАМ БОТ'
+    INFO = 'КОНТАКТЫ'

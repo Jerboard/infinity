@@ -16,6 +16,7 @@ class OrderRow(t.Protocol):
     status: str
     coin: str
     pay_method: str
+    card: str
     coin_sum: float
     wallet: str
     promo: str
@@ -47,6 +48,7 @@ OrderTable: sa.Table = sa.Table(
     sa.Column('status', sa.String(255)),
     sa.Column('coin', sa.String(255)),
     sa.Column('pay_method', sa.String(255)),
+    sa.Column('card', sa.String(255)),
     sa.Column('coin_sum', sa.Float()),
     sa.Column('wallet', sa.String(255)),
     sa.Column('promo', sa.String(255)),
@@ -74,6 +76,7 @@ async def add_order(
         user_id: int,
         coin: str,
         pay_method: str,
+        card: str,
         coin_sum: float,
         wallet: str,
         promo: str,
@@ -96,6 +99,7 @@ async def add_order(
         user_id=user_id,
         coin=coin,
         pay_method=pay_method,
+        card=card,
         coin_sum=coin_sum,
         wallet=wallet,
         promo=promo,

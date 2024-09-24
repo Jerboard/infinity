@@ -1,8 +1,10 @@
-from aiogram.types import Message, InlineKeyboardMarkup, InputMediaPhoto, FSInputFile
+from aiogram.types import Message, InlineKeyboardMarkup, InputMediaPhoto, FSInputFile, ReplyKeyboardMarkup
 from aiogram.fsm.context import FSMContext
 from aiogram.enums.content_type import ContentType
 from asyncio import sleep
 from random import choice, sample
+
+import typing as t
 
 import db
 import keyboards as kb
@@ -35,10 +37,7 @@ async def send_time_message(chat_id: int, text: str) -> None:
 
 # обрабатывает текст. заменяет неподдерживаемые теги
 def parse_text(text: str) -> str:
-    return (text.replace('<br>', '\n')
-
-            )
-    # return text
+    return text.replace('<br>', '\n')
 
 
 # отправляет сообщение
@@ -48,20 +47,11 @@ async def send_msg(
         msg_data: db.MsgRow = None,
         text: str = None,
         edit_msg: int = None,
-        keyboard: InlineKeyboardMarkup = None
+        keyboard: t.Union[InlineKeyboardMarkup, ReplyKeyboardMarkup] = None
 ) -> Message:
-    # если тест, чтоб возвращал тестовую картинку
-    # if Config.debug:
-        # msg_key = Config.test_photo
-        # msg_key = 'test'
-
     if not msg_data:
         msg_data = await db.get_msg(msg_key)
 
-    # если фото обновлено и не имеет своего ключа
-    # if Config.debug:
-    #     photo_id = Config.test_photo
-    #     update = False
     if msg_data.photo_id and msg_data.bot_id == Config.bot_id:
         photo_id = msg_data.photo_id
         update = False
@@ -69,7 +59,7 @@ async def send_msg(
         photo_id = FSInputFile(msg_data.photo_path)
         update = True
 
-    print(text)
+    # print(text)
     text = parse_text(text) if text else parse_text(msg_data.text)
 
     if edit_msg:
@@ -95,50 +85,11 @@ async def send_msg(
     return sent
 
 
-# считает сумму
-# async def check_info_output(state: FSMContext, del_msg: bool = False):
-#     data = await state.get_data()
-#     currency = await db.get_currency(data['currency_id'])
-#
-#     text = ut.get_check_info_text(data=data, currency=currency)
-#     if del_msg:
-#         await bot.delete_message(chat_id=data['user_id'], message_id=data['message_id'])
-#         sent = await ut.send_msg(
-#             msg_key=Key.CHECK_WALLET.value,
-#             chat_id=data['user_id'],
-#             text=text,
-#             keyboard=kb.get_check_info_kb(use_points=data['used_points'], points=data['points'], promo=data.get('promo'))
-#         )
-#         await state.update_data(data={'message_id': sent.message_id})
-#     else:
-#         await ut.send_msg(
-#             msg_key=Key.CHECK_WALLET.value,
-#             chat_id=data['user_id'],
-#             edit_msg=data['message_id'],
-#             text=text,
-#             keyboard=kb.get_check_info_kb(use_points=data['used_points'], points=data['points'], promo=data.get('promo'))
-#         )
-
-
 async def main_exchange(state: FSMContext, del_msg: bool = False):
     data = await state.get_data()
-    # currency_rate = data['rate']
-    # sum_coin = data['sum_exchange']
-    # currency_code = data['currency_code']
-    # sum_rub = data['amount']
-    # balance = f'<s>{data["balance"]}</s>' if data.get('used_balance') else data['balance']
-    # pay_string = data['pay_string']
 
-    # for k, v in data.items():
-    #     print(f'{k}: {v}')
+    pay_methods = await db.get_all_pay_method()
 
-    # text = (
-    #     f'Средний рыночный курс: {currency_rate}\n\n'
-    #     f'Данный курс не учитывает комиссии сервиса\n\n'
-    #     f'Вы получите: {sum_coin} {currency_code} ~ {sum_rub} RUB\n\n'
-    #     f'Внутренний баланс кошелька: {balance} RUB\n\n'
-    #     f'{pay_string}'
-    # )
     msg_data = await db.get_msg(Key.EXCHANGE.value)
     text = msg_data.text.format(
         currency_rate=data['rate'],
@@ -155,12 +106,17 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
         edit_msg = None
     else:
         edit_msg = data['message_id']
+
     sent = await ut.send_msg(
         msg_data=msg_data,
         chat_id=data['user_id'],
         edit_msg=edit_msg,
         text=text,
-        keyboard=kb.get_main_exchange_kb(total_amount=data['total_amount'], promo_id=data.get('promo_id'))
+        keyboard=kb.get_main_exchange_kb(
+            pay_methods=pay_methods,
+            total_amount=data['total_amount'],
+            promo_id=data.get('promo_id')
+        )
     )
     await state.update_data(data={'message_id': sent.message_id})
 

@@ -12,36 +12,47 @@ import keyboards as kb
 from config import Config
 from init import dp, bot
 import utils as ut
-from enums import CB, Key, UserStatus, Action, OrderStatus, Coin
+from enums import CB, Key, UserStatus, Action, OrderStatus, Coin, MainButton
+
+
+async def start_acc_send(msg: Message):
+
+    user = await db.get_user_info(msg.from_user.id)
+    referrers = await db.get_users(referrer=msg.from_user.id)
+    exchanges = await db.get_orders(user_id=msg.from_user.id, status=OrderStatus.SUC.value)
+
+    msg_data = await db.get_msg(Key.ACCOUNT.value)
+    text = msg_data.text.format(
+        user_id=msg.from_user.id,
+        count_ex=len(exchanges),
+        sum_exchange=sum(exchange.total_amount for exchange in exchanges),
+        count_ref=len(referrers),
+        ref_lvl=user.custom_referral_lvl_id,
+        balance=user.referral_points + user.cashback,
+        ref_link=f'{Config.bot_link}?start={msg.from_user.id}'
+    )
+
+    await ut.send_msg(
+        msg_data=msg_data,
+        chat_id=msg.chat.id,
+        # edit_msg=msg.message_id,
+        text=text,
+        keyboard=kb.get_account_kb()
+    )
 
 
 # Аккаунт старт
 @dp.callback_query(lambda cb: cb.data.startswith(CB.ACCOUNT.value))
 async def start_account(cb: CallbackQuery, state: FSMContext):
     await state.clear()
+    await start_acc_send(cb.message)
 
-    user = await db.get_user_info(cb.from_user.id)
-    referrers = await db.get_users(referrer=cb.from_user.id)
-    exchanges = await db.get_orders(user_id=cb.from_user.id, status=OrderStatus.SUC.value)
 
-    msg_data = await db.get_msg(Key.ACCOUNT.value)
-    text = msg_data.text.format(
-        user_id=cb.from_user.id,
-        count_ex=len(exchanges),
-        sum_exchange=sum(exchange.total_amount for exchange in exchanges),
-        count_ref=len(referrers),
-        ref_lvl=user.custom_referral_lvl_id,
-        balance=user.referral_points + user.cashback,
-        ref_link=f'{Config.bot_link}?start={cb.from_user.id}'
-    )
+@dp.message(lambda msg: msg.text == MainButton.ACCOUNT.value)
+async def start_account(msg: Message, state: FSMContext):
+    await state.clear()
+    await start_acc_send(msg)
 
-    await ut.send_msg(
-        msg_data=msg_data,
-        chat_id=cb.message.chat.id,
-        edit_msg=cb.message.message_id,
-        text=text,
-        keyboard=kb.get_account_kb()
-    )
 
 
 # Промокод
@@ -318,7 +329,7 @@ async def take_bonus_end(cb: CallbackQuery, state: FSMContext):
                 coin=order.coin,
                 total_amount=order.total_amount,
                 order_hash=order.hash,
-                cashback=order.cashback
+                cashback=order.cashback or '0'
             )
             text += '\n\n'
 
