@@ -76,6 +76,14 @@ async def back_com_start(cb: CallbackQuery, state: FSMContext):
     )
 
 
+# назад к первому экрану
+@dp.callback_query(lambda cb: cb.data.startswith(CB.CANCEL.value))
+async def cancel(cb: CallbackQuery, state: FSMContext):
+    await state.clear()
+    # text = 'Выберите из кнопок ниже:'
+    await cb.message.delete()
+
+
 # выбор валюты
 # @dp.message_handler(text=['📚 Поддержка'], state='*')
 # async def support(msg: Message, state: FSMContext):

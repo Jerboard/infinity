@@ -48,6 +48,13 @@ def get_back_kb(cb: str, arg: str = Action.BACK.value) -> InlineKeyboardMarkup:
     return kb.adjust(1).as_markup()
 
 
+# отмена
+def get_cancel_kb() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(text=f'❌ Отмена', callback_data=CB.CANCEL.value)
+    return kb.adjust(1).as_markup()
+
+
 # продать валюту
 def get_sell_kb() -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
@@ -151,11 +158,25 @@ def get_history_kb(start: int, end_page: bool) -> InlineKeyboardMarkup:
     return kb.as_markup()
 
 
-# Подтвердить замену промо
-def get_antispam_kb(user_id: int, on: bool = True) -> InlineKeyboardMarkup:
+# Антиспам кнопки пользователь
+def get_antispam_user_kb(on: bool = True) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     if on:
-        kb.button(text=f'📲 Ответить', callback_data=f'{CB.ADMIN_ANTISPAM.value}:1:{user_id}')
+        kb.button(text=f'ЗАДАТЬ ВОПРОС', callback_data=f'{CB.ADMIN_ANTISPAM.value}:{Action.SEND.value}:{Config.antispam_chat}')
     else:
-        kb.button(text=f'❌ Отмена', callback_data=f'{CB.ADMIN_ANTISPAM.value}:0:{user_id}')
+        kb.button(text=f'❌ Отмена', callback_data=f'{CB.ADMIN_ANTISPAM.value}:{Action.DEL.value}:{Config.antispam_chat}')
+
+    kb.button(text=f'🔙 Назад', callback_data=f'{CB.BACK_START.value}')
     return kb.adjust(1).as_markup()
+
+
+# Антиспам кнопки админ
+def get_antispam_admin_kb(user_id: int, on: bool = True) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    if on:
+        kb.button(text=f'📲 Ответить', callback_data=f'{CB.ADMIN_ANTISPAM.value}:{Action.SEND.value}:{user_id}')
+    else:
+        kb.button(text=f'❌ Отмена', callback_data=f'{CB.ADMIN_ANTISPAM.value}:{Action.DEL.value}:{user_id}')
+    return kb.adjust(1).as_markup()
+
+

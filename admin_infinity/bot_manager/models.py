@@ -238,7 +238,7 @@ class Msg(models.Model):
     key = models.CharField('Ключ', max_length=255, unique=True)
     comment = models.CharField('Название', max_length=255, unique=True)
     photo_id = models.CharField('Фото ID', max_length=255, null=True, blank=True)
-    bot_id = models.IntegerField('Бот ID', null=True, blank=True, max_length=255)
+    bot_id = models.BigIntegerField('Бот ID', null=True, blank=True)
     photo_path = models.FileField('Путь', upload_to='photo')
 
     def save(self, *args, **kwargs):

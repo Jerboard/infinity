@@ -27,6 +27,7 @@ class CB(str, Enum):
     HISTORY = 'history'
     GAMBLING = 'gambling'
     REPLACE_PROMO = 'replace_promo'
+    CANCEL = 'cancel'
 
 
 
