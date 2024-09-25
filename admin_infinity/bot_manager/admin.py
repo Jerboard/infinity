@@ -6,48 +6,60 @@ from django.utils.html import mark_safe
 
 from admin_infinity.settings import DEBUG
 from .models import Msg
-from .models import User, Order, CashbackLevel, Currency, PayMethod, Promo
+from .models import User, Order, CashbackLevel, Currency, PayMethod, Promo, CashbackOrder
 
 
 @admin.register(User)
 class ViewUserTable(admin.ModelAdmin):
-    # list_display = ['user_id', 'full_name',  'username', 'last_visit', 'referrer',
-    #                 'custom_referral_lvl', 'balance', 'used_points_count', 'total_points_count',
-    #                 'count_invited_users']
-    list_display = ['user_id', 'full_name',  'username', 'last_visit']
+    list_display = ['user_id', 'full_name',  'username', 'last_visit', 'referrer',
+                    'custom_referral_lvl_id', 'balance', 'used_points_count', 'total_points_count',
+                    'count_invited_users']
+    # list_display = ['user_id', 'full_name',  'username', 'last_visit']
     search_fields = ['user_id', 'username', 'referrer']
     ordering = ['-last_visit']
     list_filter = ['user_id', 'username']
     readonly_fields = ['first_visit', 'last_visit']
 
-    # def count_invited_users(self, obj):
-    #     count_users = User.objects.filter(referrer=obj.user_id).count()
-    #
-    #     referral_level = CashbackLevel.objects.filter(count_users__lte=count_users).order_by('-count_users').first()
-    #     if not referral_level:
-    #         referral_level = 1
-    #     return f'Ур. {referral_level} Пригл. {count_users}'
-    #
-    # count_invited_users.short_description = 'Приглашенных'
-    #
-    # def used_points_count(self, obj):
-    #     total = Order.objects.filter(user_id=obj.user_id, status='successful').aggregate(total=Sum('used_points'))[
-    #         'total']
-    #     cashback = CashbackLevel.objects.filter(user_id=obj.user_id, status='successful').aggregate(total=Sum('sum'))[
-    #         'total']
-    #     if not total:
-    #         total = 0
-    #     if not cashback:
-    #         cashback = 0
-    #     return str(total + cashback)
-    #
-    # used_points_count.short_description = 'Баллов потрачено'
-    #
-    # def total_points_count(self, obj):
-    #     used_points = self.used_points_count(obj)
-    #     return str(float(used_points) + obj.balance)
-    #
-    # total_points_count.short_description = 'Всего баллов'
+    def count_invited_users(self, obj):
+        count_users = User.objects.filter(referrer=obj.user_id).count()
+
+        referral_level = CashbackLevel.objects.filter(count_users__lte=count_users).order_by('-count_users').first()
+        if not referral_level:
+            referral_level = 1
+        return f'Ур. {referral_level} Пригл. {count_users}'
+
+    count_invited_users.short_description = 'Приглашенных'
+
+    def balance(self, obj):
+        return str(obj.referral_points + obj.cashback)
+
+    balance.short_description = 'Баланс'
+
+    def used_points_count(self, obj):
+        total_points = Order.objects.filter(user_id=obj.user_id, status='successful').aggregate(total=Sum('used_points'))[
+            'total']
+        total_cashback = Order.objects.filter(user_id=obj.user_id, status='successful').aggregate(total=Sum('used_cashback'))[
+            'total']
+        cashback = CashbackOrder.objects.filter(user_id=obj.user_id, status='successful').aggregate(total=Sum('sum'))[
+            'total']
+        # потрачено баллов
+        if not total_points:
+            total_points = 0
+        # потрачено кешбека
+        if not total_cashback:
+            total_cashback = 0
+        # выведено кешбека
+        if not cashback:
+            cashback = 0
+        return str(total_points + total_cashback + cashback)
+
+    used_points_count.short_description = 'Баллов потрачено'
+
+    def total_points_count(self, obj):
+        used_points = self.used_points_count(obj)
+        return str(int(used_points) + obj.referral_points + obj.cashback)
+
+    total_points_count.short_description = 'Всего баллов'
 
 
 @admin.register(Order)

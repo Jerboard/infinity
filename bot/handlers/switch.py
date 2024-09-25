@@ -7,7 +7,7 @@ from init import dp,bot
 
 # фильтр сообщений
 def is_bot_active():
-    file_path = os.path.join('data', 'is_active.txt')
+    file_path = os.path.join('switch', 'is_active.txt')
     with open(file_path, "r") as file:
         content = file.read()
         return content != '1'

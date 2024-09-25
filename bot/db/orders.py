@@ -69,7 +69,6 @@ OrderTable: sa.Table = sa.Table(
     sa.Column('referrer', sa.BigInteger),
     sa.Column('user_key_id', sa.Integer),
     sa.Column('promo_used_id', sa.Integer),
-    sa.Column('referrer_id', sa.BigInteger),
     sa.Column('add_ref_points', sa.Integer, default=0),
     sa.Column('add_cashback', sa.Integer, default=0),
 )

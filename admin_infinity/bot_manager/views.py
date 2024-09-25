@@ -254,8 +254,8 @@ def switch_view(request):
     if not request.user.is_authenticated:
         return redirect('login')
     else:
-        file_path = os.path.join('home', 'bot', 'data', 'is_active.txt')
-        # file_path = os.path.join('is_active.txt')
+        # file_path = os.path.join('home', 'bot', 'data', 'is_active.txt')
+        file_path = os.path.join('switch', 'is_active.txt')
         with open(file_path, "r") as file:
             position = file.read()
         if request.method == 'POST':

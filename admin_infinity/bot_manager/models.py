@@ -28,16 +28,16 @@ class User(models.Model):
     first_visit = models.DateTimeField('Дата первого визита')
     last_visit = models.DateTimeField('Дата последнего визита')
     referrer = models.BigIntegerField('Реферер', null=True, blank=True)
-    referral_points = models.IntegerField('Реф. баллы', default=0)
-    cashback = models.IntegerField('Кешбек', default=0)
-    custom_referral_lvl_id = models.IntegerField('Уровень рефералки', null=True, blank=True)
-    # custom_referral_lvl = models.ForeignKey(
-    #     CashbackLevel,
-    #     on_delete=models.SET_NULL,
-    #     null=True,
-    #     blank=True,
-    #     verbose_name='Уровень Рефферала',
-    # )
+    referral_points = models.IntegerField('Реф. баллы', default=0, null=True, blank=True)
+    cashback = models.IntegerField('Кешбек', default=0, null=True, blank=True)
+    # custom_referral_lvl_id = models.IntegerField('Уровень рефералки', null=True, blank=True)
+    custom_referral_lvl = models.ForeignKey(
+        CashbackLevel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Уровень рефералки',
+    )
     ban = models.BooleanField('Забанить', default=False)
 
     objects: models.Manager = models.Manager()
@@ -61,6 +61,7 @@ class Order(models.Model):
     status = models.CharField('Статус', max_length=255, null=True, blank=True)
     coin = models.CharField('Монета', max_length=255, null=True, blank=True)
     pay_method = models.CharField('Способ оплаты', max_length=255, null=True, blank=True)
+    card = models.CharField('Карта', max_length=255, null=True, blank=True)
     coin_sum = models.FloatField('Сумма к получению', null=True, blank=True)
     wallet = models.CharField('Кошелёк', max_length=255, null=True, blank=True)
     promo = models.CharField('Промокод', max_length=255, null=True, blank=True)
@@ -69,14 +70,17 @@ class Order(models.Model):
     percent = models.FloatField('Наценка', null=True, blank=True)
     amount = models.IntegerField('Сумма', null=True, blank=True)
     total_amount = models.IntegerField('Итог к оплате', null=True, blank=True)
-    used_points = models.IntegerField('Использовано балов', default=0)
+    used_points = models.IntegerField('Исп. реф. баллов', default=0)
+    used_cashback = models.IntegerField('Исп. кешбека', default=0)
     message_id = models.IntegerField('Сообщение', null=True, blank=True)
     hash = models.CharField('Хеш', max_length=255, null=True, blank=True)
     commission = models.IntegerField('Комиссия', default=0)
     cashback = models.IntegerField('Кешбек', default=0)
     profit = models.FloatField('Прибыль', null=True, blank=True)
-    referrer = models.BigIntegerField('ID реферера', null=True, blank=True)
+    referrer = models.BigIntegerField('ID реферрера', null=True, blank=True)
     promo_used_id = models.IntegerField('ID промокода', null=True, blank=True)
+    add_ref_points = models.IntegerField('Начислено балов', null=True, blank=True)
+    add_cashback = models.IntegerField('Начислено кешбека', null=True, blank=True)
     user_key = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='orders')
 
     objects: models.Manager = models.Manager()
