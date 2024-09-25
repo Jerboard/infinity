@@ -13,7 +13,7 @@ import traceback
 import os
 import asyncio
 import re
-import redis
+
 
 from config import Config
 
@@ -33,7 +33,7 @@ bot = Bot(Config.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 scheduler = AsyncIOScheduler(timezone=Config.tz)
 ENGINE = create_async_engine(url=Config.db_url)
 
-redis_client = redis.Redis(host=os.getenv('REDIS_HOST'), port=int(os.getenv('REDIS_PORT')), db=0)
+# redis_client = aioredis.Redis(host=os.getenv('REDIS_HOST'), port=int(os.getenv('REDIS_PORT')), db=0)
 
 
 async def set_main_menu():
@@ -60,7 +60,6 @@ def log_error(message, with_traceback: bool = True):
         ex_traceback = traceback.format_exc()
         tb = ''
         msg = ''
-        # start_row = '  File'
         start_row = '  File "/app'
         tb_split = ex_traceback.split('\n')
         for row in tb_split:

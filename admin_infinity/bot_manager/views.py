@@ -53,25 +53,25 @@ def logout_view(request):
 def new_orders_view(request):
     if not request.user.is_authenticated:
         return redirect('login')
+
+    if request.method == 'POST':
+        # вносим изменения в заказ
+        ut.proc_order(request.POST)
+
+        return redirect('new_orders')
     else:
-        if request.method == 'POST':
-            # вносим изменения в заказ
-            ut.proc_order(request.POST)
+        orders = Order.objects.filter(status='new')
+        cashback_orders = CashbackOrder.objects.filter(status='new')
 
-            return redirect('new_orders')
-        else:
-            orders = Order.objects.filter(status='new')
-            cashback_orders = CashbackOrder.objects.filter(status='new')
-
-            context = {
-                'pages': page_list,
-                'this_page': page_list[0]['name'],
-                'orders': orders,
-                'count_new_orders': len(orders),
-                'cashback_orders': cashback_orders,
-                'count_cashback': len(cashback_orders)
-            }
-            return render(request, 'new_orders.html', context)
+        context = {
+            'pages': page_list,
+            'this_page': page_list[0]['name'],
+            'orders': orders,
+            'count_new_orders': len(orders),
+            'cashback_orders': cashback_orders,
+            'count_cashback': len(cashback_orders)
+        }
+        return render(request, 'new_orders.html', context)
 
 
 # закрытые заказы
@@ -175,7 +175,6 @@ def wallets_and_pay_methods_view(request):
                 pay_method.card = ''
                 pay_method.is_active = 0
                 pay_method.save()
-
 
             return redirect('pay_setting')
 

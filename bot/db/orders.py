@@ -36,6 +36,8 @@ class OrderRow(t.Protocol):
     promo_used_id: int
     user_key_id: str
     referrer_id: int
+    add_ref_points: int
+    add_cashback: int
 
 
 OrderTable: sa.Table = sa.Table(
@@ -63,11 +65,13 @@ OrderTable: sa.Table = sa.Table(
     sa.Column('hash', sa.String(255)),
     sa.Column('commission', sa.Integer),
     sa.Column('cashback', sa.Integer),
-    sa.Column('profit', sa.Float()),
+    sa.Column('profit', sa.Float(), default=0),
     sa.Column('referrer', sa.BigInteger),
     sa.Column('user_key_id', sa.Integer),
     sa.Column('promo_used_id', sa.Integer),
     sa.Column('referrer_id', sa.BigInteger),
+    sa.Column('add_ref_points', sa.Integer, default=0),
+    sa.Column('add_cashback', sa.Integer, default=0),
 )
 
 
@@ -191,11 +195,26 @@ async def get_order(order_id: int) -> OrderRow:
 
 
 # обновляет заявку
-async def update_orders(order_id: int, status: str = None) -> None:
+async def update_order(
+        order_id: int,
+        profit: float = None,
+        status: int = None,
+        add_ref_points: int = None,
+        add_cashback: int = None,
+) -> None:
     query = OrderTable.update().where(OrderTable.c.id == order_id)
 
     if status:
         query = query.values(status=status)
+
+    if profit:
+        query = query.values(profit=profit)
+
+    if add_ref_points:
+        query = query.values(add_ref_points=add_ref_points)
+
+    if status:
+        query = query.values(add_cashback=add_cashback)
 
     async with begin_connection() as conn:
         await conn.execute(query)

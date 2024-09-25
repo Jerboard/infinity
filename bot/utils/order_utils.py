@@ -3,20 +3,53 @@ from datetime import datetime, timedelta
 import os
 
 import db
-from init import bot, log_error, redis_client, CHANNEL
+from init import bot, log_error
+from config import Config
 from .msg_utils import send_msg
 from enums import OrderStatus, Key
 
 
-# Создаём объект подписки
-pubsub = redis_client.pubsub()
+# Завершает заявку
+async def done_order(order: db.OrderRow):
+    currency = await db.get_currency(currency_code=order.coin)
+    user = await db.get_user_info(order.user_id)
 
-# Подписываемся на канал 'my_channel'
-pubsub.subscribe(CHANNEL)
+    # прибыль
+    buy_price = order.coin_sum * currency.buy_price
+    profit = (order.total_amount - order.commission) - buy_price
 
-# Обрабатываем полученные сообщения
-for message in pubsub.listen():
-    print(f"Получено сообщение: {message['data'].decode('utf-8')}")
+    await db.update_order(order_id=order.id, status=OrderStatus.SUC.value, profit=profit)
+
+    msg_data = await db.get_msg(Key.SUC_ORDER.value)
+    text = msg_data.text.format(order_id=order.id, order_hash=order.hash)
+    await send_msg(
+        msg_data=msg_data,
+        chat_id=order.user_id,
+        text=text
+    )
+
+    # начисляем кешбек
+    if profit > 0:
+        info = await db.get_info()
+        cashback = round(profit * (info.cashback / 100))
+        await db.update_user_info(user_id=order.user_id, add_cashback=cashback)
+        await db.update_order(order_id=order.id, add_cashback=cashback)
+
+    # реферальные баллы
+    if user.referrer and profit > 0:
+        referrer = await db.get_user_info(user_id=user.referrer)
+
+        if referrer.custom_referral_lvl_id:
+            lvl = await db.get_referral_lvl(lvl_id=referrer.custom_referral_lvl_id)
+
+        else:
+            referrals = await db.get_users(referrer=user.referrer)
+            lvl = await db.get_referral_lvl(count_user=len(referrals))
+
+        if lvl:
+            ref_points = round(profit * (lvl.percent / 100))
+            await db.update_user_info(user_id=referrer.user_id, add_point=ref_points)
+            await db.update_order(order_id=order.id, add_ref_points=ref_points)
 
 
 # Отменяет заявку
@@ -27,15 +60,10 @@ async def del_order(order: db.OrderRow):
     if order.promo:
         await db.update_used_promo(promo_id=order.promo_used_id, used=False)
 
-    await db.update_orders(order_id=order.id, status=OrderStatus.FAIL.value)
+    await db.update_order(order_id=order.id, status=OrderStatus.FAIL.value)
 
     msg_data = await db.get_msg(Key.FAIL_ORDER.value)
     text = msg_data.text.format(order_id=order.id)
-
-    try:
-        await bot.delete_message(chat_id=order.user_id, message_id=order.message_id)
-    except Exception as ex:
-        pass
 
     await send_msg(
         msg_data=msg_data,
@@ -56,22 +84,9 @@ async def hand_orders():
     orders = await db.get_orders(for_done=True)
     for order in orders:
         if order.status == OrderStatus.PROC:
-            await db.update_orders(order_id=order.id, status=OrderStatus.SUC.value)
+            await done_order(order)
 
-            msg_data = await db.get_msg(Key.SUC_ORDER.value)
-            text = msg_data.text.format(
-                order_id=order.id,
-                order_hash=order.hash
-            )
-
-            # await bot.delete_message(chat_id=order.user_id, message_id=order.message_id)
-            await send_msg(
-                msg_data=msg_data,
-                chat_id=order.user_id,
-                text=text
-            )
-
-        else:
+        elif order.status == OrderStatus.CANCEL:
             await del_order(order)
 
 
@@ -82,19 +97,6 @@ async def hand_cashback_orders():
         try:
             if order.status == OrderStatus.PROC:
                 await db.update_cb_orders(order_id=order.id, status=OrderStatus.SUC.value)
-
-                text = f'Ваша заявка № {order.id} выполнена\n\n'
-
-                try:
-                    await bot.delete_message(chat_id=order.id, message_id=order.id)
-                except Exception as ex:
-                    pass
-
-                await send_msg(
-                    msg_key=Key.SUC_ORDER.value,
-                    chat_id=order.user_id,
-                    text=text
-                )
 
             elif order.status == OrderStatus.CANCEL:
                 await db.update_cb_orders(order_id=order.id, status=OrderStatus.FAIL.value)

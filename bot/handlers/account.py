@@ -16,10 +16,16 @@ from enums import CB, Key, UserStatus, Action, OrderStatus, Coin, MainButton
 
 
 async def start_acc_send(msg: Message):
-
     user = await db.get_user_info(msg.from_user.id)
     referrers = await db.get_users(referrer=msg.from_user.id)
     exchanges = await db.get_orders(user_id=msg.from_user.id, status=OrderStatus.SUC.value)
+
+    if user.custom_referral_lvl_id:
+        lvl = user.custom_referral_lvl_id
+
+    else:
+        ref_lvl = await db.get_referral_lvl(count_user=len(referrers))
+        lvl = ref_lvl.id or 1
 
     msg_data = await db.get_msg(Key.ACCOUNT.value)
     text = msg_data.text.format(
@@ -27,7 +33,7 @@ async def start_acc_send(msg: Message):
         count_ex=len(exchanges),
         sum_exchange=sum(exchange.total_amount for exchange in exchanges),
         count_ref=len(referrers),
-        ref_lvl=user.custom_referral_lvl_id,
+        ref_lvl=lvl,
         balance=user.referral_points + user.cashback,
         ref_link=f'{Config.bot_link}?start={msg.from_user.id}'
     )

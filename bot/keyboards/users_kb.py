@@ -78,16 +78,16 @@ def get_currency_list_kb(currencies: tuple[db.CurrencyRow]) -> InlineKeyboardMar
 def get_main_exchange_kb(
         pay_methods: tuple[db.PayMethodRow],
         total_amount: int,
-        promo_id: str = None
+        promo: db.UsedPromoRow = None
 ) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     for method in pay_methods:
         kb.button(text=f'{method.name} ({total_amount} РУБ)', callback_data=f'{CB.SEND_WALLET.value}:{method.id}')
 
-    if promo_id:
-        kb.button(text='ИСП, ПРОМОКОД', callback_data=CB.USE_PROMO.value)
+    if promo:
+        kb.button(text='ИСП. ПРОМОКОД', callback_data=CB.USE_PROMO.value)
 
-    kb.button(text=f'ИСП, БАЛАНС КОШЕЛЬКА', callback_data=CB.USE_CASHBACK.value)
+    kb.button(text=f'ИСП. БАЛАНС КОШЕЛЬКА', callback_data=CB.USE_CASHBACK.value)
     return kb.adjust(1).as_markup()
 
 

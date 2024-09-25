@@ -107,6 +107,8 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
     else:
         edit_msg = data['message_id']
 
+    promo = await db.get_used_promo(user_id=data['user_id'])  # if not data.get('used_promo') else None
+
     sent = await ut.send_msg(
         msg_data=msg_data,
         chat_id=data['user_id'],
@@ -115,7 +117,7 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
         keyboard=kb.get_main_exchange_kb(
             pay_methods=pay_methods,
             total_amount=data['total_amount'],
-            promo_id=data.get('promo_id')
+            promo=promo
         )
     )
     await state.update_data(data={'message_id': sent.message_id})

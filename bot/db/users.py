@@ -94,10 +94,10 @@ async def update_user_info(
         query = query.values(balance=UserTable.c.balance + add_balance)
 
     if add_point:
-        query = query.values(balance=UserTable.c.referral_points + add_point)
+        query = query.values(referral_points=UserTable.c.referral_points + add_point)
 
     if add_cashback:
-        query = query.values(balance=UserTable.c.cashback + add_cashback)
+        query = query.values(cashback=UserTable.c.cashback + add_cashback)
 
     async with begin_connection() as conn:
         await conn.execute(query)

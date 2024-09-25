@@ -79,7 +79,7 @@ async def send_sum(cb: CallbackQuery, state: FSMContext):
 
     if currency_id_str != 'back':
         currency_id = int(currency_id_str)
-        currency = await db.get_currency(currency_id)
+        currency = await db.get_currency(currency_id=currency_id)
         currency_name = f'{currency.name} ({currency.code})'
         await state.update_data(data={
             'user_id': cb.from_user.id,
@@ -90,7 +90,7 @@ async def send_sum(cb: CallbackQuery, state: FSMContext):
 
     else:
         data = await state.get_data()
-        currency = await db.get_currency(data['currency_id'])
+        currency = await db.get_currency(currency_id=data['currency_id'])
         currency_name = data['currency_name']
 
     min_sum = currency.min if currency.min != 0 else 'Без ограничения'
@@ -127,7 +127,7 @@ async def sum_exchange(msg: Message, state: FSMContext):
         data = await state.get_data()
         # await state.set_state('exchange_send_sum')
 
-        currency = await db.get_currency(data['currency_id'])
+        currency = await db.get_currency(currency_id=data['currency_id'])
 
         # зачем тут +1
         currency_rate = round(currency.rate * ((currency.ratio / 100) + 1))
@@ -198,13 +198,13 @@ async def sum_exchange(msg: Message, state: FSMContext):
                 'currency_code': currency.code,
                 'pay_string': f'К ОПЛАТЕ {total_amount}Р',
             })
-            promo = await db.get_used_promo(user_id=msg.from_user.id)
-            if promo:
-                await state.update_data(data={
-                    'promo_id': promo.id,
-                    'promo_rate': promo.rate,
-                    'promo': promo.promo,
-                })
+
+            # if promo:
+            #     await state.update_data(data={
+            #         'promo_id': promo.id,
+            #         'promo_rate': promo.rate,
+            #         'promo': promo.promo,
+            #     })
 
             await ut.main_exchange(state, del_msg=True)
 
@@ -218,7 +218,8 @@ async def use_promo(cb: CallbackQuery, state: FSMContext):
         await cb.answer('ПРОМОКОД УЖЕ ПРИМЕНЕН', show_alert=True)
         return
 
-    rate = 1 - (data['promo_rate'] / 100)
+    promo = await db.get_used_promo(user_id=data['user_id'])
+    rate = 1 - (promo.rate / 100)
     total_amount = round(data['total_amount'] * rate)
 
     pay_string = f'<s>{data["pay_string"]}</s>\nК ОПЛАТЕ С УЧЕТОМ ПРОМОКОДА: {total_amount}р.'
@@ -227,6 +228,9 @@ async def use_promo(cb: CallbackQuery, state: FSMContext):
         'total_amount': total_amount,
         'pay_string': pay_string,
         'used_promo': True,
+        'promo_id': promo.id,
+        'promo_rate': promo.rate,
+        'promo': promo.promo,
     })
     await ut.main_exchange(state)
 
@@ -314,7 +318,7 @@ async def check_wallet(msg: Message, state: FSMContext):
 
     # списываем баллы
     use_points, use_cashback = 0, 0
-    if data.get('used_points'):
+    if data.get('used_balance'):
         if data['total_amount'] == 1:
             use_points = data['referral_points']
             use_cashback = data['used_balance'] - data['referral_points']
@@ -323,12 +327,18 @@ async def check_wallet(msg: Message, state: FSMContext):
             use_points = data['referral_points']
             use_cashback = data['cashback']
 
+        print(f'>>>{msg.from_user.id} {0 - use_points} {0 - use_cashback}')
         await db.update_user_info(
             user_id=msg.from_user.id,
             add_point=0 - use_points,
             add_cashback=0 - use_cashback
         )
+        print('minus balance')
 
+    for k, v in data.items():
+        print(f'{k}:{v}')
+
+    await state.clear()
     pay_method_info = await db.get_pay_method(data['pay_method_id'])
     order_id = await db.add_order(
         user_id=msg.from_user.id,
@@ -350,8 +360,6 @@ async def check_wallet(msg: Message, state: FSMContext):
         promo_used_id=data.get('promo_id', 0),
         commission=data['commission'],
     )
-
-    await state.update_data(data={'order_id': order_id})
 
     msg_data = await db.get_msg(Key.PAYMENT.value)
     text = msg_data.text.format(
@@ -382,7 +390,7 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
         await ut.del_order(order)
 
     else:
-        await db.update_orders(order_id=order_id, status=OrderStatus.NEW.value)
+        await db.update_order(order_id=order_id, status=OrderStatus.NEW.value)
         order = await db.get_order(order_id)
 
         msg_data = await db.get_msg(Key.PAYMENT_CONF.value)

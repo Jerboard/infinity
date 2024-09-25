@@ -8,3 +8,4 @@ from .checked_wallets import *
 from .cd_levels import *
 from .promo_new import *
 from .used_promo import *
+from .info import *

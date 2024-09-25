@@ -43,8 +43,13 @@ CurrencyTable: sa.Table = sa.Table(
 
 
 # возвращает валюту по id
-async def get_currency(currency_id: int) -> CurrencyRow:
-    query = CurrencyTable.select().where(CurrencyTable.c.id == currency_id)
+async def get_currency(currency_id: int = None, currency_code: str = None) -> CurrencyRow:
+    query = CurrencyTable.select()
+
+    if currency_id:
+        query = query.where(CurrencyTable.c.id == currency_id)
+    if currency_code:
+        query = query.where(CurrencyTable.c.code == currency_code)
 
     async with begin_connection() as conn:
         result = await conn.execute(query)
