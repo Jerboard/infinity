@@ -260,3 +260,21 @@ class Msg(models.Model):
         verbose_name_plural = 'Сообщения'
         db_table = 'messages'
         managed = False
+
+
+# Тексты и фото
+class Info(models.Model):
+    id = models.AutoField(primary_key=True)
+    update_at = models.DateTimeField('Последнее обновление', auto_now=True)
+    cashback = models.IntegerField('Кешбек')
+
+    objects: models.Manager = models.Manager()
+
+    def __str__(self):
+        return f'{self.id}'
+
+    class Meta:
+        verbose_name = 'Инфо'
+        verbose_name_plural = 'Инфо'
+        db_table = 'info'
+        managed = False

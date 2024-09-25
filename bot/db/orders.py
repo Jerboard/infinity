@@ -38,6 +38,7 @@ class OrderRow(t.Protocol):
     referrer_id: int
     add_ref_points: int
     add_cashback: int
+    row: int
 
 
 OrderTable: sa.Table = sa.Table(
@@ -71,6 +72,7 @@ OrderTable: sa.Table = sa.Table(
     sa.Column('promo_used_id', sa.Integer),
     sa.Column('add_ref_points', sa.Integer, default=0),
     sa.Column('add_cashback', sa.Integer, default=0),
+    sa.Column('row', sa.Integer),
 )
 
 
@@ -200,6 +202,7 @@ async def update_order(
         status: int = None,
         add_ref_points: int = None,
         add_cashback: int = None,
+        row: int = None,
 ) -> None:
     query = OrderTable.update().where(OrderTable.c.id == order_id)
 
@@ -214,6 +217,9 @@ async def update_order(
 
     if status:
         query = query.values(add_cashback=add_cashback)
+
+    if row:
+        query = query.values(row=row)
 
     async with begin_connection() as conn:
         await conn.execute(query)

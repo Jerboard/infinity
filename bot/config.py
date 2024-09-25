@@ -15,6 +15,7 @@ class Config:
         bot_id = 7377609086
         antispam_chat = 5772948261
         feedback_chat = -1002390989476
+        get_table_id = os.getenv ("TABLE_TEST")
     else:
         token = os.getenv ("TOKEN")
         access_chat = int(os.getenv('ACCESS_CHAT'))
@@ -22,7 +23,9 @@ class Config:
         bot_id = 7377609086
         antispam_chat = 575386391
         feedback_chat = -1001277203966
+        get_table_id = os.getenv ("TABLE_TEST")
 
+    file_google_path = os.path.join('data', 'sheet_key.json')
     db_host = os.getenv('DB_HOST')
     db_port = os.getenv('DB_PORT')
     db_name = os.getenv('POSTGRES_DB')

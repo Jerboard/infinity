@@ -327,16 +327,14 @@ async def check_wallet(msg: Message, state: FSMContext):
             use_points = data['referral_points']
             use_cashback = data['cashback']
 
-        print(f'>>>{msg.from_user.id} {0 - use_points} {0 - use_cashback}')
         await db.update_user_info(
             user_id=msg.from_user.id,
             add_point=0 - use_points,
             add_cashback=0 - use_cashback
         )
-        print('minus balance')
 
-    for k, v in data.items():
-        print(f'{k}:{v}')
+    # for k, v in data.items():
+    #     print(f'{k}:{v}')
 
     await state.clear()
     pay_method_info = await db.get_pay_method(data['pay_method_id'])
@@ -378,6 +376,11 @@ async def check_wallet(msg: Message, state: FSMContext):
     )
     await state.clear()
 
+    # добавляем в таблицу
+    order = await db.get_order(order_id)
+    row = ut.add_order_row(order)
+    await db.update_order(order_id=order_id, row=row)
+
 
 # ожидание оплаты
 @dp.callback_query(lambda cb: cb.data.startswith(CB.PAYMENT_CONF.value))
@@ -405,6 +408,8 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
             edit_msg=cb.message.message_id,
             text=text
         )
+
+        ut.update_status_ggl(status=OrderStatus.NEW.value, row=order.row)
 
         username = f'@{cb.from_user.username}' if cb.from_user.username is not None else ''
         text = f'<b>Новая заявка:</b>\n' \

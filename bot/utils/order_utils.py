@@ -6,6 +6,7 @@ import db
 from init import bot, log_error
 from config import Config
 from .msg_utils import send_msg
+from .google_utils import update_status_ggl
 from enums import OrderStatus, Key
 
 
@@ -32,8 +33,9 @@ async def done_order(order: db.OrderRow):
     if profit > 0:
         info = await db.get_info()
         cashback = round(profit * (info.cashback / 100))
-        await db.update_user_info(user_id=order.user_id, add_cashback=cashback)
-        await db.update_order(order_id=order.id, add_cashback=cashback)
+        if cashback > 0:
+            await db.update_user_info(user_id=order.user_id, add_cashback=cashback)
+            await db.update_order(order_id=order.id, add_cashback=cashback)
 
     # реферальные баллы
     if user.referrer and profit > 0:
@@ -50,6 +52,9 @@ async def done_order(order: db.OrderRow):
             ref_points = round(profit * (lvl.percent / 100))
             await db.update_user_info(user_id=referrer.user_id, add_point=ref_points)
             await db.update_order(order_id=order.id, add_ref_points=ref_points)
+
+#     обновить статус в гуглк
+    update_status_ggl(status=OrderStatus.SUC.value, row=order.row)
 
 
 # Отменяет заявку
@@ -70,6 +75,8 @@ async def del_order(order: db.OrderRow):
         chat_id=order.user_id,
         text=text
     )
+    #     обновить статус в гугле
+    update_status_ggl(status=OrderStatus.FAIL.value, row=order.row)
 
 
 # Удаляет просроченые заявки

@@ -9,3 +9,4 @@ coinaddrvalidator
 web3
 httpx
 redis
+gspread

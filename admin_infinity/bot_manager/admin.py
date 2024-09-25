@@ -6,7 +6,7 @@ from django.utils.html import mark_safe
 
 from admin_infinity.settings import DEBUG
 from .models import Msg
-from .models import User, Order, CashbackLevel, Currency, PayMethod, Promo, CashbackOrder
+from .models import User, Order, CashbackLevel, Currency, PayMethod, Promo, CashbackOrder, Info
 
 
 @admin.register(User)
@@ -126,3 +126,10 @@ class ViewAdminMsg(admin.ModelAdmin):
 class ViewAdminMsg(admin.ModelAdmin):
     list_display = ['promo', 'rate', 'created_at']
     readonly_fields = ['created_at']
+
+
+# способы оплаты
+@admin.register(Info)
+class ViewAdminMsg(admin.ModelAdmin):
+    list_display = ['cashback']
+    readonly_fields = ['update_at']
