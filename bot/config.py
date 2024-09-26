@@ -8,8 +8,7 @@ DEBUG = bool(int(os.getenv('DEBUG')))
 
 class Config:
     if DEBUG:
-        # token = os.getenv ("TOKEN_TEST")
-        token = '7377609086:AAGDLKGKNTeruBfGNYOr4O-FO1kt7-9gtYI'
+        token = os.getenv ("TOKEN_TEST")
         access_chat = -4544544680
         bot_link = 'https://t.me/tushchkan_test_4_bot'
         bot_id = 7377609086
@@ -17,13 +16,21 @@ class Config:
         feedback_chat = -1002390989476
         get_table_id = os.getenv ("TABLE_TEST")
     else:
-        token = os.getenv ("TOKEN")
-        access_chat = int(os.getenv('ACCESS_CHAT'))
+        token = os.getenv("TOKEN_TEST")
+        access_chat = -4544544680
         bot_link = 'https://t.me/tushchkan_test_4_bot'
         bot_id = 7377609086
-        antispam_chat = 575386391
-        feedback_chat = -1001277203966
-        get_table_id = os.getenv ("TABLE_TEST")
+        antispam_chat = 5772948261
+        feedback_chat = -1002390989476
+        get_table_id = os.getenv("TABLE_TEST")
+
+        # token = os.getenv ("TOKEN")
+        # access_chat = int(os.getenv('ACCESS_CHAT'))
+        # bot_link = 'https://t.me/tushchkan_test_4_bot'
+        # bot_id = 7377609086
+        # antispam_chat = 575386391
+        # feedback_chat = -1001277203966
+        # get_table_id = os.getenv ("TABLE_TEST")
 
     file_google_path = os.path.join('data', 'sheet_key.json')
     db_host = os.getenv('DB_HOST')

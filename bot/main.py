@@ -17,7 +17,7 @@ async def main() -> None:
     await set_main_menu()
     if not Config.debug:
         await scheduler_start_async()
-    await scheduler_start_async()
+    # await scheduler_start_async()
 
     await bot.delete_webhook (drop_pending_updates=True)
     await dp.start_polling(bot)
