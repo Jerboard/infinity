@@ -56,11 +56,6 @@ services:
     env_file:
       - .env
 
-#  redis:
-#    image: redis:latest
-#    container_name: redis_infinity
-#    ports:
-#      - "6379:6379"
 
   nginx:
     image: nginx:latest

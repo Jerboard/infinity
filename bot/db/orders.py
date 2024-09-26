@@ -68,7 +68,7 @@ OrderTable: sa.Table = sa.Table(
     sa.Column('cashback', sa.Integer),
     sa.Column('profit', sa.Float(), default=0),
     sa.Column('referrer', sa.BigInteger),
-    sa.Column('user_key_id', sa.Integer),
+    # sa.Column('user_key_id', sa.Integer),
     sa.Column('promo_used_id', sa.Integer),
     sa.Column('add_ref_points', sa.Integer, default=0),
     sa.Column('add_cashback', sa.Integer, default=0),
@@ -174,7 +174,7 @@ async def get_orders(
         query = query.where(OrderTable.c.amount == amount)
 
     if referrer_id:
-        query = query.where(OrderTable.c.referrer_id == referrer_id)
+        query = query.where(OrderTable.c.referrer == referrer_id)
 
     if desc_order:
         query = query.order_by(sa.desc(OrderTable.c.created_at))
@@ -215,7 +215,7 @@ async def update_order(
     if add_ref_points:
         query = query.values(add_ref_points=add_ref_points)
 
-    if status:
+    if add_cashback:
         query = query.values(add_cashback=add_cashback)
 
     if row:

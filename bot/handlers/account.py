@@ -15,10 +15,11 @@ import utils as ut
 from enums import CB, Key, UserStatus, Action, OrderStatus, Coin, MainButton
 
 
-async def start_acc_send(msg: Message):
-    user = await db.get_user_info(msg.from_user.id)
-    referrers = await db.get_users(referrer=msg.from_user.id)
-    exchanges = await db.get_orders(user_id=msg.from_user.id, status=OrderStatus.SUC.value)
+async def start_acc_send(msg: Message, from_user_id: int = None):
+    user_id = from_user_id or msg.from_user.id
+    user = await db.get_user_info(user_id)
+    referrers = await db.get_users(referrer=user_id)
+    exchanges = await db.get_orders(user_id=user_id, status=OrderStatus.SUC.value)
 
     if user.custom_referral_lvl_id:
         lvl = user.custom_referral_lvl_id
@@ -29,7 +30,7 @@ async def start_acc_send(msg: Message):
 
     msg_data = await db.get_msg(Key.ACCOUNT.value)
     text = msg_data.text.format(
-        user_id=msg.from_user.id,
+        user_id=user_id,
         count_ex=len(exchanges),
         sum_exchange=sum(exchange.total_amount for exchange in exchanges),
         count_ref=len(referrers),
@@ -51,14 +52,13 @@ async def start_acc_send(msg: Message):
 @dp.callback_query(lambda cb: cb.data.startswith(CB.ACCOUNT.value))
 async def start_account(cb: CallbackQuery, state: FSMContext):
     await state.clear()
-    await start_acc_send(cb.message)
+    await start_acc_send(cb.message, from_user_id=cb.from_user.id)
 
 
 @dp.message(lambda msg: msg.text == MainButton.ACCOUNT.value)
 async def start_account(msg: Message, state: FSMContext):
     await state.clear()
     await start_acc_send(msg)
-
 
 
 # Промокод
@@ -90,7 +90,6 @@ async def acc_promo(msg: Message, state: FSMContext):
         old_promo = await db.get_used_promo(user_id=msg.from_user.id)
 
         if old_promo:
-            print(f'old_promo: {old_promo}')
             # old_promo_info = await db.get_promo(promo_id=old_promo.id)
             await state.update_data(data={
                 'old_promo_id': old_promo.id,
@@ -167,7 +166,7 @@ async def partner(cb: CallbackQuery, state: FSMContext):
         sum_ref_exchange=round(sum(exchange.profit for exchange in exchanges) * 0.01),
         count_ref=len(referrers),
         ref_lvl=user.custom_referral_lvl_id,
-        cashback=user.cashback,
+        cashback=user.referral_points,
         ref_link=f'{Config.bot_link}?start={cb.from_user.id}'
     )
 
@@ -180,11 +179,11 @@ async def partner(cb: CallbackQuery, state: FSMContext):
     )
 
 
-# Кнопка партнёрская программа
+# Кнопка кешбек
 @dp.callback_query(lambda cb: cb.data.startswith(CB.CASHBACK.value))
 async def partner(cb: CallbackQuery, state: FSMContext):
     user = await db.get_user_info(cb.from_user.id)
-    referrers = await db.get_orders(referrer_id=cb.from_user.id, status=OrderStatus.SUC.value)
+    referrers = await db.get_orders(user_id=cb.from_user.id, status=OrderStatus.SUC.value)
 
     msg_data = await db.get_msg(Key.CASHBACK.value)
     text = msg_data.text.format(
@@ -208,26 +207,31 @@ async def partner(cb: CallbackQuery, state: FSMContext):
     balance = user.cashback + user.referral_points
 
     await state.set_state(UserStatus.TAKE_CASHBACK)
-    await state.update_data(data={'balance': balance, 'cashback': user.cashback, 'points': user.referral_points})
 
     msg_data = await db.get_msg(Key.TAKE_BONUS.value)
     text = msg_data.text.format(
         balance=balance
     )
 
-    await ut.send_msg(
+    sent = await ut.send_msg(
         msg_data=msg_data,
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         text=text,
         keyboard=kb.get_back_kb(CB.ACCOUNT.value)
     )
+    await state.update_data(data={
+        'balance': balance,
+        'cashback': user.cashback,
+        'points': user.referral_points,
+        'message_id': sent.message_id,
+    })
 
 
 # приём кошелька
 @dp.message(StateFilter(UserStatus.TAKE_CASHBACK))
 async def take_cashback_step_2(msg: Message, state: FSMContext):
-    await msg.delete()
+    # await msg.delete()
     data = await state.get_data()
     if data['balance'] < 1000:
         sent = await msg.answer('❌Ваш баланс меньше 1000р.')
@@ -253,12 +257,13 @@ async def take_cashback_step_2(msg: Message, state: FSMContext):
         wallet=msg.text
     )
 
+    await bot.delete_message(chat_id=msg.chat.id, message_id=data['message_id'])
     await ut.send_msg(
         msg_data=msg_data,
         chat_id=msg.chat.id,
-        edit_msg=msg.message_id,
+        # edit_msg=msg.message_id,
         text=text,
-        keyboard=kb.get_back_kb(CB.TAKE_BONUS.value)
+        keyboard=kb.get_conf_take_bonus_kb()
     )
 
 
@@ -286,7 +291,7 @@ async def take_bonus_end(cb: CallbackQuery, state: FSMContext):
 
     msg_data = await db.get_msg(Key.TAKE_BONUS_END.value)
     text = msg_data.text.format(
-        balance=data["balance"],
+        balance=data["cashback"],
         cashback_id=cashback_id
     )
 
@@ -300,10 +305,15 @@ async def take_bonus_end(cb: CallbackQuery, state: FSMContext):
 
     text = f'<b>Заявка на вывод кешбека:</b>\n' \
            f'<b>От:</b> {cb.from_user.full_name}\n' \
-           f'<b>Сумма:</b> {data["balance"]} руб.\n' \
+           f'<b>Сумма:</b> {data["cashback"]} руб.\n' \
            f'<b>Кошелёк:</b> {data["wallet"]}'
 
     await bot.send_message(Config.access_chat, text)
+
+    # добавляем в таблицу
+    order_cb = await db.get_cb_order(cashback_id)
+    row = ut.add_cd_order_row(order_cb)
+    await db.update_cb_orders(order_id=cashback_id, row=row)
 
 
 # история обменов

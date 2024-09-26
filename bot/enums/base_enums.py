@@ -61,6 +61,14 @@ class OrderStatus(str, Enum):
     FAIL = 'failed'
 
 
+order_status_dict = {
+    OrderStatus.NOT_CONF.value: 'Ожидает оплаты',
+    OrderStatus.NEW.value: 'Оплачен',
+    OrderStatus.SUC.value: 'Завершён',
+    OrderStatus.FAIL.value: 'Отменён'
+}
+
+
 # статусы заказов
 class MainButton(str, Enum):
     EXCHANGE = 'КУПИТЬ'

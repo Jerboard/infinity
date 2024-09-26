@@ -172,7 +172,7 @@ async def sum_exchange(msg: Message, state: FSMContext):
                 pass
 
             sent = await ut.send_msg(
-                msg_key=Key.SUM_EXCHANGE.value,
+                msg_key=Key.SEND_SUM.value,
                 chat_id=msg.chat.id,
                 text=text,
             )
@@ -180,7 +180,7 @@ async def sum_exchange(msg: Message, state: FSMContext):
 
         else:
             user_data = await db.get_user_info(msg.from_user.id)
-            print(f'user_data:{user_data}')
+            # print(f'user_data:{user_data}')
             # balance = user_data.referral_points + user_data.cashback
 
             sum_coin = round(sum_coin, currency.round)
@@ -409,7 +409,7 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
             text=text
         )
 
-        ut.update_status_ggl(status=OrderStatus.NEW.value, row=order.row)
+        ut.add_order_row(order=order, row=order.row)
 
         username = f'@{cb.from_user.username}' if cb.from_user.username is not None else ''
         text = f'<b>Новая заявка:</b>\n' \

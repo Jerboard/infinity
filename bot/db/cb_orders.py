@@ -20,6 +20,7 @@ class OrderCBRow(t.Protocol):
     points: int
     cashback: int
     message_id: int
+    row: int
 
 
 OrderCBTable: sa.Table = sa.Table(
@@ -29,13 +30,14 @@ OrderCBTable: sa.Table = sa.Table(
     sa.Column('created_at', sa.DateTime()),
     sa.Column('updated_at', sa.DateTime()),
     sa.Column('user_id', sa.BigInteger),
-    sa.Column('status', sa.String(255)),
+    sa.Column('status', sa.String(255), default=OrderStatus.NEW.value),
     sa.Column('coin', sa.String(255)),
     sa.Column('wallet', sa.String(255)),
     sa.Column('sum', sa.Integer),
     sa.Column('points', sa.Integer),
     sa.Column('cashback', sa.Integer),
-    sa.Column('message_id', sa.Integer)
+    sa.Column('message_id', sa.Integer),
+    sa.Column('row', sa.Integer),
 )
 
 
@@ -53,11 +55,10 @@ async def add_cb_order(
     query = OrderCBTable.insert().values(
         created_at=now,
         updated_at=now,
-        status=OrderStatus.NOT_CONF.value,
         user_id=user_id,
         coin=coin,
         wallet=wallet,
-        sum=amount,
+        sum=balance,
         points=points,
         cashback=cashback,
         message_id=message_id,
@@ -108,12 +109,25 @@ async def get_cb_orders(
     return result.all()
 
 
+# возвращает заявку
+async def get_cb_order(order_id: int) -> OrderCBRow:
+    query = OrderCBTable.select().where(OrderCBTable.c.id == order_id)
+
+    async with begin_connection() as conn:
+        result = await conn.execute(query)
+
+    return result.first()
+
+
 # обновляет заявку
-async def update_cb_orders(order_id: int, status: str = None) -> None:
+async def update_cb_orders(order_id: int, status: str = None, row: int = None) -> None:
     query = OrderCBTable.update().where(OrderCBTable.c.id == order_id)
 
     if status:
         query = query.values(status=status)
+
+    if row:
+        query = query.values(row=row)
 
     async with begin_connection() as conn:
         await conn.execute(query)

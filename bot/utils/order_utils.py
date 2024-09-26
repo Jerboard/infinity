@@ -6,7 +6,7 @@ import db
 from init import bot, log_error
 from config import Config
 from .msg_utils import send_msg
-from .google_utils import update_status_ggl
+from .google_utils import add_order_row, add_cd_order_row
 from enums import OrderStatus, Key
 
 
@@ -34,6 +34,7 @@ async def done_order(order: db.OrderRow):
         info = await db.get_info()
         cashback = round(profit * (info.cashback / 100))
         if cashback > 0:
+            # print(f'>>> cashback: {cashback} profit: {profit}')
             await db.update_user_info(user_id=order.user_id, add_cashback=cashback)
             await db.update_order(order_id=order.id, add_cashback=cashback)
 
@@ -53,8 +54,9 @@ async def done_order(order: db.OrderRow):
             await db.update_user_info(user_id=referrer.user_id, add_point=ref_points)
             await db.update_order(order_id=order.id, add_ref_points=ref_points)
 
-#     обновить статус в гуглк
-    update_status_ggl(status=OrderStatus.SUC.value, row=order.row)
+#     обновить статус в гугл
+    order = await db.get_order(order.id)
+    add_order_row(order=order, row=order.row)
 
 
 # Отменяет заявку
@@ -76,7 +78,8 @@ async def del_order(order: db.OrderRow):
         text=text
     )
     #     обновить статус в гугле
-    update_status_ggl(status=OrderStatus.FAIL.value, row=order.row)
+    order = await db.get_order(order.id)
+    add_order_row(order=order, row=order.row)
 
 
 # Удаляет просроченые заявки
@@ -105,22 +108,34 @@ async def hand_cashback_orders():
             if order.status == OrderStatus.PROC:
                 await db.update_cb_orders(order_id=order.id, status=OrderStatus.SUC.value)
 
+                msg_data = await db.get_msg(Key.SUC_ORDER.value)
+                text = 'Бонусы отправлены'
+                await send_msg(
+                    msg_data=msg_data,
+                    chat_id=order.user_id,
+                    text=text
+                )
+
             elif order.status == OrderStatus.CANCEL:
                 await db.update_cb_orders(order_id=order.id, status=OrderStatus.FAIL.value)
                 await db.update_user_info(user_id=order.user_id, add_balance=order.sum)
 
                 text = f'Ваш заказ № {order.id} ОТМЕНЕН.\n'
 
-                try:
-                    await bot.delete_message(chat_id=order.user_id, message_id=order.message_id)
-                except Exception as ex:
-                    pass
+                # try:
+                #     await bot.delete_message(chat_id=order.user_id, message_id=order.message_id)
+                # except Exception as ex:
+                #     pass
 
                 await send_msg(
                     msg_key=Key.FAIL_ORDER.value,
                     chat_id=order.user_id,
                     text=text
                 )
+
+            # добавляем в таблицу
+            order_cb = await db.get_cb_order(order.id)
+            add_cd_order_row(order_cb, row=order_cb.row)
 
         except Exception as ex:
             log_error(f'Не удалось обработать заявку\n{ex}', with_traceback=False)

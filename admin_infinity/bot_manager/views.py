@@ -199,7 +199,6 @@ def promo_view(request):
     else:
         if request.method == 'POST':
             data = request.POST
-            print(data)
             if data['type'] == 'codes':
                 promo = Promo.objects.get(id=data['id'])
                 if data['button'] == 'del':

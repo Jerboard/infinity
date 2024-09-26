@@ -10,3 +10,4 @@
 nginx/logs
 /data/
 /admin_infinity/static/admin/
+/bot/data/sheet_key.json
