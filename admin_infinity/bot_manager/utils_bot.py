@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import os
-import logging
 
 from admin_infinity.settings import redis_client, CHANNEL
 from .export_file import export

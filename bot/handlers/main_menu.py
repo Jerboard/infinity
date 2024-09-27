@@ -5,7 +5,7 @@ from aiogram.filters.command import CommandStart
 import db
 import keyboards as kb
 import utils as ut
-from init import dp, bot
+from init import dp, bot, log_error
 from data import capcha_list
 from enums import Key, CB
 
@@ -53,12 +53,14 @@ async def com_start(msg: Message, state: FSMContext):
 async def capcha(cb: CallbackQuery, state: FSMContext):
     _, suc, referrer_str = cb.data.split(':')
     referrer = int(referrer_str)
+    print(suc, referrer_str)
+    log_error(f'{cb.data}', with_traceback=False)
     await cb.message.delete()
     if suc == '1':
         await db.add_user(
-            user_id=cb.message.from_user.id,
-            full_name=cb.message.from_user.full_name,
-            username=cb.message.from_user.username,
+            user_id=cb.from_user.id,
+            full_name=cb.from_user.full_name,
+            username=cb.from_user.username,
             referrer=referrer if referrer != 1 else None
         )
         await ut.send_msg(msg_key=Key.START.value, chat_id=cb.message.chat.id, keyboard=kb.get_start_kb())

@@ -42,7 +42,7 @@ UserTable: sa.Table = sa.Table(
 
 # Добавляет пользователя
 async def add_user(user_id: int, full_name: str, username: str, referrer: int = None) -> None:
-    now = datetime.now(Config.tz)
+    now = datetime.now()
     query = (
         sa_postgresql.insert(UserTable)
         .values(

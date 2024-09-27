@@ -3,7 +3,6 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 
 import os
-import logging
 
 from datetime import datetime
 from .export_file import export
