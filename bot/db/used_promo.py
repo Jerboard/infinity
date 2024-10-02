@@ -48,7 +48,7 @@ async def get_used_promo(promo: str = None, user_id: int = None, used: bool = No
 
     if promo:
         query = query.where(UsedPromoTable.c.promo == promo)
-    if promo:
+    if user_id:
         query = query.where(UsedPromoTable.c.user_id == user_id)
 
     if used is not None:

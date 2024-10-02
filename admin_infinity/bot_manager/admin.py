@@ -8,7 +8,8 @@ from admin_infinity.settings import DEBUG
 from .models import Msg
 from .models import User, Order, CashbackLevel, Currency, PayMethod, Promo, CashbackOrder, Info
 
-
+# admin_infinity_bot
+# dQ6tWhJ5
 @admin.register(User)
 class ViewUserTable(admin.ModelAdmin):
     list_display = ['user_id', 'full_name',  'username', 'last_visit', 'referrer',

@@ -73,7 +73,7 @@ async def get_user_info(user_id: int) -> UserRow:
 
 # возвращает список пользователей
 async def get_users(referrer: int = None) -> tuple[UserRow]:
-    query = UserTable.select()
+    query = UserTable.select().where(UserTable.c.ban == False)
     if referrer:
         query = query.where(UserTable.c.referrer == referrer)
     async with begin_connection() as conn:

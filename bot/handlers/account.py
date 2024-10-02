@@ -100,7 +100,7 @@ async def acc_promo(msg: Message, state: FSMContext):
             msg_data = await db.get_msg(Key.REPLACE_PROMO_CONF.value)
             text = msg_data.text.format(
                 active_promo=old_promo.promo,
-                rate=old_promo.promo
+                rate=old_promo.rate
             )
             await ut.send_msg(
                 msg_data=msg_data,
@@ -161,11 +161,17 @@ async def partner(cb: CallbackQuery, state: FSMContext):
     referrers = await db.get_users(referrer=cb.from_user.id)
     exchanges = await db.get_orders(referrer_id=cb.from_user.id, status=OrderStatus.SUC.value)
 
+    # проверяем реф уровень
+    ref_lvl = user.custom_referral_lvl_id
+    if not ref_lvl:
+        lvl = await db.get_referral_lvl(count_user=len(referrers))
+        ref_lvl = lvl.id
+
     msg_data = await db.get_msg(Key.PARTNER.value)
     text = msg_data.text.format(
         sum_ref_exchange=round(sum(exchange.profit for exchange in exchanges) * 0.01),
         count_ref=len(referrers),
-        ref_lvl=user.custom_referral_lvl_id,
+        ref_lvl=ref_lvl,
         cashback=user.referral_points,
         ref_link=f'{Config.bot_link}?start={cb.from_user.id}'
     )
@@ -181,7 +187,7 @@ async def partner(cb: CallbackQuery, state: FSMContext):
 
 # Кнопка кешбек
 @dp.callback_query(lambda cb: cb.data.startswith(CB.CASHBACK.value))
-async def partner(cb: CallbackQuery, state: FSMContext):
+async def cashback(cb: CallbackQuery, state: FSMContext):
     user = await db.get_user_info(cb.from_user.id)
     referrers = await db.get_orders(user_id=cb.from_user.id, status=OrderStatus.SUC.value)
 
@@ -202,7 +208,7 @@ async def partner(cb: CallbackQuery, state: FSMContext):
 
 # Кнопка партнёрская вывода
 @dp.callback_query(lambda cb: cb.data.startswith(CB.TAKE_BONUS.value))
-async def partner(cb: CallbackQuery, state: FSMContext):
+async def take_bonus(cb: CallbackQuery, state: FSMContext):
     user = await db.get_user_info(cb.from_user.id)
     balance = user.cashback + user.referral_points
 
@@ -354,7 +360,7 @@ async def take_bonus_end(cb: CallbackQuery, state: FSMContext):
             chat_id=cb.message.chat.id,
             edit_msg=cb.message.message_id,
             text=text,
-            keyboard=kb.get_history_kb(start=start_index, end_page=len(orders) >= end_index)
+            keyboard=kb.get_history_kb(start=start_index, end_page=len(orders) > end_index)
         )
 
 

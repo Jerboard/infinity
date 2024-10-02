@@ -125,9 +125,9 @@ body {
         {% for order in orders %}
         <div class="order-block">
             <span class="item" style="max-width: 2%; overflow: hidden;">{{ order.id }}</span>
-            <span class="item" style="width: 5%; white-space: normal;">{{ order.time }}</span>
+            <span class="item" style="width: 5%; white-space: normal;">{{ order.created_at }}</span>
             <span class="item" style="width: 2%; overflow: hidden;">{{ order.status }}</span>
-            <span class="item" style="width: 5%; overflow: hidden;">{{ order.name_user|default:"" }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.user.full_name|default:"" }}</span>
             <span class="item" style="width: 5%; overflow: hidden;">{{ order.user_id|default:"" }}</span>
             <span class="item" style="width: 3%; overflow: hidden;">{{ order.coin }}</span>
             <span class="item" style="width: 4%; overflow: hidden;">{{ order.pay_method }}</span>
