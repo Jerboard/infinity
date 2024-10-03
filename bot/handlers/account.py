@@ -36,7 +36,7 @@ async def start_acc_send(msg: Message, from_user_id: int = None):
         count_ref=len(referrers),
         ref_lvl=lvl,
         balance=user.referral_points + user.cashback,
-        ref_link=f'{Config.bot_link}?start={msg.from_user.id}'
+        ref_link=f'{Config.bot_link}?start={user.ref_code}'
     )
 
     await ut.send_msg(
@@ -173,7 +173,7 @@ async def partner(cb: CallbackQuery, state: FSMContext):
         count_ref=len(referrers),
         ref_lvl=ref_lvl,
         cashback=user.referral_points,
-        ref_link=f'{Config.bot_link}?start={cb.from_user.id}'
+        ref_link=f'{Config.bot_link}?start={user.ref_code}'
     )
 
     await ut.send_msg(

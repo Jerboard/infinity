@@ -185,21 +185,21 @@ async def sum_exchange(msg: Message, state: FSMContext):
             # balance = user_data.referral_points + user_data.cashback
 
             sum_coin = round(sum_coin, currency.round)
-            if not data.get('back'):
-                await state.update_data(data={
-                    'amount': sum_rub,
-                    'total_amount': total_amount,
-                    'sum_exchange': sum_coin,
-                    'rate': currency_rate,
-                    'start_time': datetime.now(),
-                    'commission': currency.commission,
-                    'percent': currency.ratio,
-                    'balance': user_data.referral_points + user_data.cashback,
-                    'referral_points': user_data.referral_points,
-                    'cashback': user_data.cashback,
-                    'currency_code': currency.code,
-                    'pay_string': f'К ОПЛАТЕ {total_amount}Р',
-                })
+            await state.update_data(data={
+                'amount': sum_rub,
+                'total_amount': total_amount,
+                'sum_exchange': sum_coin,
+                'rate': currency_rate,
+                'start_time': datetime.now(),
+                'commission': currency.commission,
+                'percent': currency.ratio,
+                'balance': user_data.referral_points + user_data.cashback,
+                'referral_points': user_data.referral_points,
+                'cashback': user_data.cashback,
+                'currency_code': currency.code,
+                'pay_string': f'К ОПЛАТЕ {total_amount}Р',
+                'used_promo': False
+            })
 
             # if promo:
             #     await state.update_data(data={

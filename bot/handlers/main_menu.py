@@ -34,7 +34,7 @@ async def com_start(msg: Message, state: FSMContext):
     if not user:
         # тут проходит капчу
         check_referrer = msg.text.split(' ')
-        referrer = check_referrer[1] if len(check_referrer) == 2 else '1'
+        referrer = check_referrer[1] if len(check_referrer) == 2 else '0'
         await ut.send_capcha(chat_id=msg.chat.id, first_name=msg.from_user.first_name, referrer=referrer)
 
     elif user.ban:
@@ -51,23 +51,22 @@ async def com_start(msg: Message, state: FSMContext):
 # проверяет капчу
 @dp.callback_query(lambda cb: cb.data.startswith(CB.CAPCHA.value))
 async def capcha(cb: CallbackQuery, state: FSMContext):
-    _, suc, referrer_str = cb.data.split(':')
-    referrer = int(referrer_str)
-    print(suc, referrer_str)
+    _, suc, ref_code = cb.data.split(':')
     log_error(f'{cb.data}', with_traceback=False)
     await cb.message.delete()
     if suc == '1':
+        referrer = await db.get_user_info(ref_code=ref_code)
         await db.add_user(
             user_id=cb.from_user.id,
             full_name=cb.from_user.full_name,
             username=cb.from_user.username,
-            referrer=referrer if referrer != 1 else None
+            referrer=referrer.user_id if referrer else None
         )
         await ut.send_msg(msg_key=Key.START.value, chat_id=cb.message.chat.id, keyboard=kb.get_start_kb())
     else:
         await cb.answer('⚠️ Вы не прошли проверку', show_alert=True)
         await ut.send_capcha(
-            chat_id=cb.message.chat.id, first_name=cb.from_user.first_name, referrer=referrer_str
+            chat_id=cb.message.chat.id, first_name=cb.from_user.first_name, referrer=ref_code
         )
 
 

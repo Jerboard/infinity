@@ -1,3 +1,5 @@
+from random import choice
+
 import db
 
 
@@ -8,6 +10,11 @@ def is_digit(text):
         return True
     except:
         return False
+
+
+# даёт случайную сроку для реферальной ссылки
+def get_ref_code() -> str:
+    return ''.join([choice('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(10)])
 
 
 def get_check_info_text(data: dict, currency: db.CurrencyRow) -> str:

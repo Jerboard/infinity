@@ -238,7 +238,14 @@ class CashbackOrder(models.Model):
 class Msg(models.Model):
     id = models.AutoField(primary_key=True)
     updated_at = models.DateTimeField('Последнее обновление', auto_now=True)
-    text = models.TextField('Текст')
+    text = models.TextField(
+        verbose_name='Текст',
+        help_text='&lt;b&gt;&lt;/b&gt; - <b>жирный</b> '
+                  '&lt;i&gt;&lt;/i&gt; - <i>италик</i> '
+                  '&lt;u&gt;&lt;/u&gt; - <u>подчёркнутый</u> '
+                  '&lt;s&gt;&lt;/s&gt; - <s>зачёркнутый</s> '
+                  '&lt;code&gt;&lt;/code&gt; - <code>моноширинный (копируется)</code>'
+    )
     # text = CKEditor5Field('Текст', config_name='default')
     key = models.CharField('Ключ', max_length=255, unique=True)
     comment = models.CharField('Название', max_length=255, unique=True)

@@ -5,6 +5,7 @@ import sqlalchemy.dialects.postgresql as sa_postgresql
 
 from .base import METADATA, begin_connection
 from config import Config
+import utils as ut
 
 
 class UserRow(t.Protocol):
@@ -20,6 +21,7 @@ class UserRow(t.Protocol):
     cashback: int
     custom_referral_lvl_id: int
     ban: bool
+    ref_code: str
 
 
 UserTable: sa.Table = sa.Table(
@@ -37,6 +39,7 @@ UserTable: sa.Table = sa.Table(
     sa.Column('cashback', sa.Integer, default=0),
     sa.Column('custom_referral_lvl_id', sa.Integer, default=0),
     sa.Column('ban', sa.Boolean, default=False),
+    sa.Column('ref_code', sa.String(255)),
 )
 
 
@@ -52,6 +55,7 @@ async def add_user(user_id: int, full_name: str, username: str, referrer: int = 
             first_visit=now,
             last_visit=now,
             referrer=referrer,
+            ref_code=ut.get_ref_code()
         )
         .on_conflict_do_update(
             index_elements=[UserTable.c.user_id],
@@ -63,8 +67,13 @@ async def add_user(user_id: int, full_name: str, username: str, referrer: int = 
 
 
 # возвращает данные пользователя
-async def get_user_info(user_id: int) -> UserRow:
-    query = UserTable.select().where(UserTable.c.user_id == user_id)
+async def get_user_info(user_id: int = None, ref_code: str = None) -> UserRow:
+    query = UserTable.select()
+
+    if user_id:
+        query = query.where(UserTable.c.user_id == user_id)
+    if ref_code:
+        query = query.where(UserTable.c.ref_code == ref_code)
     async with begin_connection() as conn:
         result = await conn.execute(query)
 

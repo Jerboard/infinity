@@ -36,7 +36,7 @@ def get_account_kb() -> InlineKeyboardMarkup:
     kb.button(text='КЕШБЭК', callback_data=CB.CASHBACK.value)
     kb.button(text='ВЫВОД БОНУСОВ', callback_data=CB.TAKE_BONUS.value)
     kb.button(text='ИСТОРИЯ ОБМЕНОВ', callback_data=f'{CB.HISTORY.value}:0')
-    kb.button(text='ИСПЫТАЙ УДАЧУ', callback_data=CB.GAMBLING.value)
+    # kb.button(text='ИСПЫТАЙ УДАЧУ', callback_data=CB.GAMBLING.value)
     kb.button(text=f'🔙 НАЗАД', callback_data=f'{CB.BACK_START.value}')
     return kb.adjust(1).as_markup()
 
