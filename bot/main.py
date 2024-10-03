@@ -8,11 +8,12 @@ from handlers import dp
 from config import Config
 from init import set_main_menu, bot, log_error
 from db.base import init_models
+from db.temp import update_db
 from utils.scheduler_utils import scheduler_start_async
 
 
 async def main() -> None:
-    # await db_command()
+    # await update_db()
     await init_models()
     await set_main_menu()
     if not Config.debug:

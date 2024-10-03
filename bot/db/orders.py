@@ -125,6 +125,59 @@ async def add_order(
     return result.inserted_primary_key[0]
 
 
+# добавляет заказ обновление бд
+async def add_order_msql(
+        created_at: datetime,
+        user_id: int,
+        status: str,
+        coin: str,
+        pay_method: str,
+        coin_sum: float,
+        wallet: str,
+        promo: str,
+        promo_rate: int,
+        exchange_rate: int,
+        percent: float,
+        amount: int,
+        hash: str,
+        used_cashback: int,
+        total_amount: int,
+        profit: int,
+        promo_used_id: int,
+        commission: int,
+        referrer: int,
+        used_points: int,
+) -> int:
+    # now = datetime.now()
+    query = OrderTable.insert().values(
+        created_at=created_at,
+        updated_at=created_at,
+        status=status,
+        user_id=user_id,
+        coin=coin,
+        pay_method=pay_method,
+        coin_sum=coin_sum,
+        wallet=wallet,
+        promo=promo,
+        promo_rate=promo_rate,
+        exchange_rate=exchange_rate,
+        percent=percent,
+        amount=amount,
+        used_cashback=used_cashback,
+        used_points=used_points,
+        profit=profit,
+        total_amount=total_amount,
+        promo_used_id=promo_used_id,
+        commission=commission,
+        hash=hash,
+        referrer=referrer,
+    )
+    async with begin_connection() as conn:
+        result = await conn.execute(query)
+
+    return result.inserted_primary_key[0]
+
+
 # возвращает заказы
 async def get_orders(
         user_id: int = None,

@@ -69,6 +69,28 @@ async def add_cb_order(
     return result.inserted_primary_key[0]
 
 
+# добавляет заказ
+async def add_cb_order_msql(
+        created_at: datetime,
+        user_id: int,
+        wallet: str,
+        cashback: int,
+        status: str,
+) -> int:
+    query = OrderCBTable.insert().values(
+        created_at=created_at,
+        updated_at=created_at,
+        user_id=user_id,
+        wallet=wallet,
+        cashback=cashback,
+        status=status,
+    )
+    async with begin_connection() as conn:
+        result = await conn.execute(query)
+
+    return result.inserted_primary_key[0]
+
+
 # возвращает заказы на кешбэк
 async def get_cb_orders(
         user_id: int = None,

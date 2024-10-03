@@ -56,7 +56,6 @@ def log_error(message, with_traceback: bool = True):
     log_file_path = os.path.join(log_path, f'{now.day}.log')
     logging.basicConfig (level=logging.WARNING, filename=log_file_path, encoding='utf-8')
 
-    print(f'log_file_path: {log_file_path}')
     if with_traceback:
         ex_traceback = traceback.format_exc()
         tb = ''

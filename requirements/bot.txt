@@ -2,6 +2,7 @@ aiogram
 sqlalchemy
 apscheduler
 asyncpg
+aiomysql
 python-dotenv
 pytz
 uvloop

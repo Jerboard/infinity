@@ -12,11 +12,6 @@ def is_digit(text):
         return False
 
 
-# даёт случайную сроку для реферальной ссылки
-def get_ref_code() -> str:
-    return ''.join([choice('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(10)])
-
-
 def get_check_info_text(data: dict, currency: db.CurrencyRow) -> str:
     if data.get('promo') or data.get('used_points'):
         text = f'<i>Курс покупки <b>{currency.name}</b> {data["rate"]} руб\n\n' \

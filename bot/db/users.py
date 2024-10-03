@@ -1,11 +1,12 @@
 from datetime import datetime
+from random import choice
+
 import typing as t
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as sa_postgresql
 
 from .base import METADATA, begin_connection
 from config import Config
-import utils as ut
 
 
 class UserRow(t.Protocol):
@@ -43,6 +44,11 @@ UserTable: sa.Table = sa.Table(
 )
 
 
+# даёт случайную сроку для реферальной ссылки
+def get_ref_code() -> str:
+    return ''.join([choice('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') for _ in range(10)])
+
+
 # Добавляет пользователя
 async def add_user(user_id: int, full_name: str, username: str, referrer: int = None) -> None:
     now = datetime.now()
@@ -55,7 +61,46 @@ async def add_user(user_id: int, full_name: str, username: str, referrer: int = 
             first_visit=now,
             last_visit=now,
             referrer=referrer,
-            ref_code=ut.get_ref_code()
+            ref_code=get_ref_code()
+        )
+        .on_conflict_do_update(
+            index_elements=[UserTable.c.user_id],
+            set_={"full_name": full_name, 'username': username, 'last_visit': now}
+        )
+    )
+    async with begin_connection() as conn:
+        await conn.execute(query)
+
+
+# {'id': 66, 'user_id': '5559591475', 'first_name': 'Ванёк', 'last_name': None, 'username': 'Garmonya1904',
+# 'first_visit': datetime.datetime(2023, 6, 16, 7, 6, 57, 48902), 'referrer': None,
+# 'balance': 0, 'custom_refferal_lvl_id': None, 'ban': 0}
+# Добавляет пользователя из старой базы
+async def add_user_msql(
+        user_id: int,
+        full_name: str,
+        username: str,
+        first_visit: datetime,
+        referrer: int = None,
+        balance: int = None,
+        custom_referral_lvl_id: int = None,
+        ban: bool = None,
+
+) -> None:
+    now = datetime.now()
+    query = (
+        sa_postgresql.insert(UserTable)
+        .values(
+            user_id=user_id,
+            full_name=full_name,
+            username=username,
+            first_visit=first_visit,
+            last_visit=now,
+            referrer=referrer,
+            balance=balance,
+            custom_referral_lvl_id=custom_referral_lvl_id,
+            ban=ban,
+            ref_code=get_ref_code()
         )
         .on_conflict_do_update(
             index_elements=[UserTable.c.user_id],
