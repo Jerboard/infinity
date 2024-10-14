@@ -32,7 +32,9 @@ class ViewUserTable(admin.ModelAdmin):
     count_invited_users.short_description = 'Приглашенных'
 
     def balance(self, obj):
-        return str(obj.referral_points + obj.cashback)
+        referral_points = obj.referral_points or 0
+        cashback = obj.cashback or 0
+        return str(referral_points + cashback)
 
     balance.short_description = 'Баланс'
 

@@ -61,7 +61,10 @@ async def done_order(order: db.OrderRow):
 
 # Отменяет заявку
 async def del_order(order: db.OrderRow):
-    if order.used_points > 0 or order.used_cashback > 0:
+    used_points = order.used_points or 0
+    used_cashback = order.used_cashback or 0
+
+    if used_points > 0 or used_cashback > 0:
         await db.update_user_info(user_id=order.user_id, add_point=order.used_points, add_cashback=order.used_cashback)
 
     if order.promo:
