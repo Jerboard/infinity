@@ -109,7 +109,8 @@ async def send_sum(cb: CallbackQuery, state: FSMContext):
         edit_msg=cb.message.message_id,
         msg_data=msg_data,
         text=text,
-        keyboard=kb.get_back_kb(CB.EXCHANGE.value)
+        keyboard=kb.get_cancel_kb()
+        # keyboard=kb.get_back_kb(CB.EXCHANGE.value)
     )
 
 
@@ -184,21 +185,34 @@ async def sum_exchange(msg: Message, state: FSMContext):
             # print(f'user_data:{user_data}')
             # balance = user_data.referral_points + user_data.cashback
 
+            profit = ut.get_profit_exchange(
+                coin_sum=sum_coin,
+                buy_price=currency.buy_price,
+                total_amount=total_amount,
+                commission=currency.commission
+            )
             sum_coin = round(sum_coin, currency.round)
+            promo = await db.get_used_promo(user_id=msg.from_user.id, used=False)
+
             await state.update_data(data={
                 'amount': sum_rub,
                 'total_amount': total_amount,
                 'sum_exchange': sum_coin,
+                'rate_raw': currency.rate,
                 'rate': currency_rate,
                 'start_time': datetime.now(),
                 'commission': currency.commission,
                 'percent': currency.ratio,
                 'balance': user_data.referral_points + user_data.cashback,
-                'referral_points': user_data.referral_points,
-                'cashback': user_data.cashback,
+                # 'referral_points': user_data.referral_points,
+                # 'cashback': user_data.cashback,
+                'referral_points': 0,
+                'cashback': 0,
                 'currency_code': currency.code,
                 'pay_string': f'К ОПЛАТЕ {total_amount}Р',
-                'used_promo': False
+                'used_promo': False,
+                'profit': profit,
+                'promo_data': promo,
             })
 
             # if promo:
@@ -220,9 +234,11 @@ async def use_promo(cb: CallbackQuery, state: FSMContext):
         await cb.answer('ПРОМОКОД УЖЕ ПРИМЕНЕН', show_alert=True)
         return
 
-    promo = await db.get_used_promo(user_id=cb.from_user.id, used=False)
+    # promo = await db.get_used_promo(user_id=cb.from_user.id, used=False)
+    promo: db.UsedPromoRow = data['promo_data']
     rate = 1 - (promo.rate / 100)
-    total_amount = round(data['total_amount'] * rate)
+    discount = data['profit'] * rate
+    total_amount = round(data['total_amount'] - discount)
 
     pay_string = f'<s>{data["pay_string"]}</s>\nК ОПЛАТЕ С УЧЕТОМ ПРОМОКОДА: {total_amount}р.'
 
@@ -365,6 +381,7 @@ async def check_wallet(msg: Message, state: FSMContext):
         message_id=data['message_id'],
         promo_used_id=data.get('promo_id', 0),
         commission=data['commission'],
+        profit=data['profit']
     )
 
     msg_data = await db.get_msg(Key.PAYMENT.value)

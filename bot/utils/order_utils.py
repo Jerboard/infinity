@@ -4,42 +4,50 @@ import os
 
 import db
 from init import bot, log_error
+import keyboards as kb
 from config import Config
 from .msg_utils import send_msg
 from .google_utils import add_order_row, add_cd_order_row
 from enums import OrderStatus, Key
 
 
+def get_profit_exchange(coin_sum: float, buy_price: float, total_amount: float, commission: float) -> int:
+    # прибыль
+    buy_price = coin_sum * buy_price
+    return round((total_amount - commission) - buy_price)
+
+
 # Завершает заявку
 async def done_order(order: db.OrderRow):
-    currency = await db.get_currency(currency_code=order.coin)
+    # currency = await db.get_currency(currency_code=order.coin)
     user = await db.get_user_info(order.user_id)
 
     # прибыль
-    buy_price = order.coin_sum * currency.buy_price
-    profit = (order.total_amount - order.commission) - buy_price
+    # buy_price = order.coin_sum * currency.buy_price
+    # profit = (order.total_amount - order.commission) - buy_price
 
-    await db.update_order(order_id=order.id, status=OrderStatus.SUC.value, profit=profit)
+    await db.update_order(order_id=order.id, status=OrderStatus.SUC.value)
 
     msg_data = await db.get_msg(Key.SUC_ORDER.value)
     text = msg_data.text.format(order_id=order.id, order_hash=order.hash)
     await send_msg(
         msg_data=msg_data,
         chat_id=order.user_id,
-        text=text
+        text=text,
+        keyboard=kb.get_done_order_kb()
     )
 
     # начисляем кешбек
-    if profit > 0:
+    if order.profit > 0:
         info = await db.get_info()
-        cashback = round(profit * (info.cashback / 100))
+        cashback = round(order.profit * (info.cashback / 100))
         if cashback > 0:
             # print(f'>>> cashback: {cashback} profit: {profit}')
             await db.update_user_info(user_id=order.user_id, add_cashback=cashback)
             await db.update_order(order_id=order.id, add_cashback=cashback)
 
     # реферальные баллы
-    if user.referrer and profit > 0:
+    if user.referrer and order.profit > 0:
         referrer = await db.get_user_info(user_id=user.referrer)
 
         if referrer.custom_referral_lvl_id:
@@ -50,7 +58,7 @@ async def done_order(order: db.OrderRow):
             lvl = await db.get_referral_lvl(count_user=len(referrals))
 
         if lvl:
-            ref_points = round(profit * (lvl.percent / 100))
+            ref_points = round(order.profit * (lvl.percent / 100))
             await db.update_user_info(user_id=referrer.user_id, add_point=ref_points)
             await db.update_order(order_id=order.id, add_ref_points=ref_points)
 

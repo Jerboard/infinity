@@ -70,7 +70,8 @@ def get_currency_list_kb(currencies: tuple[db.CurrencyRow]) -> InlineKeyboardMar
         kb.button(text=f'{currency.name} ({currency.code})', callback_data=f'{CB.SELECT_PAYMENT.value}:{currency.id}')
 
     back_bt = InlineKeyboardBuilder()
-    back_bt.button(text='🔙 Назад', callback_data=CB.BACK_START.value)
+    # back_bt.button(text='🔙 Назад', callback_data=CB.BACK_START.value)
+    back_bt.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
     return kb.adjust(2).attach(back_bt).as_markup()
 
 
@@ -113,7 +114,8 @@ def get_sending_kb() -> InlineKeyboardMarkup:
 def get_replace_promo_kb() -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text=f'Сменить промокод', callback_data=f'{CB.REPLACE_PROMO.value}')
-    kb.button(text=f'🔙 Назад', callback_data=f'{CB.PROMO.value}')
+    # kb.button(text=f'🔙 Назад', callback_data=f'{CB.PROMO.value}')
+    kb.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
     return kb.adjust(1).as_markup()
 
 
@@ -185,4 +187,11 @@ def get_feedback_kb() -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text=f'✅ Опубликовать', callback_data=CB.PUBLISH_FEEDBACK.value)
     kb.button(text=f'❌ Удалить', callback_data=f'{CB.CANCEL.value}')
+    return kb.adjust(1).as_markup()
+
+
+# продать валюту
+def get_done_order_kb() -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    kb.button(text='ОСТАВИТЬ ОТЗЫВ', callback_data=CB.FEEDBACK.value)
     return kb.adjust(1).as_markup()

@@ -89,24 +89,4 @@ async def cancel(cb: CallbackQuery, state: FSMContext):
     await state.clear()
     # text = 'Выберите из кнопок ниже:'
     await cb.message.delete()
-
-
-# выбор валюты
-# @dp.message_handler(text=['📚 Поддержка'], state='*')
-# async def support(msg: Message, state: FSMContext):
-#     await state.finish()
-#
-#     user = get_user_data (msg.from_user.id)
-#     if user ['ban']:
-#         await msg.answer ('Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity',
-#                           reply_markup=ReplyKeyboardRemove ())
-#         return
-#
-#     text = '📍 Тут собраны ответы на самые распространенные вопросы, а также наши контактные данные.'
-#     photo_id = photos ['support']
-#
-#     await msg.answer_photo(photo=photo_id, caption=text, reply_markup=get_support_kb())
-
-
-
-
+    await ut.send_msg(msg_key=Key.START.value, chat_id=cb.message.chat.id, keyboard=kb.get_start_kb())

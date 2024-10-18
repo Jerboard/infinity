@@ -92,7 +92,7 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
 
     msg_data = await db.get_msg(Key.EXCHANGE.value)
     text = msg_data.text.format(
-        currency_rate=data['rate'],
+        currency_rate=data['rate_raw'],
         sum_coin=data['sum_exchange'],
         currency_code=data['currency_code'],
         sum_rub=data['amount'],
@@ -107,7 +107,8 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
     else:
         edit_msg = data['message_id']
 
-    promo = await db.get_used_promo(user_id=data['user_id'])  # if not data.get('used_promo') else None
+    # promo = await db.get_used_promo(user_id=data['user_id'])  # if not data.get('used_promo') else None
+    promo: db.UsedPromoRow = data['promo_data']
 
     sent = await ut.send_msg(
         msg_data=msg_data,

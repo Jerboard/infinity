@@ -12,6 +12,13 @@ def is_digit(text):
         return False
 
 
+#   считает прибыль с обмена
+def get_profit_exchange(coin_sum: float, buy_price: float, total_amount: float, commission: float) -> int:
+    buy_price = coin_sum * buy_price
+    profit = round((total_amount - commission) - buy_price)
+    return 0 if profit < 0 else profit
+
+
 def get_check_info_text(data: dict, currency: db.CurrencyRow) -> str:
     if data.get('promo') or data.get('used_points'):
         text = f'<i>Курс покупки <b>{currency.name}</b> {data["rate"]} руб\n\n' \
