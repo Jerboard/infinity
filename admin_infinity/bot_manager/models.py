@@ -40,6 +40,13 @@ class User(models.Model):
     )
     ban = models.BooleanField('Забанить', default=False)
 
+    def save(self, *args, **kwargs):
+        if not self.referral_points:
+            self.referral_points = 0
+        if not self.cashback:
+            self.cashback = 0
+        super(User, self).save(*args, **kwargs)
+
     objects: models.Manager = models.Manager()
 
     def __str__(self):

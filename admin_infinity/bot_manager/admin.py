@@ -18,7 +18,7 @@ class ViewUserTable(admin.ModelAdmin):
     # list_display = ['user_id', 'full_name',  'username', 'last_visit']
     search_fields = ['user_id', 'username', 'referrer']
     ordering = ['-last_visit']
-    list_filter = ['user_id', 'username']
+    # list_filter = ['user_id', 'username']
     readonly_fields = ['first_visit', 'last_visit']
 
     def count_invited_users(self, obj):
