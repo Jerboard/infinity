@@ -6,7 +6,7 @@ import db
 import keyboards as kb
 import utils as ut
 from init import dp, bot, log_error
-from enums import Key, CB, MainButton
+from enums import Key, CB, MainButton,Coin
 
 
 # @dp.message()
@@ -20,6 +20,22 @@ from enums import Key, CB, MainButton
 #     print(msg.chat.title)
 #     print(msg.chat.id)
 
+
+# Команда старт
+# @dp.message()
+# async def com_start(msg: Message, state: FSMContext):
+#     check = await ut.check_wallet(coin_code=Coin.LTC.value, wallet=msg.text)
+#     await msg.answer(str(check))
+
+'''
+LWttPMKz3YxBDuFRi4K8cRq8cYxkmFfge2
+MPoUJ5MT7zX6UweR2e3kyt4W9yBbaKnRC2
+
+ltc1qvpycwysyf6tr8y2dc79jngsv6eq0fpgu0qr6h5
+
+первые 2 лайткоин 
+последний бтк
+'''
 
 # Команда старт
 @dp.message(CommandStart())
