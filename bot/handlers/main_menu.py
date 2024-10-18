@@ -37,6 +37,7 @@ ltc1qvpycwysyf6tr8y2dc79jngsv6eq0fpgu0qr6h5
 последний бтк
 '''
 
+
 # Команда старт
 @dp.message(CommandStart())
 async def com_start(msg: Message, state: FSMContext):

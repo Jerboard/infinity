@@ -35,7 +35,6 @@ async def update_currency_rate():
         await db.update_currency(currency_code=symbol, rate=rate)
 
 
-
 # def update_currency_rate_binance():
 #     # url = 'https://api.binance.com/api/v3/ticker/price?symbols=["BTCRUB","LTCRUB","ETHRUB","XMRUSDT","USDTRUB"]'
 #     url = 'https://api.binance.com/api/v3/ticker/price?symbols=["BTCUSDT","LTCUSDT","ETHUSDT","XMRUSDT","USDTRUB"]'
@@ -66,8 +65,8 @@ async def update_currency_rate():
 
 # проверяет биткоин кошелёк
 async def check_wallet(coin_code, wallet):
-    if Config.debug:
-        return True
+    # if Config.debug:
+    #     return True
 
     correct = False
 
@@ -86,6 +85,7 @@ async def check_wallet(coin_code, wallet):
     elif coin_code == Coin.LTC:
         url = f"https://api.blockcypher.com/v1/ltc/main/addrs/{wallet}"
         response = requests.get(url)
+        print(f'response: {response.text}')
         if response.status_code == 200:
             correct = True
 
