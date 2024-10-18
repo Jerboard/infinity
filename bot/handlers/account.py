@@ -15,50 +15,11 @@ import utils as ut
 from enums import CB, Key, UserStatus, Action, OrderStatus, Coin, MainButton
 
 
-async def start_acc_send(msg: Message, from_user_id: int = None):
-    user_id = from_user_id or msg.from_user.id
-    user = await db.get_user_info(user_id)
-    referrers = await db.get_users(referrer=user_id)
-    exchanges = await db.get_orders(user_id=user_id, status=OrderStatus.SUC.value)
-
-    if user.custom_referral_lvl_id:
-        lvl = user.custom_referral_lvl_id
-
-    else:
-        ref_lvl = await db.get_referral_lvl(count_user=len(referrers))
-        lvl = ref_lvl.id or 1
-
-    msg_data = await db.get_msg(Key.ACCOUNT.value)
-    text = msg_data.text.format(
-        user_id=user_id,
-        count_ex=len(exchanges),
-        sum_exchange=sum(exchange.total_amount for exchange in exchanges),
-        count_ref=len(referrers),
-        ref_lvl=lvl,
-        balance=user.referral_points + user.cashback,
-        ref_link=f'{Config.bot_link}?start={user.ref_code}'
-    )
-
-    await ut.send_msg(
-        msg_data=msg_data,
-        chat_id=msg.chat.id,
-        # edit_msg=msg.message_id,
-        text=text,
-        keyboard=kb.get_account_kb()
-    )
-
-
 # Аккаунт старт
 @dp.callback_query(lambda cb: cb.data.startswith(CB.ACCOUNT.value))
 async def start_account(cb: CallbackQuery, state: FSMContext):
     await state.clear()
-    await start_acc_send(cb.message, from_user_id=cb.from_user.id)
-
-
-@dp.message(lambda msg: msg.text == MainButton.ACCOUNT.value)
-async def start_account(msg: Message, state: FSMContext):
-    await state.clear()
-    await start_acc_send(msg)
+    await ut.start_acc_send(cb.message, from_user_id=cb.from_user.id)
 
 
 # Промокод
@@ -87,7 +48,7 @@ async def acc_promo(msg: Message, state: FSMContext):
             await ut.send_time_message(chat_id=msg.chat.id, text='❗️ Вы уже использовали этот промокод')
             return
 
-        old_promo = await db.get_used_promo(user_id=msg.from_user.id)
+        old_promo = await db.get_used_promo(user_id=msg.from_user.id, used=False)
 
         if old_promo:
             # old_promo_info = await db.get_promo(promo_id=old_promo.id)

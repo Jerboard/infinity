@@ -89,6 +89,7 @@ def get_main_exchange_kb(
         kb.button(text='ИСП. ПРОМОКОД', callback_data=CB.USE_PROMO.value)
 
     kb.button(text=f'ИСП. БАЛАНС КОШЕЛЬКА', callback_data=CB.USE_CASHBACK.value)
+    kb.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
     return kb.adjust(1).as_markup()
 
 

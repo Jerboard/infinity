@@ -12,7 +12,7 @@ from init import bot
 from config import Config
 from data import capcha_list
 import utils as ut
-from enums import Key
+from enums import Key, UserStatus, OrderStatus
 
 
 # отправляет сообщение
@@ -193,3 +193,94 @@ async def send_any_message(msg: Message, chat_id: int, keyboard: InlineKeyboardM
         sent = None
 
     return sent
+
+
+# кнопка продать
+async def russian_rub(msg: Message, edit_msg: int = None):
+    await ut.send_msg(
+        msg_key=Key.SELL.value,
+        chat_id=msg.chat.id,
+        edit_msg=edit_msg,
+        keyboard=kb.get_sell_kb()
+    )
+
+
+# старт обмена
+async def select_currency(msg: Message, state: FSMContext, edit_msg: int = None):
+    await state.clear()
+    check_orders = await db.get_orders(user_id=msg.from_user.id, check=True)
+
+    if check_orders:
+        text = 'У вас ещё осталась незакрытая заявка'
+        await ut.send_time_message(chat_id=msg.chat.id, text=text)
+    else:
+        await state.set_state(UserStatus.EXCHANGE)
+
+        currency = await db.get_all_currency()
+        await ut.send_msg(
+            msg_key=Key.SELECT_CURRENCY.value,
+            chat_id=msg.chat.id,
+            edit_msg=edit_msg,
+            keyboard=kb.get_currency_list_kb(currency)
+        )
+
+
+async def start_acc_send(msg: Message, from_user_id: int = None):
+    user_id = from_user_id or msg.from_user.id
+
+    user = await db.get_user_info(user_id)
+    referrers = await db.get_users(referrer=user_id)
+    exchanges = await db.get_orders(user_id=user_id, status=OrderStatus.SUC.value)
+    active_promo = await db.get_used_promo(user_id=user_id, used=False)
+    # old_promo = await db.get_used_promo(user_id=msg.from_user.id)
+
+    if user.custom_referral_lvl_id:
+        lvl = user.custom_referral_lvl_id
+
+    else:
+        ref_lvl = await db.get_referral_lvl(count_user=len(referrers))
+        lvl = ref_lvl.id or 1
+
+    msg_data = await db.get_msg(Key.ACCOUNT.value)
+    text = msg_data.text.format(
+        user_id=user_id,
+        count_ex=len(exchanges),
+        sum_exchange=sum(exchange.total_amount for exchange in exchanges),
+        count_ref=len(referrers),
+        ref_lvl=lvl,
+        balance=user.referral_points + user.cashback,
+        ref_link=f'{Config.bot_link}?start={user.ref_code}'
+    )
+
+    if active_promo:
+        text += f'\n\nАктивирован промокод: {active_promo.promo} на {active_promo.rate}%'
+
+    await ut.send_msg(
+        msg_data=msg_data,
+        chat_id=msg.chat.id,
+        # edit_msg=msg.message_id,
+        text=text,
+        keyboard=kb.get_account_kb()
+    )
+
+
+async def antispam_sent(msg: Message, edit_msg: int = None):
+    await ut.send_msg(
+        msg_key=Key.ANTISPAM.value,
+        chat_id=msg.chat.id,
+        edit_msg=edit_msg,
+        keyboard=kb.get_antispam_user_kb()
+    )
+
+
+# Раздел "О нас"
+async def info_send(msg: Message, edit_msg: int = None):
+    await ut.send_msg(
+        msg_key=Key.INFO.value,
+        chat_id=msg.chat.id,
+        edit_msg=edit_msg,
+        keyboard=kb.get_info_kb()
+    )
+
+
+

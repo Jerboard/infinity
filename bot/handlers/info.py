@@ -13,28 +13,11 @@ from init import dp, bot, log_error
 from enums import CB, UserStatus, Key, MainButton
 
 
-# Раздел "О нас"
-async def info_send(msg: Message, edit_msg: int = None):
-    await ut.send_msg(
-        msg_key=Key.INFO.value,
-        chat_id=msg.chat.id,
-        edit_msg=edit_msg,
-        keyboard=kb.get_info_kb()
-    )
-
-
 # старт обмена инлайн
 @dp.callback_query(lambda cb: cb.data.startswith(CB.INFO.value))
 async def info_send_inline(cb: CallbackQuery, state: FSMContext):
     await state.clear()
-    await info_send(cb.message, edit_msg=cb.message)
-
-
-# старт обмена кнопка
-@dp.message(lambda msg: msg.text == MainButton.INFO.value)
-async def info_send_reply(msg: Message, state: FSMContext):
-    await state.clear()
-    await info_send(msg)
+    await ut.info_send(cb.message, edit_msg=cb.message)
 
 
 # отправить отзыв

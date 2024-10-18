@@ -13,27 +13,11 @@ from init import dp, bot, log_error
 from enums import CB, UserStatus, Key, Action, MainButton
 
 
-async def antispam_sent(msg: Message, edit_msg: int = None):
-    await ut.send_msg(
-        msg_key=Key.ANTISPAM.value,
-        chat_id=msg.chat.id,
-        edit_msg=edit_msg,
-        keyboard=kb.get_antispam_user_kb()
-    )
-
-
 # Антиспам старт
 @dp.callback_query(lambda cb: cb.data.startswith(CB.ANTISPAM.value))
 async def antispam_inline(cb: CallbackQuery, state: FSMContext):
     await state.clear()
-    await antispam_sent(cb.message, edit_msg=cb.message)
-
-
-# Антиспам старт
-@dp.message(lambda msg: msg.text == MainButton.ANTISPAM.value)
-async def antispam_reply(msg: Message, state: FSMContext):
-    await state.clear()
-    await antispam_sent(msg)
+    await ut.antispam_sent(cb.message, edit_msg=cb.message)
 
 
 # Отправьте сообщение в антиспам для админа

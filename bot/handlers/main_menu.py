@@ -6,8 +6,7 @@ import db
 import keyboards as kb
 import utils as ut
 from init import dp, bot, log_error
-from data import capcha_list
-from enums import Key, CB
+from enums import Key, CB, MainButton
 
 
 # @dp.message()
@@ -81,6 +80,40 @@ async def back_com_start(cb: CallbackQuery, state: FSMContext):
         edit_msg=cb.message.message_id
         # keyboard=kb.get_start_kb()
     )
+
+
+# продать старт кнопка
+@dp.message(lambda msg: msg.text == MainButton.SELL.value)
+async def russian_rub_reply(msg: Message, state: FSMContext):
+    await state.clear()
+    await ut.russian_rub(msg)
+
+
+# старт обмена кнопка
+@dp.message(lambda msg: msg.text == MainButton.EXCHANGE.value)
+async def select_currency_reply(msg: Message, state: FSMContext):
+    await state.clear()
+    await ut.select_currency(msg, state)
+
+
+@dp.message(lambda msg: msg.text == MainButton.ACCOUNT.value)
+async def start_account(msg: Message, state: FSMContext):
+    await state.clear()
+    await ut.start_acc_send(msg)
+
+
+# Антиспам старт
+@dp.message(lambda msg: msg.text == MainButton.ANTISPAM.value)
+async def antispam_reply(msg: Message, state: FSMContext):
+    await state.clear()
+    await ut.antispam_sent(msg)
+
+
+# старт обмена кнопка
+@dp.message(lambda msg: msg.text == MainButton.INFO.value)
+async def info_send_reply(msg: Message, state: FSMContext):
+    await state.clear()
+    await ut.info_send(msg)
 
 
 # назад к первому экрану

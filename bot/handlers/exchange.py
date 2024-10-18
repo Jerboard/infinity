@@ -14,62 +14,18 @@ import utils as ut
 from enums import CB, Key, UserStatus, Action, OrderStatus, MainButton
 
 
-# кнопка продать
-async def russian_rub(msg: Message, edit_msg:int = None):
-    await ut.send_msg(
-        msg_key=Key.SELL.value,
-        chat_id=msg.chat.id,
-        edit_msg=edit_msg,
-        keyboard=kb.get_sell_kb()
-    )
-
-
 # продать старт инлайн
 @dp.callback_query(lambda cb: cb.data.startswith(CB.SELL.value))
 async def russian_rub_inline(cb: CallbackQuery, state: FSMContext):
     await state.clear()
-    await russian_rub(cb.message, edit_msg=cb.message.message_id)
-
-
-# продать старт кнопка
-@dp.message(lambda msg: msg.text == MainButton.SELL.value)
-async def russian_rub_reply(msg: Message, state: FSMContext):
-    await state.clear()
-    await russian_rub(msg)
-
-
-# старт обмена
-async def select_currency(msg: Message, state: FSMContext, edit_msg: int = None):
-    await state.clear()
-    check_orders = await db.get_orders(user_id=msg.from_user.id, check=True)
-
-    if check_orders:
-        text = 'У вас ещё осталась незакрытая заявка'
-        await ut.send_time_message(chat_id=msg.chat.id, text=text)
-    else:
-        await state.set_state(UserStatus.EXCHANGE)
-
-        currency = await db.get_all_currency()
-        await ut.send_msg(
-            msg_key=Key.SELECT_CURRENCY.value,
-            chat_id=msg.chat.id,
-            edit_msg=edit_msg,
-            keyboard=kb.get_currency_list_kb(currency)
-        )
+    await ut.russian_rub(cb.message, edit_msg=cb.message.message_id)
 
 
 # старт обмена инлайн
 @dp.callback_query(lambda cb: cb.data.startswith(CB.EXCHANGE.value))
 async def select_currency_inline(cb: CallbackQuery, state: FSMContext):
     await state.clear()
-    await select_currency(cb.message, state, edit_msg=cb.message.message_id)
-
-
-# старт обмена кнопка
-@dp.message(lambda msg: msg.text == MainButton.EXCHANGE.value)
-async def select_currency_reply(msg: Message, state: FSMContext):
-    await state.clear()
-    await select_currency(msg, state)
+    await ut.select_currency(cb.message, state, edit_msg=cb.message.message_id)
 
 
 # выбор способа оплаты
@@ -204,10 +160,8 @@ async def sum_exchange(msg: Message, state: FSMContext):
                 'commission': currency.commission,
                 'percent': currency.ratio,
                 'balance': user_data.referral_points + user_data.cashback,
-                # 'referral_points': user_data.referral_points,
-                # 'cashback': user_data.cashback,
-                'referral_points': 0,
-                'cashback': 0,
+                'referral_points': user_data.referral_points,
+                'cashback': user_data.cashback,
                 'currency_code': currency.code,
                 'pay_string': f'К ОПЛАТЕ {total_amount}Р',
                 'used_promo': False,
@@ -262,6 +216,10 @@ async def use_point(cb: CallbackQuery, state: FSMContext):
         await cb.answer('ВНУТРЕННИЙ БАЛАНС КОШЕЛЬКА УЖЕ ПРИМЕНЕН', show_alert=True)
         return
 
+    if data['balance'] == 0:
+        await cb.answer('ВНУТРЕННИЙ БАЛАНС КОШЕЛЬКА РАВЕН НУЛЮ', show_alert=True)
+        return
+
     if data['balance'] > data['total_amount']:
         used_balance = data['balance'] - data['total_amount'] + 1
         total_amount = 1
@@ -304,7 +262,8 @@ async def send_wallet(cb: CallbackQuery, state: FSMContext):
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         text=text,
-        keyboard=kb.get_back_kb(CB.BACK_CHECK_INFO.value)
+        keyboard=kb.get_cancel_kb()
+        # keyboard=kb.get_back_kb(CB.BACK_CHECK_INFO.value)
     )
 
 
