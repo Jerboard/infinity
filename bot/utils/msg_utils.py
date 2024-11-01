@@ -88,12 +88,28 @@ async def send_msg(
 async def main_exchange(state: FSMContext, del_msg: bool = False):
     data = await state.get_data()
 
+    ex_data = ut.amount_calculator(
+        coin_rate=data.get('coin_rate'),
+        user_rub_sum=data.get('user_rub_sum'),
+        commission=data.get('commission'),
+        infinity_percent=data.get('percent'),
+        coin_round=data.get('coin_round'),
+        # first_count=data.get('first_count'),
+        buy_rate=data.get('buy_rate'),
+        cashback_rate=data.get('cashback_rate'),
+        promo_rate=data.get('promo_rate'),
+        used_balance=data.get('used_balance')
+    )
+
+    await state.update_data(**ex_data)
+    data = await state.get_data()
+
     pay_methods = await db.get_all_pay_method()
 
     msg_data = await db.get_msg(Key.EXCHANGE.value)
     text = msg_data.text.format(
-        currency_rate=data['rate_raw'],
-        sum_coin=data['sum_exchange'],
+        currency_rate=data['coin_rate'],
+        sum_coin=data['coin_sum'],
         currency_code=data['currency_code'],
         sum_rub=data['amount'],
         balance=f'<s>{data["balance"]}</s>' if data.get('used_balance') else data['balance'],

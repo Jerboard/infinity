@@ -96,6 +96,7 @@ async def add_order(
         promo_used_id: int,
         commission: int,
         profit: int,
+        cashback: int,
 ) -> int:
     now = datetime.now()
     query = OrderTable.insert().values(
@@ -120,6 +121,7 @@ async def add_order(
         promo_used_id=promo_used_id,
         commission=commission,
         profit=profit,
+        cashback=cashback,
     )
     async with begin_connection() as conn:
         result = await conn.execute(query)

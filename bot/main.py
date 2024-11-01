@@ -9,11 +9,24 @@ from config import Config
 from init import set_main_menu, bot, log_error
 from db.base import init_models
 from db.temp import update_db
-from utils.scheduler_utils import scheduler_start_async
+from utils.scheduler_utils import scheduler_start_async, hand_orders
+from utils.base_utils import amount_calculator
 
 
 async def main() -> None:
+    # amount_calculator(
+    #     coin_rate=6000,
+    #     user_rub_sum=5000,
+    #     commission=10,
+    #     infinity_percent=10,
+    #     coin_round=8,
+    #     buy_rate=6300,
+    #     cashback_rate=0.01,
+    #     promo_rate=80,
+    #     use_balance=500
+    # )
     # await update_db()
+    # await hand_orders()
     await init_models()
     await set_main_menu()
     if not Config.debug:

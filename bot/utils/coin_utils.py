@@ -85,7 +85,7 @@ async def check_wallet(coin_code, wallet):
     elif coin_code == Coin.LTC:
         url = f"https://api.blockcypher.com/v1/ltc/main/addrs/{wallet}"
         response = requests.get(url)
-        print(f'response: {response.text}')
+        # print(f'response: {response.text}')
         if response.status_code == 200:
             correct = True
 

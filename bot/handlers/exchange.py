@@ -83,29 +83,20 @@ async def sum_exchange(msg: Message, state: FSMContext):
     else:
         input_sum = float(input_sum)
         data = await state.get_data()
-        # await state.set_state('exchange_send_sum')
 
         currency = await db.get_currency(currency_id=data['currency_id'])
 
-        # зачем тут +1
-        currency_rate = round(currency.rate * ((currency.ratio / 100) + 1))
-
-        # if input_sum <= currency.max:
         if input_sum <= 200:
             sum_coin = input_sum
-            sum_rub = round(sum_coin * currency_rate)
-            total_amount = sum_rub + currency.commission
-            # sum_rub = round((sum_coin * currency_rate))
+            sum_rub = round(sum_coin * currency.rate)
         else:
             sum_rub = input_sum
-            sum_coin = sum_rub / currency_rate
-            total_amount = sum_rub + currency.commission
-            # sum_coin = (sum_rub - currency.commission) / currency_rate
+            sum_coin = sum_rub / currency.rate
 
         correct_sum = True
         text = 'Произошла ошибка перезапустите бот /start'
         if sum_coin < currency.min:
-            min_rub = round(currency_rate * currency.min)
+            min_rub = round(currency.rate * currency.min)
             text = (f'❌ Некорректная сумма\n'
                     f'Сумма должна быть больше:\n'
                     f'{currency.min} {currency.code}\n'
@@ -114,7 +105,7 @@ async def sum_exchange(msg: Message, state: FSMContext):
             correct_sum = False
 
         elif sum_coin > currency.max:
-            max_rub = round(currency_rate * currency.max)
+            max_rub = round(currency.rate * currency.max)
             text = (f'❌ Некорректная сумма\n' 
                     f'Сумма должна быть меньше:\n' 
                     f'{currency.max} {currency.code}\n' 
@@ -138,36 +129,35 @@ async def sum_exchange(msg: Message, state: FSMContext):
 
         else:
             user_data = await db.get_user_info(msg.from_user.id)
-            # print(f'user_data:{user_data}')
-            # balance = user_data.referral_points + user_data.cashback
-
-            profit = ut.get_profit_exchange(
-                coin_sum=sum_coin,
-                buy_price=currency.buy_price,
-                total_amount=total_amount,
-                commission=currency.commission
-            )
-            sum_coin = round(sum_coin, currency.round)
+            balance = user_data.referral_points + user_data.cashback
             promo = await db.get_used_promo(user_id=msg.from_user.id, used=False)
+            info = await db.get_info()
 
             await state.update_data(data={
-                'amount': sum_rub,
-                'total_amount': total_amount,
-                'sum_exchange': sum_coin,
-                'rate_raw': currency.rate,
-                'rate': currency_rate,
                 'start_time': datetime.now(),
+                'user_rub_sum': sum_rub,
+                'coin_rate': currency.rate,
                 'commission': currency.commission,
+                'buy_rate': currency.buy_price,
                 'percent': currency.ratio,
-                'balance': user_data.referral_points + user_data.cashback,
-                'referral_points': user_data.referral_points,
-                'cashback': user_data.cashback,
                 'currency_code': currency.code,
-                'pay_string': f'К ОПЛАТЕ {total_amount}Р',
-                'used_promo': False,
-                'profit': profit,
+                'coin_round': currency.round,
+                'cashback_rate': info.cashback,
                 'promo_data': promo,
+                'balance': balance,
+                'used_promo': False,
+                # 'first_count': True,
             })
+
+            await ut.main_exchange(state, del_msg=True)
+
+            # await state.update_data(data={
+            #
+            #     'referral_points': user_data.referral_points,
+            #     'cashback': user_data.cashback,
+            #     'used_promo': False,
+            #     'promo_data': promo,
+            # })
 
             # if promo:
             #     await state.update_data(data={
@@ -175,8 +165,6 @@ async def sum_exchange(msg: Message, state: FSMContext):
             #         'promo_rate': promo.rate,
             #         'promo': promo.promo,
             #     })
-
-            await ut.main_exchange(state, del_msg=True)
 
 
 # Использовать промо
@@ -190,15 +178,8 @@ async def use_promo(cb: CallbackQuery, state: FSMContext):
 
     # promo = await db.get_used_promo(user_id=cb.from_user.id, used=False)
     promo: db.UsedPromoRow = data['promo_data']
-    rate = 1 - (promo.rate / 100)
-    discount = data['profit'] * rate
-    total_amount = round(data['total_amount'] - discount)
-
-    pay_string = f'<s>{data["pay_string"]}</s>\nК ОПЛАТЕ С УЧЕТОМ ПРОМОКОДА: {total_amount}р.'
 
     await state.update_data(data={
-        'total_amount': total_amount,
-        'pay_string': pay_string,
         'used_promo': True,
         'promo_id': promo.id,
         'promo_rate': promo.rate,
@@ -228,12 +209,12 @@ async def use_point(cb: CallbackQuery, state: FSMContext):
         used_balance = data['balance']
         total_amount = data['total_amount'] - data['balance']
 
-    pay_string = f'<s>{data["pay_string"]}</s>\nК ОПЛАТЕ С УЧЕТОМ БАЛАНСА: {total_amount}р.'
+    # pay_string = f'<s>{data["pay_string"]}</s>\nК ОПЛАТЕ С УЧЕТОМ БАЛАНСА: {total_amount}р.'
 
     await state.update_data(data={
-        'total_amount': total_amount,
+        # 'total_amount': total_amount,
         'used_balance': used_balance,
-        'pay_string': pay_string,
+        # 'pay_string': pay_string,
     })
     await ut.main_exchange(state)
 
@@ -326,12 +307,11 @@ async def check_wallet(msg: Message, state: FSMContext):
         coin=data['currency_code'],
         pay_method=pay_method_info.name,
         card=pay_method_info.card,
-        coin_sum=data['sum_exchange'],
-        # wallet=data['wallet'],
+        coin_sum=data['coin_sum'],
         wallet=msg.text,
         promo=data.get('promo'),
         promo_rate=data.get('promo_rate', 0),
-        exchange_rate=data['rate'],
+        exchange_rate=data['coin_rate'],
         percent=data['percent'],
         amount=data['amount'],
         used_points=use_points,
@@ -340,7 +320,8 @@ async def check_wallet(msg: Message, state: FSMContext):
         message_id=data['message_id'],
         promo_used_id=data.get('promo_id', 0),
         commission=data['commission'],
-        profit=data['profit']
+        profit=data['profit'],
+        cashback=data['profit']
     )
 
     msg_data = await db.get_msg(Key.PAYMENT.value)
@@ -393,7 +374,7 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
             text=text
         )
 
-        ut.add_order_row(order=order, row=order.row)
+        # ut.add_order_row(order=order, row=order.row)
 
         username = f'@{cb.from_user.username}' if cb.from_user.username is not None else ''
         text = f'<b>Новая заявка:</b>\n' \
