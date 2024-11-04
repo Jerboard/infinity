@@ -14,24 +14,12 @@ from utils.base_utils import amount_calculator
 
 
 async def main() -> None:
-    # amount_calculator(
-    #     coin_rate=6000,
-    #     user_rub_sum=5000,
-    #     commission=10,
-    #     infinity_percent=10,
-    #     coin_round=8,
-    #     buy_rate=6300,
-    #     cashback_rate=0.01,
-    #     promo_rate=80,
-    #     use_balance=500
-    # )
-    # await update_db()
-    # await hand_orders()
     await init_models()
     await set_main_menu()
     if not Config.debug:
         await scheduler_start_async()
     # await scheduler_start_async()
+    # await hand_orders()
 
     await bot.delete_webhook (drop_pending_updates=True)
     await dp.start_polling(bot)

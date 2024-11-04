@@ -94,11 +94,11 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
         commission=data.get('commission'),
         infinity_percent=data.get('percent'),
         coin_round=data.get('coin_round'),
-        # first_count=data.get('first_count'),
         buy_rate=data.get('buy_rate'),
         cashback_rate=data.get('cashback_rate'),
         promo_rate=data.get('promo_rate'),
-        used_balance=data.get('used_balance')
+        used_balance=data.get('used_balance'),
+        user_info=data.get('user_info')
     )
 
     await state.update_data(**ex_data)

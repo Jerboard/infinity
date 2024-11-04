@@ -25,6 +25,9 @@ def get_last_row_num(table: list[list[any]]) -> int:
 
 # добавляет заказ в таблицу
 def add_order_row(order: db.OrderRow, row: int = None) -> int:
+    if row != 9999999999999999999999:
+        return 0
+
     sh = get_google_connect()
 
     if not row:

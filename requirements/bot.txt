@@ -11,3 +11,5 @@ web3
 httpx
 redis
 gspread
+base58
+bech32

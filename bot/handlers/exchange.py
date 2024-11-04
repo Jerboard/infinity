@@ -129,7 +129,7 @@ async def sum_exchange(msg: Message, state: FSMContext):
 
         else:
             user_data = await db.get_user_info(msg.from_user.id)
-            balance = user_data.referral_points + user_data.cashback
+            # balance = user_data.referral_points + user_data.cashback
             promo = await db.get_used_promo(user_id=msg.from_user.id, used=False)
             info = await db.get_info()
 
@@ -144,9 +144,10 @@ async def sum_exchange(msg: Message, state: FSMContext):
                 'coin_round': currency.round,
                 'cashback_rate': info.cashback,
                 'promo_data': promo,
-                'balance': balance,
+                # 'balance': balance,
                 'used_promo': False,
-                # 'first_count': True,
+                'used_balance': False,
+                'user_info': user_data,
             })
 
             await ut.main_exchange(state, del_msg=True)
@@ -201,19 +202,19 @@ async def use_point(cb: CallbackQuery, state: FSMContext):
         await cb.answer('ВНУТРЕННИЙ БАЛАНС КОШЕЛЬКА РАВЕН НУЛЮ', show_alert=True)
         return
 
-    if data['balance'] > data['total_amount']:
-        used_balance = data['balance'] - data['total_amount'] + 1
-        total_amount = 1
-
-    else:
-        used_balance = data['balance']
-        total_amount = data['total_amount'] - data['balance']
+    # if data['balance'] > data['total_amount']:
+    #     used_balance = data['balance'] - data['total_amount'] + 1
+    #     total_amount = 1
+    #
+    # else:
+    #     used_balance = data['balance']
+    #     total_amount = data['total_amount'] - data['balance']
 
     # pay_string = f'<s>{data["pay_string"]}</s>\nК ОПЛАТЕ С УЧЕТОМ БАЛАНСА: {total_amount}р.'
 
     await state.update_data(data={
         # 'total_amount': total_amount,
-        'used_balance': used_balance,
+        'used_balance': True,
         # 'pay_string': pay_string,
     })
     await ut.main_exchange(state)
@@ -283,18 +284,18 @@ async def check_wallet(msg: Message, state: FSMContext):
     # списываем баллы
     use_points, use_cashback = 0, 0
     if data.get('used_balance'):
-        if data['total_amount'] == 1:
-            use_points = data['referral_points']
-            use_cashback = data['used_balance'] - data['referral_points']
-
-        else:
-            use_points = data['referral_points']
-            use_cashback = data['cashback']
+        # if data['total_amount'] == 1:
+        #     use_points = data['referral_points']
+        #     use_cashback = data['used_balance'] - data['referral_points']
+        #
+        # else:
+        #     use_points = data['referral_points']
+        #     use_cashback = data['cashback']
 
         await db.update_user_info(
             user_id=msg.from_user.id,
-            add_point=0 - use_points,
-            add_cashback=0 - use_cashback
+            add_point=0 - data['use_points'],
+            add_cashback=0 - data['use_cashback']
         )
 
     # for k, v in data.items():
@@ -314,14 +315,14 @@ async def check_wallet(msg: Message, state: FSMContext):
         exchange_rate=data['coin_rate'],
         percent=data['percent'],
         amount=data['amount'],
-        used_points=use_points,
-        used_cashback=use_cashback,
+        used_points=data['use_points'],
+        used_cashback=data['use_cashback'],
         total_amount=data['total_amount'],
         message_id=data['message_id'],
         promo_used_id=data.get('promo_id', 0),
         commission=data['commission'],
         profit=data['profit'],
-        cashback=data['profit']
+        cashback=data['cashback']
     )
 
     msg_data = await db.get_msg(Key.PAYMENT.value)
