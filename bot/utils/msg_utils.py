@@ -109,9 +109,10 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
     msg_data = await db.get_msg(Key.EXCHANGE.value)
     text = msg_data.text.format(
         currency_rate=data['coin_rate'],
-        sum_coin=data['coin_sum'],
+        # sum_coin=data['coin_sum'],
+        sum_coin=data['input_sum'] if data.get('input_coin') else data['coin_sum'],
         currency_code=data['currency_code'],
-        sum_rub=data['amount'],
+        sum_rub=data['user_rub_sum'],
         balance=f'<s>{data["balance"]}</s>' if data.get('used_balance') else data['balance'],
         pay_string=data['pay_string']
     )

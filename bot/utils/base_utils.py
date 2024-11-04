@@ -59,6 +59,7 @@ def amount_calculator(
     infinity_rate = coin_rate * ((infinity_percent / 100) + 1)  # курс рынка
     amount = (coin_sum * infinity_rate) + commission  # сумма с пользователя
     total_amount = amount
+    buy_rate = buy_rate or 0
     profit = (coin_sum * infinity_rate) - (coin_sum * buy_rate)  # прибыль
 
     # if first_count:

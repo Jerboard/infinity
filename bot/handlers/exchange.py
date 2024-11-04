@@ -89,9 +89,11 @@ async def sum_exchange(msg: Message, state: FSMContext):
         if input_sum <= 200:
             sum_coin = input_sum
             sum_rub = round(sum_coin * currency.rate)
+            input_coin = True
         else:
             sum_rub = input_sum
             sum_coin = sum_rub / currency.rate
+            input_coin = False
 
         correct_sum = True
         text = 'Произошла ошибка перезапустите бот /start'
@@ -134,6 +136,8 @@ async def sum_exchange(msg: Message, state: FSMContext):
             info = await db.get_info()
 
             await state.update_data(data={
+                'input_sum': msg.text,
+                'input_coin': input_coin,
                 'start_time': datetime.now(),
                 'user_rub_sum': sum_rub,
                 'coin_rate': currency.rate,
@@ -144,7 +148,6 @@ async def sum_exchange(msg: Message, state: FSMContext):
                 'coin_round': currency.round,
                 'cashback_rate': info.cashback,
                 'promo_data': promo,
-                # 'balance': balance,
                 'used_promo': False,
                 'used_balance': False,
                 'user_info': user_data,
