@@ -206,11 +206,12 @@ async def take_cashback_step_2(msg: Message, state: FSMContext):
         await sent.delete()
         return
 
-    checked_wallet = await db.get_wallet(code=Coin.BTC.value, wallet=msg.text)
-    if not checked_wallet:
-        checked_wallet = await ut.check_wallet(coin_code=Coin.BTC.value, wallet=msg.text)
+    # checked_wallet = await db.get_wallet(code=Coin.BTC.value, wallet=msg.text)
+    # if not checked_wallet:
+    #     checked_wallet = await ut.check_wallet(coin_code=Coin.BTC.value, wallet=msg.text)
 
-    if not checked_wallet:
+    # if not checked_wallet:
+    if not ut.check_valid_wallet(coin=Coin.BTC.value, wallet=msg.text):
         sent = await msg.answer('❌ Некорректный адрес кошелька')
         await sleep(3)
         await sent.delete()

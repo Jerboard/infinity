@@ -192,7 +192,6 @@ async def get_orders(
         amount: float = None,
         referrer_id: int = None,
         desc_order: bool = False
-
 ) -> tuple[OrderRow]:
     query = OrderTable.select()
 
@@ -261,7 +260,7 @@ async def update_order(
         add_cashback: int = None,
         row: int = None,
 ) -> None:
-    query = OrderTable.update().where(OrderTable.c.id == order_id)
+    query = OrderTable.update().where(OrderTable.c.id == order_id).values(updated_at=datetime.now())
 
     if status:
         query = query.values(status=status)

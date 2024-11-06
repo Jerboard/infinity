@@ -8,6 +8,7 @@ from admin_infinity.settings import DEBUG
 from .models import Msg
 from .models import User, Order, CashbackLevel, Currency, PayMethod, Promo, CashbackOrder, Info
 
+
 # admin_infinity_bot
 # dQ6tWhJ5
 @admin.register(User)
@@ -86,12 +87,13 @@ class RefLvlTable(admin.ModelAdmin):
 @admin.register(Msg)
 class ViewAdminMsg(admin.ModelAdmin):
     if DEBUG:
-        list_display = ['key', 'comment', 'text', 'cover_image_preview']
+        list_display = ['key', 'comment', 'text', 'cover_image_preview', 'custom_order']
         readonly_fields = ['updated_at', 'cover_image_preview_in', 'photo_id']
     else:
-        list_display = ['comment', 'text', 'cover_image_preview']
+        list_display = ['comment', 'text', 'cover_image_preview', 'custom_order']
         readonly_fields = ['updated_at', 'cover_image_preview_in', 'photo_id', 'bot_id', 'key']
-    # list_editable = ['comment']
+    list_editable = ['custom_order']
+    ordering = ['custom_order']
 
     def cover_image_preview(self, obj):
         if obj.photo_path:

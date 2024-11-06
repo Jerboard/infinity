@@ -51,7 +51,8 @@ async def send_sum(cb: CallbackQuery, state: FSMContext):
         currency_name = data['currency_name']
 
     min_sum = currency.min if currency.min != 0 else 'Без ограничения'
-    msg_data = await db.get_msg(Key.SEND_SUM.value)
+    msg_key = ut.get_send_sum_key(currency.code)
+    msg_data = await db.get_msg(msg_key)
     text = msg_data.text.format(
         currency_name=currency_name,
         min_sum=min_sum,
@@ -97,6 +98,7 @@ async def sum_exchange(msg: Message, state: FSMContext):
 
         correct_sum = True
         text = 'Произошла ошибка перезапустите бот /start'
+
         if sum_coin < currency.min:
             min_rub = round(currency.rate * currency.min)
             text = (f'❌ Некорректная сумма\n'
@@ -259,25 +261,41 @@ async def check_wallet(msg: Message, state: FSMContext):
 
     data = await state.get_data()
 
-    checked_wallet = await db.get_wallet(code=data['currency_code'], wallet=msg.text)
-    if not checked_wallet:
-        check = await ut.check_wallet(coin_code=data['currency_code'], wallet=msg.text)
-        if check:
-            if not Config.debug:
-                await db.add_wallet(user_id=msg.from_user.id, code=data['currency_code'], wallet=msg.text)
+    if not ut.check_valid_wallet(coin=data['currency_code'], wallet=msg.text):
+        # await msg.answer('❌ Некорректный адрес кошелька')
 
-        else:
-            await msg.answer('❌ Некорректный адрес кошелька')
+        # text = f'<b>Укажи {data["currency_name"]}-Кошелек:</b>'
+        await ut.send_time_message(chat_id=msg.chat.id, text='❌ Некорректный адрес кошелька', msg_ids=[msg.message_id])
+        # await sleep(3)
+        # await msg.delete()
+        # await ut.send_msg(
+        #     msg_key=Key.SEND_WALLET.value,
+        #     chat_id=msg.chat.id,
+        #     # edit_msg=data['message_id'],
+        #     text=text,
+        #     keyboard=kb.get_cancel_kb()
+        # )
+        return
 
-            text = f'<b>Укажи {data["currency_name"]}-Кошелек:</b>'
-            await ut.send_msg(
-                msg_key=Key.SEND_WALLET.value,
-                chat_id=msg.chat.id,
-                edit_msg=data['message_id'],
-                text=text,
-                keyboard=kb.get_back_kb(CB.SELECT_PAYMENT.value)
-            )
-            return
+    # checked_wallet = await db.get_wallet(code=data['currency_code'], wallet=msg.text)
+    # if not checked_wallet:
+    #     check = await ut.check_wallet(coin_code=data['currency_code'], wallet=msg.text)
+    #     if check:
+    #         if not Config.debug:
+    #             await db.add_wallet(user_id=msg.from_user.id, code=data['currency_code'], wallet=msg.text)
+    #
+    #     else:
+    #         await msg.answer('❌ Некорректный адрес кошелька')
+    #
+    #         text = f'<b>Укажи {data["currency_name"]}-Кошелек:</b>'
+    #         await ut.send_msg(
+    #             msg_key=Key.SEND_WALLET.value,
+    #             chat_id=msg.chat.id,
+    #             edit_msg=data['message_id'],
+    #             text=text,
+    #             keyboard=kb.get_back_kb(CB.SELECT_PAYMENT.value)
+    #         )
+    #         return
 
     await state.update_data(data={'wallet': msg.text})
 

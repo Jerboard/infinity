@@ -10,10 +10,11 @@ from init import set_main_menu, bot, log_error
 from db.base import init_models
 from db.temp import update_db
 from utils.scheduler_utils import scheduler_start_async, hand_orders
-from utils.base_utils import amount_calculator
+from utils.wallet_utils import test_wallet_valid
 
 
 async def main() -> None:
+    # await test_wallet_valid()
     await init_models()
     await set_main_menu()
     if not Config.debug:

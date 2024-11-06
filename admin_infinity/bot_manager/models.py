@@ -259,6 +259,7 @@ class Msg(models.Model):
     photo_id = models.CharField('Фото ID', max_length=255, null=True, blank=True)
     bot_id = models.BigIntegerField('Бот ID', null=True, blank=True)
     photo_path = models.FileField('Путь', upload_to='photo')
+    custom_order = models.IntegerField('Порядок', null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.pk:

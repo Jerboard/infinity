@@ -15,8 +15,7 @@ def get_google_connect() -> Spreadsheet:
 
 def get_last_row_num(table: list[list[any]]) -> int:
     last_row = 3
-
-    for row in table[3:]:
+    for row in table[2:]:
         if not str(row[0]).isdigit():
             break
         last_row += 1
@@ -25,9 +24,6 @@ def get_last_row_num(table: list[list[any]]) -> int:
 
 # добавляет заказ в таблицу
 def add_order_row(order: db.OrderRow, row: int = None) -> int:
-    if row != 9999999999999999999999:
-        return 0
-
     sh = get_google_connect()
 
     if not row:

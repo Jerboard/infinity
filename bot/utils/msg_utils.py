@@ -29,10 +29,16 @@ async def send_capcha(chat_id: int, first_name: str, referrer: str = None) -> No
 
 
 # временное сообщение
-async def send_time_message(chat_id: int, text: str) -> None:
+async def send_time_message(chat_id: int, text: str, msg_ids: list[int] = None) -> None:
     sent = await bot.send_message(chat_id=chat_id, text=text)
     await sleep(3)
     await sent.delete()
+    if msg_ids:
+        for msg_id in msg_ids:
+            try:
+                await bot.delete_message(chat_id=chat_id, message_id=msg_id)
+            except Exception as ex:
+                pass
 
 
 # обрабатывает текст. заменяет неподдерживаемые теги

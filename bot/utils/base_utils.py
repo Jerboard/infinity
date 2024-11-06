@@ -2,6 +2,7 @@ from random import choice
 
 import db
 from config import Config
+from enums import Coin, Key
 
 
 # проверяет на цифру
@@ -11,6 +12,18 @@ def is_digit(text):
         return True
     except:
         return False
+
+
+# возвращает нужный ключ для обмена
+def get_send_sum_key(coin: str) -> str:
+    if coin == Coin.BTC:
+        return Key.SEND_SUM_BTC.value
+    elif coin == Coin.LTC:
+        return Key.SEND_SUM_LTC.value
+    elif coin == Coin.XMR:
+        return Key.SEND_SUM_XMR.value
+    else:
+        return Key.SEND_SUM_USDT.value
 
 
 #   считает прибыль с обмена
@@ -99,17 +112,17 @@ def amount_calculator(
     else:
         cashback = 0
 
-    print(f'sum_coin: {coin_sum}')
-    print(f'amount: {amount}')
-    print(f'profit: {profit}')
-    print(f'cashback: {cashback}')
-    print(f'discount: {discount}')
-    print(f'used_balance: {used_balance}')
-    print(f'infinity_percent: {infinity_percent}')
-    print(f'infinity_rate: {infinity_rate}')
-    print(f'coin_rate: {coin_rate}')
-    print(f'use_cashback: {use_cashback}')
-    print(f'use_points: {use_points}')
+    # print(f'sum_coin: {coin_sum}')
+    # print(f'amount: {amount}')
+    # print(f'profit: {profit}')
+    # print(f'cashback: {cashback}')
+    # print(f'discount: {discount}')
+    # print(f'used_balance: {used_balance}')
+    # print(f'infinity_percent: {infinity_percent}')
+    # print(f'infinity_rate: {infinity_rate}')
+    # print(f'coin_rate: {coin_rate}')
+    # print(f'use_cashback: {use_cashback}')
+    # print(f'use_points: {use_points}')
 
     return {
         'coin_sum': round(coin_sum, coin_round),
