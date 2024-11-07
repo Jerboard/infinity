@@ -7,6 +7,7 @@ import coinaddrvalidator
 from datetime import datetime
 
 import db
+from config import Config
 from enums import Coin, OrderStatus
 
 import random
@@ -70,6 +71,9 @@ async def test_wallet_valid():
 
 # проверяет кошелёк
 def check_valid_wallet(coin: str, wallet: str) -> bool:
+    if Config.debug:
+        return True
+
     if coin == Coin.BTC:
         return validate_bitcoin_address(wallet)
 

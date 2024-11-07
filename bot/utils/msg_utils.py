@@ -12,7 +12,7 @@ from init import bot
 from config import Config
 from data import capcha_list
 import utils as ut
-from enums import Key, UserStatus, OrderStatus
+from enums import Key, UserStatus, OrderStatus, InputType
 
 
 # отправляет сообщение
@@ -96,16 +96,20 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
 
     ex_data = ut.amount_calculator(
         coin_rate=data.get('coin_rate'),
-        user_rub_sum=data.get('user_rub_sum'),
+        input_sum=data.get('input_sum'),
+        input_type=data.get('input_type'),
         commission=data.get('commission'),
         infinity_percent=data.get('percent'),
         coin_round=data.get('coin_round'),
         buy_rate=data.get('buy_rate'),
         cashback_rate=data.get('cashback_rate'),
+        user_info=data.get('user_info'),
         promo_rate=data.get('promo_rate'),
         used_balance=data.get('used_balance'),
-        user_info=data.get('user_info')
     )
+
+    for k, v in ex_data.items():
+        print(f'{k}: {v}')
 
     await state.update_data(**ex_data)
     data = await state.get_data()
@@ -116,9 +120,9 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
     text = msg_data.text.format(
         currency_rate=data['coin_rate'],
         # sum_coin=data['coin_sum'],
-        sum_coin=data['input_sum'] if data.get('input_coin') else data['coin_sum'],
+        sum_coin=data['input_sum_str'] if data.get('input_type') == InputType.COIN else data['coin_sum'],
         currency_code=data['currency_code'],
-        sum_rub=data['user_rub_sum'],
+        sum_rub=data['input_sum_str'] if data.get('input_type') == InputType.RUB else data['rub_sum'],
         balance=f'<s>{data["balance"]}</s>' if data.get('used_balance') else data['balance'],
         pay_string=data['pay_string']
     )

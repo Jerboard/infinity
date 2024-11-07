@@ -2,7 +2,8 @@ from random import choice
 
 import db
 from config import Config
-from enums import Coin, Key
+import utils as ut
+from enums import Coin, Key, InputType
 
 
 # проверяет на цифру
@@ -57,26 +58,30 @@ def get_check_info_text(data: dict, currency: db.CurrencyRow) -> str:
 # считает сумму к аплате профит и прочие, списывает
 def amount_calculator(
         coin_rate: int,
-        user_rub_sum: int,
+        # user_rub_sum: int,
+        input_sum: int,
+        input_type: str,
         commission: int,
         infinity_percent: float,
+        coin_round: int,
         buy_rate: int,
         cashback_rate: float,
-        coin_round: int,
         user_info: db.UserRow,
         promo_rate: int = None,
         used_balance: bool = None
 ) -> dict:
-    coin_sum = user_rub_sum / coin_rate
-    # commission_rate = (commission/100) + 1
+    if input_type == InputType.COIN:
+        coin_sum = input_sum
+        rub_sum = input_sum * coin_rate
+    else:
+        coin_sum = input_sum / coin_rate
+        rub_sum = input_sum
+
     infinity_rate = coin_rate * ((infinity_percent / 100) + 1)  # курс рынка
     amount = (coin_sum * infinity_rate) + commission  # сумма с пользователя
     total_amount = amount
     buy_rate = buy_rate or 0
     profit = (coin_sum * infinity_rate) - (coin_sum * buy_rate)  # прибыль
-
-    # if first_count:
-    #     start_amount
 
     pay_string = f'К ОПЛАТЕ {round(total_amount)}Р'
 
@@ -90,6 +95,8 @@ def amount_calculator(
     else:
         discount = 0
 
+    print(f'cashback: {user_info.cashback} referral_points: {user_info.referral_points}')
+    # cashback: 5 referral_points: 1000
     balance = user_info.cashback + user_info.referral_points
     use_points, use_cashback = 0, 0
     if used_balance:
@@ -100,10 +107,23 @@ def amount_calculator(
             profit -= balance
 
         else:
-            use_points = user_info.referral_points
-            use_cashback = user_info.cashback - total_amount
+            if user_info.referral_points < total_amount:
+                use_points = user_info.referral_points
+                use_cashback = total_amount - use_points - 1
+
+            elif user_info.referral_points == total_amount:
+                use_points = user_info.referral_points - 1
+                use_cashback = 0
+
+            else:
+                use_points = total_amount - 1
+                use_cashback = 0
+
             total_amount = 1
             profit -= (use_points + use_cashback)
+
+        if profit < 0:
+            profit = 0
 
         pay_string = f'<s>{pay_string}</s>\nК ОПЛАТЕ С УЧЕТОМ БАЛАНСА: {round(total_amount)}р.'
 
@@ -112,20 +132,9 @@ def amount_calculator(
     else:
         cashback = 0
 
-    # print(f'sum_coin: {coin_sum}')
-    # print(f'amount: {amount}')
-    # print(f'profit: {profit}')
-    # print(f'cashback: {cashback}')
-    # print(f'discount: {discount}')
-    # print(f'used_balance: {used_balance}')
-    # print(f'infinity_percent: {infinity_percent}')
-    # print(f'infinity_rate: {infinity_rate}')
-    # print(f'coin_rate: {coin_rate}')
-    # print(f'use_cashback: {use_cashback}')
-    # print(f'use_points: {use_points}')
-
     return {
         'coin_sum': round(coin_sum, coin_round),
+        'rub_sum': round(rub_sum),
         'total_amount': round(total_amount),
         'amount': round(amount),
         'profit': round(profit),

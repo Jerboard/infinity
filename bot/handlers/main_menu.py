@@ -138,5 +138,8 @@ async def info_send_reply(msg: Message, state: FSMContext):
 async def cancel(cb: CallbackQuery, state: FSMContext):
     await state.clear()
     # text = 'Выберите из кнопок ниже:'
-    await cb.message.delete()
+    try:
+        await cb.message.delete()
+    except Exception as ex:
+        log_error(ex)
     await ut.send_msg(msg_key=Key.START.value, chat_id=cb.message.chat.id, keyboard=kb.get_start_kb())

@@ -40,12 +40,7 @@ async def done_order(order: db.OrderRow):
     # начисляем кешбек
     if order.cashback > 0:
         await db.update_user_info(user_id=order.user_id, add_cashback=order.cashback)
-        # info = await db.get_info()
-        # cashback = round(order.profit * (info.cashback / 100))
-        # if cashback > 0:
-            # print(f'>>> cashback: {cashback} profit: {profit}')
-            # await db.update_user_info(user_id=order.user_id, add_cashback=cashback)
-            # await db.update_order(order_id=order.id, add_cashback=cashback)
+        await db.update_order(order_id=order.id, add_cashback=order.cashback)
 
     # реферальные баллы
     if user.referrer and order.profit > 0:

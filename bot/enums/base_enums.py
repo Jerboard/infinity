@@ -38,6 +38,12 @@ class Key(str, Enum):
 
 
 # действия
+class InputType(str, Enum):
+    RUB = 'rub'
+    COIN = 'coin'
+
+
+# действия
 class Action(str, Enum):
     ADD = 'add'
     DEL = 'del'

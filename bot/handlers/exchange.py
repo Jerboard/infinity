@@ -11,7 +11,7 @@ import keyboards as kb
 from config import Config
 from init import dp, bot
 import utils as ut
-from enums import CB, Key, UserStatus, Action, OrderStatus, MainButton
+from enums import CB, Key, UserStatus, Action, OrderStatus, InputType
 
 
 # продать старт инлайн
@@ -84,52 +84,34 @@ async def sum_exchange(msg: Message, state: FSMContext):
     else:
         input_sum = float(input_sum)
         data = await state.get_data()
-
         currency = await db.get_currency(currency_id=data['currency_id'])
 
-        if input_sum <= 200:
-            sum_coin = input_sum
-            sum_rub = round(sum_coin * currency.rate)
-            input_coin = True
-        else:
-            sum_rub = input_sum
-            sum_coin = sum_rub / currency.rate
-            input_coin = False
-
-        correct_sum = True
-        text = 'Произошла ошибка перезапустите бот /start'
-
-        if sum_coin < currency.min:
-            min_rub = round(currency.rate * currency.min)
-            text = (f'❌ Некорректная сумма\n'
-                    f'Сумма должна быть больше:\n'
-                    f'{currency.min} {currency.code}\n'
-                    f'{min_rub} руб.')
-
-            correct_sum = False
-
-        elif sum_coin > currency.max:
-            max_rub = round(currency.rate * currency.max)
-            text = (f'❌ Некорректная сумма\n' 
-                    f'Сумма должна быть меньше:\n' 
-                    f'{currency.max} {currency.code}\n' 
-                    f'{max_rub} руб.')
-
-            correct_sum = False
+        input_type: str = InputType.RUB.value if input_sum > currency.max else InputType.COIN.value
+        check_sum = input_sum if input_type == InputType.COIN else input_sum / currency.rate
 
         # если некорректная сумма - просит новую
-        if not correct_sum:
-            try:
-                await bot.delete_message(chat_id=msg.chat.id, message_id=data['message_id'])
-            except TelegramBadRequest as ex:
-                pass
+        if check_sum > currency.max or check_sum < currency.min:
+            # try:
+            #     await bot.delete_message(chat_id=msg.chat.id, message_id=data['message_id'])
+            # except TelegramBadRequest as ex:
+            #     pass
 
+            min_rub = round(currency.rate * currency.min)
+            max_rub = round(currency.rate * currency.max)
+            text = (
+                f'❌ Некорректная сумма\n'
+                f'Сумма должна быть меньше:\n{currency.max} {currency.code} {max_rub} руб.\n'
+                f'И больше:\n{currency.min} {currency.code} {min_rub} руб.'
+            )
+
+            msg_key = ut.get_send_sum_key(currency.code)
             sent = await ut.send_msg(
-                msg_key=Key.SEND_SUM.value,
+                msg_key=msg_key,
                 chat_id=msg.chat.id,
+                edit_msg=data['message_id'],
                 text=text,
             )
-            await state.update_data(data={'message_id': sent.message_id})
+            # await state.update_data(data={'message_id': sent.message_id})
 
         else:
             user_data = await db.get_user_info(msg.from_user.id)
@@ -138,17 +120,17 @@ async def sum_exchange(msg: Message, state: FSMContext):
             info = await db.get_info()
 
             await state.update_data(data={
-                'input_sum': msg.text,
-                'input_coin': input_coin,
+                'input_sum_str': msg.text,
                 'start_time': datetime.now(),
-                'user_rub_sum': sum_rub,
                 'coin_rate': currency.rate,
+                'input_sum': input_sum,
+                'input_type': input_type,
                 'commission': currency.commission,
-                'buy_rate': currency.buy_price,
                 'percent': currency.ratio,
-                'currency_code': currency.code,
                 'coin_round': currency.round,
+                'buy_rate': currency.buy_price,
                 'cashback_rate': info.cashback,
+                'currency_code': currency.code,
                 'promo_data': promo,
                 'used_promo': False,
                 'used_balance': False,
@@ -156,21 +138,6 @@ async def sum_exchange(msg: Message, state: FSMContext):
             })
 
             await ut.main_exchange(state, del_msg=True)
-
-            # await state.update_data(data={
-            #
-            #     'referral_points': user_data.referral_points,
-            #     'cashback': user_data.cashback,
-            #     'used_promo': False,
-            #     'promo_data': promo,
-            # })
-
-            # if promo:
-            #     await state.update_data(data={
-            #         'promo_id': promo.id,
-            #         'promo_rate': promo.rate,
-            #         'promo': promo.promo,
-            #     })
 
 
 # Использовать промо
@@ -207,20 +174,8 @@ async def use_point(cb: CallbackQuery, state: FSMContext):
         await cb.answer('ВНУТРЕННИЙ БАЛАНС КОШЕЛЬКА РАВЕН НУЛЮ', show_alert=True)
         return
 
-    # if data['balance'] > data['total_amount']:
-    #     used_balance = data['balance'] - data['total_amount'] + 1
-    #     total_amount = 1
-    #
-    # else:
-    #     used_balance = data['balance']
-    #     total_amount = data['total_amount'] - data['balance']
-
-    # pay_string = f'<s>{data["pay_string"]}</s>\nК ОПЛАТЕ С УЧЕТОМ БАЛАНСА: {total_amount}р.'
-
     await state.update_data(data={
-        # 'total_amount': total_amount,
         'used_balance': True,
-        # 'pay_string': pay_string,
     })
     await ut.main_exchange(state)
 
@@ -396,8 +351,6 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
             text=text
         )
 
-        # ut.add_order_row(order=order, row=order.row)
-
         username = f'@{cb.from_user.username}' if cb.from_user.username is not None else ''
         text = f'<b>Новая заявка:</b>\n' \
                f'<b>Номер заявки:</b> {order_id}\n' \
@@ -409,3 +362,6 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
                f'<b>Сумма рублей:</b> <code>{order.total_amount}</code>'
 
         await bot.send_message(Config.access_chat, text)
+
+        ut.add_order_row(order=order, row=order.row)
+
