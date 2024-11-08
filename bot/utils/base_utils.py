@@ -95,7 +95,7 @@ def amount_calculator(
     else:
         discount = 0
 
-    print(f'cashback: {user_info.cashback} referral_points: {user_info.referral_points}')
+    # print(f'cashback: {user_info.cashback} referral_points: {user_info.referral_points}')
     # cashback: 5 referral_points: 1000
     balance = user_info.cashback + user_info.referral_points
     use_points, use_cashback = 0, 0

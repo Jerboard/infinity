@@ -19,12 +19,7 @@ def get_profit_exchange(coin_sum: float, buy_price: float, total_amount: float, 
 
 # Завершает заявку
 async def done_order(order: db.OrderRow):
-    # currency = await db.get_currency(currency_code=order.coin)
     user = await db.get_user_info(order.user_id)
-
-    # прибыль
-    # buy_price = order.coin_sum * currency.buy_price
-    # profit = (order.total_amount - order.commission) - buy_price
 
     await db.update_order(order_id=order.id, status=OrderStatus.SUC.value)
 
@@ -55,6 +50,7 @@ async def done_order(order: db.OrderRow):
 
         if lvl:
             ref_points = round(order.profit * (lvl.percent / 100))
+
             await db.update_user_info(user_id=referrer.user_id, add_point=ref_points)
             await db.update_order(order_id=order.id, add_ref_points=ref_points)
 
