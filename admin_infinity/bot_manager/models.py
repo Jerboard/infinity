@@ -2,6 +2,14 @@ from django.db import models
 from django_ckeditor_5.fields import CKEditor5Field
 
 
+order_status = (
+    ('not_conf', 'Ожидает оплаты'),
+    ('new', 'Оплачен'),
+    ('successful', 'Завершён'),
+    ('failed', 'Отменён'),
+)
+
+
 # Уровни кешбека
 class CashbackLevel(models.Model):
     id = models.AutoField(primary_key=True)
@@ -64,9 +72,8 @@ class Order(models.Model):
     id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField('Создан', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлён', auto_now=True)
-    # user_id = models.BigIntegerField('ID пользователя')
     user = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='Пользователь', null=True, blank=True)
-    status = models.CharField('Статус', max_length=255, null=True, blank=True)
+    status = models.CharField('Статус', max_length=255, null=True, blank=True, choices=order_status)
     coin = models.CharField('Монета', max_length=255, null=True, blank=True)
     pay_method = models.CharField('Способ оплаты', max_length=255, null=True, blank=True)
     card = models.CharField('Карта', max_length=255, null=True, blank=True)
@@ -89,7 +96,7 @@ class Order(models.Model):
     promo_used_id = models.IntegerField('ID промокода', null=True, blank=True)
     add_ref_points = models.IntegerField('Начислено балов', null=True, blank=True)
     add_cashback = models.IntegerField('Начислено кешбека', null=True, blank=True)
-    user_key = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='orders')
+    # user_key = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='orders')
 
     objects: models.Manager = models.Manager()
 
