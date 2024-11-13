@@ -21,9 +21,6 @@ async def update_currency_rate():
       'Accepts': 'application/json',
       'X-CMC_PRO_API_KEY': Config.api_key_cm,
     }
-    # response = requests.get(url, headers=headers, params=parameters)
-    # response_json = response.json()
-    # exchange_rates = response_json['data']
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers, params=parameters)
@@ -33,34 +30,6 @@ async def update_currency_rate():
     for symbol, data in exchange_rates.items ():
         rate = round (data ['quote'] ['RUB'] ['price'], 2)
         await db.update_currency(currency_code=symbol, rate=rate)
-
-
-# def update_currency_rate_binance():
-#     # url = 'https://api.binance.com/api/v3/ticker/price?symbols=["BTCRUB","LTCRUB","ETHRUB","XMRUSDT","USDTRUB"]'
-#     url = 'https://api.binance.com/api/v3/ticker/price?symbols=["BTCUSDT","LTCUSDT","ETHUSDT","XMRUSDT","USDTRUB"]'
-#     response = requests.get(url)
-#     if response.status_code == 200:
-#
-#         symbols = loads(response.text)
-#         currency = {s['symbol']: float(s['price']) for s in symbols}
-#         # currency['XMRRUB'] = currency['XMRUSDT'] * currency['USDTRUB']
-#         # del currency['XMRUSDT']
-#         rate_rub = currency['USDTRUB']
-#         logging.warning(f'rate_rub: {rate_rub}')
-#
-#         conn = connect()
-#         cur = conn.cursor()
-#         for k, v in currency.items():
-#             if k != 'USDTRUB':
-#                 rate = v * rate_rub
-#                 coin_code = k[:-4]
-#             else:
-#                 rate = v
-#                 coin_code = k [:-3]
-#             cur.execute('update bot_manager_currency set rate = %s where code = %s', (round(rate, 2), coin_code))
-#             conn.commit()
-#
-#         cur.close()
 
 
 # проверяет биткоин кошелёк

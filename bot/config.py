@@ -24,14 +24,6 @@ class Config:
         feedback_chat = -1002390989476
         get_table_id = os.getenv("TABLE_TEST")
 
-        # token = os.getenv ("TOKEN")
-        # access_chat = int(os.getenv('ACCESS_CHAT'))
-        # bot_link = 'https://t.me/tushchkan_test_4_bot'
-        # bot_id = 7377609086
-        # antispam_chat = 575386391
-        # feedback_chat = -1001277203966
-        # get_table_id = os.getenv ("TABLE_TEST")
-
     debug = DEBUG
     file_google_path = os.path.join('data', 'sheet_key.json')
     db_host = os.getenv('DB_HOST')
@@ -48,8 +40,3 @@ class Config:
     datetime_form = '%d.%m.%Y %H:%M:%S'
 
     test_photo = 'AgACAgIAAxkBAAMKZtwCcBYQoPHYC7QXVMDvHPk4TO0AAtHdMRtgheBKwXbCeNk2bWEBAAMCAAN4AAM2BA'  # @tushchkan_test_4_bot
-
-    # day_form = '%d.%m'
-    # date_form = '%d.%m.%Y'
-
-    # time_form = '%H:%M'

@@ -40,10 +40,13 @@ async def take_feedback(msg: Message, state: FSMContext):
     data = await state.get_data()
     await state.clear()
 
+    user = f'{msg.from_user.full_name} (@{msg.from_user.username})' if msg.from_user.username else msg.from_user.full_name
+    text = f'{msg.text}\n\n{user}'
+
     await bot.delete_message(chat_id=msg.chat.id, message_id=data['message_id'])
     await bot.send_message(
         chat_id=Config.access_chat,
-        text=msg.text,
+        text=text,
         entities=msg.entities,
         parse_mode=None,
         reply_markup=kb.get_feedback_kb()
