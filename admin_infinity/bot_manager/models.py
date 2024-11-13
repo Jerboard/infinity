@@ -179,16 +179,6 @@ class PayMethod(models.Model):
 
 # промокоды
 class Promo(models.Model):
-    # id = models.AutoField(primary_key=True)
-    # created_at = models.DateTimeField('Создан', auto_now_add=True)
-    # start_date = models.DateField('Дата начала', null=True, blank=True)
-    # end_date = models.DateField('Дата окончания', null=True, blank=True)
-    # rate = models.IntegerField('Скидка', null=True, blank=True)
-    # promo = models.CharField('Промокод', max_length=255, null=True, blank=True)
-    # many = models.IntegerField('Кратность')
-    # is_active = models.BooleanField('Активный', default=True)
-    # is_onetime = models.BooleanField('Одноразовый', default=False)
-
     id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField('Создан', auto_now_add=True)
     updated_at = models.DateTimeField('Использован', auto_now_add=True)
@@ -232,6 +222,7 @@ class CashbackOrder(models.Model):
     coin = models.CharField('Валюта', max_length=10)
     wallet = models.CharField('Кошелёк', max_length=255)
     sum = models.IntegerField('Сумма')
+    sum_coin = models.FloatField('Сумма btc', null=True, blank=True)
     points = models.IntegerField('Реферральные баллы')
     cashback = models.IntegerField('Кешбек')
     message_id = models.IntegerField('Сообщение')

@@ -79,7 +79,7 @@ def add_cd_order_row(order: db.OrderCBRow, row: int = None) -> int:
 
     # изменяет статус заказа
     try:
-        cell = f'A{row}:J{row}'
+        cell = f'A{row}:K{row}'
         new_row_str = [
             [
                 str(order.id) if order.id else '',
@@ -90,6 +90,7 @@ def add_cd_order_row(order: db.OrderCBRow, row: int = None) -> int:
                 str(order.coin) if order.coin else '',
                 str(order.wallet) if order.wallet else '',
                 str(order.sum) if order.sum else '',
+                str(order.sum_coin) if order.sum else '',
                 str(order.points) if order.points else '',
                 str(order.cashback) if order.cashback else '',
             ]

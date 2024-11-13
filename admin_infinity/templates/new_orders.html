@@ -97,7 +97,7 @@ body {
                 <span class="item" style="width: 5%">ID</span>
                 <span class="item" style="width: 15%">ID Пользователя</span>
                 <span class="item" style="width: 30%">Кошелёк</span>
-                <span class="item" style="width: 5%">Сумма</span>
+                <span class="item" style="width: 5%">Сумма btc</span>
             </div>
             {% for order in cashback_orders %}
             <div class="order">
@@ -105,7 +105,7 @@ body {
                 <span class="item" style="width: 5%">{{ order.id }}</span>
                 <span class="item" style="width: 15%">{{ order.user_id }}</span>
                 <span class="item" style="width: 30%"> {{ order.wallet }}</span>
-                <span class="item" style="width: 5%"> {{ order.sum }}</span>
+                <span class="item" style="width: 5%"> {{ order.sum_coin }}</span>
                 <form method="post">
                     {% csrf_token %}
                 <input type="hidden" name="id" value="{{ order.id }}">

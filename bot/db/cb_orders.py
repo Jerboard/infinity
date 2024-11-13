@@ -17,6 +17,7 @@ class OrderCBRow(t.Protocol):
     coin: str
     wallet: str
     sum: int
+    sum_coin: float
     points: int
     cashback: int
     message_id: int
@@ -34,6 +35,7 @@ OrderCBTable: sa.Table = sa.Table(
     sa.Column('coin', sa.String(255)),
     sa.Column('wallet', sa.String(255)),
     sa.Column('sum', sa.Integer),
+    sa.Column('sum_coin', sa.Float),
     sa.Column('points', sa.Integer),
     sa.Column('cashback', sa.Integer),
     sa.Column('message_id', sa.Integer),
@@ -47,6 +49,7 @@ async def add_cb_order(
         coin: str,
         wallet: str,
         balance: int,
+        sum_coin: float,
         points: int,
         cashback: int,
         message_id: int
@@ -59,6 +62,7 @@ async def add_cb_order(
         coin=coin,
         wallet=wallet,
         sum=balance,
+        sum_coin=sum_coin,
         points=points,
         cashback=cashback,
         message_id=message_id,
@@ -143,7 +147,8 @@ async def get_cb_order(order_id: int) -> OrderCBRow:
 
 # обновляет заявку
 async def update_cb_orders(order_id: int, status: str = None, row: int = None) -> None:
-    query = OrderCBTable.update().where(OrderCBTable.c.id == order_id)
+    now = datetime.now()
+    query = OrderCBTable.update().where(OrderCBTable.c.id == order_id).values(updated_at=now)
 
     if status:
         query = query.values(status=status)

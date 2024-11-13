@@ -49,7 +49,8 @@ async def get_promo(promo: str = None, promo_id: int = None, is_active: bool = T
 
 # возвращает кошелёк
 async def update_promo(promo_id: int, user_id: int = None, used: bool = None) -> None:
-    query = PromoTable.update().where(PromoTable.c.id == promo_id)
+    now = datetime.now()
+    query = PromoTable.update().where(PromoTable.c.id == promo_id).values(updated_at=now)
 
     if used is not None:
         query = query.values(is_used=used)

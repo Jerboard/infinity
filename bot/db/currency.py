@@ -71,7 +71,8 @@ async def get_all_currency(only_active: bool = True) -> tuple[CurrencyRow]:
 
 # обновляет курс
 async def update_currency(currency_code: str, rate: float) -> None:
-    query = CurrencyTable.update().where(CurrencyTable.c.code == currency_code).values(rate=rate)
+    now = datetime.now()
+    query = CurrencyTable.update().where(CurrencyTable.c.code == currency_code).values(rate=rate, updated_at=now)
 
     async with begin_connection() as conn:
         await conn.execute(query)

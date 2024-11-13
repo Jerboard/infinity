@@ -247,11 +247,15 @@ async def take_bonus_end(cb: CallbackQuery, state: FSMContext):
         add_cashback=0 - data['cashback'],
     )
 
+    currency = await db.get_currency(currency_code=Coin.BTC.value)
+    sum_coin = round(data['balance'] / currency.rate, currency.round)
+
     cashback_id = await db.add_cb_order(
         user_id=cb.from_user.id,
         coin=Coin.BTC.value,
         wallet=data['wallet'],
         balance=data['balance'],
+        sum_coin=sum_coin,
         points=data['points'],
         cashback=data['cashback'],
         message_id=cb.from_user.id
@@ -259,7 +263,7 @@ async def take_bonus_end(cb: CallbackQuery, state: FSMContext):
 
     msg_data = await db.get_msg(Key.TAKE_BONUS_END.value)
     text = msg_data.text.format(
-        balance=data["cashback"],
+        balance=data["balance"],
         cashback_id=cashback_id
     )
 
@@ -271,10 +275,13 @@ async def take_bonus_end(cb: CallbackQuery, state: FSMContext):
         keyboard=kb.get_back_kb(CB.ACCOUNT.value)
     )
 
-    text = f'<b>Заявка на вывод кешбека:</b>\n' \
-           f'<b>От:</b> {cb.from_user.full_name}\n' \
-           f'<b>Сумма:</b> {data["cashback"]} руб.\n' \
-           f'<b>Кошелёк:</b> {data["wallet"]}'
+    text = (
+        f'<b>Заявка на вывод кешбека:</b>\n'
+        f'<b>От:</b> {cb.from_user.full_name}\n'
+        f'<b>Сумма рублей:</b> {data["balance"]} руб.\n'
+        f'<b>Сумма биткоин:</b> {sum_coin} BTC\n'
+        f'<b>Кошелёк:</b> {data["wallet"]}'
+    )
 
     await bot.send_message(Config.access_chat, text)
 
