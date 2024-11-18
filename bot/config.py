@@ -9,22 +9,21 @@ DEBUG = bool(int(os.getenv('DEBUG')))
 class Config:
     if DEBUG:
         token = os.getenv ("TOKEN_TEST")
-        access_chat = -4544544680
+        access_chat = os.getenv ("ACCESS_CHAT_TEST")
         bot_link = 'https://t.me/tushchkan_test_4_bot'
-        bot_id = 7377609086
-        antispam_chat = 5772948261
-        feedback_chat = -1002390989476
+        antispam_chat = os.getenv("MANAGER_ID_TEST")
+        feedback_chat = int(os.getenv("FEEDBACK_CHAT_TEST"))
         get_table_id = os.getenv ("TABLE_TEST")
     else:
         token = os.getenv("TOKEN_TEST")
-        access_chat = -4544544680
+        access_chat = os.getenv ("ACCESS_CHAT_TEST")
         bot_link = 'https://t.me/tushchkan_test_4_bot'
-        bot_id = 7377609086
-        antispam_chat = 5772948261
-        feedback_chat = -1002390989476
+        antispam_chat = os.getenv("MANAGER_ID")
+        feedback_chat = int(os.getenv("FEEDBACK_CHAT_TEST"))
         get_table_id = os.getenv("TABLE_TEST")
 
     debug = DEBUG
+    bot_id = int(token.split(":")[0])
     file_google_path = os.path.join('data', 'sheet_key.json')
     db_host = os.getenv('DB_HOST')
     db_port = os.getenv('DB_PORT')

@@ -108,8 +108,8 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
         used_balance=data.get('used_balance'),
     )
 
-    for k, v in ex_data.items():
-        print(f'{k}: {v}')
+    # for k, v in ex_data.items():
+    #     print(f'{k}: {v}')
 
     await state.update_data(**ex_data)
     data = await state.get_data()

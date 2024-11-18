@@ -69,8 +69,7 @@ def log_error(message, with_traceback: bool = True):
             if not row.startswith(' '):
                 msg += f'{row}\n'
 
-        logging.warning(f'{now}\n{tb}\n\n{msg}\n---------------------------------\n')
+        logging.warning(f'>>error\n{now}\n{tb}\n\n{msg}\n---------------------------------\n')
         return msg
     else:
-        logging.warning(f'SAVE\n\n---------------------------------\n')
         logging.warning(f'{now}\n{message}\n\n---------------------------------\n')
