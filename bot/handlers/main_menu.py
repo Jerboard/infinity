@@ -94,8 +94,8 @@ async def back_com_start(cb: CallbackQuery, state: FSMContext):
     await ut.send_msg(
         msg_key=Key.START.value,
         chat_id=cb.message.chat.id,
-        edit_msg=cb.message.message_id
-        # keyboard=kb.get_start_kb()
+        edit_msg=cb.message.message_id,
+        keyboard=kb.get_start_kb()
     )
 
 

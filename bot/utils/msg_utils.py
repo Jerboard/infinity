@@ -65,7 +65,6 @@ async def send_msg(
         photo_id = FSInputFile(msg_data.photo_path)
         update = True
 
-    # print(text)
     text = parse_text(text) if text else parse_text(msg_data.text)
 
     if edit_msg:

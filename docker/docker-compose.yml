@@ -7,6 +7,7 @@ services:
       - "5432:5432"
     volumes:
       - ../data:/var/lib/postgresql/data
+    restart: unless-stopped
     env_file:
       - .env
 
@@ -18,6 +19,7 @@ services:
       - "8080:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
     env_file:
       - .env
 
@@ -33,6 +35,8 @@ services:
       - ../bot:/app
       - ../photo:/app/photo
       - ../switch:/app/switch
+      - ../logs/exchange_bot:/app/logs
+    restart: unless-stopped
     depends_on:
       - db
     env_file:
@@ -49,6 +53,9 @@ services:
       - ../admin_infinity:/app
       - ../photo:/app/media/photo
       - ../switch:/app/switch
+      - ../logs/django:/app/logs
+
+    restart: unless-stopped
     ports:
       - "8000:8000"
     depends_on:
@@ -70,7 +77,8 @@ services:
       - ../admin_infinity/staticfiles:/var/html/staticfiles/
       - ../admin_infinity/media:/var/html/media/
       - ../photo:/var/html/media/photo/
-      - ../nginx/logs:/var/log/nginx
+      - ../logs/nginx:/var/log/nginx
+    restart: unless-stopped
     depends_on:
       - web
 

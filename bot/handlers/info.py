@@ -17,7 +17,7 @@ from enums import CB, UserStatus, Key, MainButton
 @dp.callback_query(lambda cb: cb.data.startswith(CB.INFO.value))
 async def info_send_inline(cb: CallbackQuery, state: FSMContext):
     await state.clear()
-    await ut.info_send(cb.message, edit_msg=cb.message)
+    await ut.info_send(cb.message, edit_msg=cb.message.message_id)
 
 
 # отправить отзыв

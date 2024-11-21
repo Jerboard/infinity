@@ -1,17 +1,20 @@
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.enums.content_type import ContentType
 from datetime import datetime
 
 import db
 import keyboards as kb
+from config import Config
 from init import dp, bot, log_error
 from enums import CB, Action
 
 
 # филтр админов
 def admin_filter(user_id: int):
-    # admins = ['524275902', '1879617805', '2028268703']
-    admins = [1879617805, 2028268703]
+    if Config.debug:
+        admins = [524275902, 1879617805, 2028268703]
+    else:
+        admins = [1879617805, 2028268703]
     return user_id in admins
 
 
@@ -53,14 +56,20 @@ async def sending_message(cb: CallbackQuery):
         for user in users:
             try:
                 if cb.message.content_type == ContentType.TEXT:
-                    await bot.send_message(chat_id=user.user_id, text=cb.message.text, entities=cb.message.entities)
+                    await bot.send_message(
+                        chat_id=user.user_id,
+                        text=cb.message.text,
+                        entities=cb.message.entities,
+                        reply_markup=ReplyKeyboardRemove()
+                    )
 
                 elif cb.message.content_type == ContentType.PHOTO:
                     await bot.send_photo(
                         chat_id=user.user_id,
                         photo=cb.message.photo[-1].file_id,
                         caption=cb.message.caption,
-                        caption_entities=cb.message.caption_entities
+                        caption_entities=cb.message.caption_entities,
+                        reply_markup=ReplyKeyboardRemove()
                     )
 
                 elif cb.message.content_type == ContentType:
@@ -68,7 +77,8 @@ async def sending_message(cb: CallbackQuery):
                         chat_id=user.user_id,
                         video=cb.message.animation.file_id,
                         caption=cb.message.caption,
-                        caption_entities=cb.message.caption_entities
+                        caption_entities=cb.message.caption_entities,
+                        reply_markup=ReplyKeyboardRemove()
                     )
 
             except Exception as ex:
