@@ -1,0 +1,8 @@
+FROM python:3.11.5
+
+WORKDIR /app
+COPY /requirements/bot_antispam.txt .
+RUN pip install -r bot_antispam.txt
+COPY /bot .
+
+CMD ["python", "main.py"]

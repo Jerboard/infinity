@@ -42,6 +42,26 @@ services:
     env_file:
       - .env
 
+
+  bot_antispam:
+    build:
+      context: ..
+      dockerfile: docker/dockerfiles/DockerfileAntispam
+      args:
+        - --no-cache
+    container_name: bot_antispam
+    volumes:
+      - ../bot_antispam:/app
+      - ../bot/db:/app/db
+      - ../bot/enums:/app/enums
+      - ../photo:/app/photo
+      - ../logs/bot_antispam:/app/logs
+    restart: unless-stopped
+    depends_on:
+      - db
+    env_file:
+      - .env
+
   web:
     build:
       context: ..

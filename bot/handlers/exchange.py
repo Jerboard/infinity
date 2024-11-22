@@ -21,7 +21,7 @@ async def russian_rub_inline(cb: CallbackQuery, state: FSMContext):
     await ut.russian_rub(cb.message, edit_msg=cb.message.message_id)
 
 
-# старт обмена инлайн
+# старт обмена инлайн.  Выбор валюты
 @dp.callback_query(lambda cb: cb.data.startswith(CB.EXCHANGE.value))
 async def select_currency_inline(cb: CallbackQuery, state: FSMContext):
     await state.clear()
@@ -33,41 +33,72 @@ async def select_currency_inline(cb: CallbackQuery, state: FSMContext):
 async def send_sum(cb: CallbackQuery, state: FSMContext):
     _, currency_id_str = cb.data.split(':')
 
-    if currency_id_str != 'back':
-        currency_id = int(currency_id_str)
-        currency = await db.get_currency(currency_id=currency_id)
-        currency_name = f'{currency.name} ({currency.code})'
-        await state.update_data(data={
-            'user_id': cb.from_user.id,
-            'currency_id': currency.id,
-            'currency_name': currency_name,
-            'message_id': cb.message.message_id
-        })
+    # if currency_id_str != 'back':
+    currency_id = int(currency_id_str)
+    currency = await db.get_currency(currency_id=currency_id)
+    currency_name = f'{currency.name} ({currency.code})'
+    await state.update_data(data={
+        'user_id': cb.from_user.id,
+        'currency_id': currency.id,
+        'currency_name': currency_name,
+        'message_id': cb.message.message_id
+    })
 
-    else:
-        await state.update_data(data={'back': True})
-        data = await state.get_data()
-        currency = await db.get_currency(currency_id=data['currency_id'])
-        currency_name = data['currency_name']
+    # else:
+        # await state.update_data(data={'back': True})
+        # data = await state.get_data()
+        # currency = await db.get_currency(currency_id=data['currency_id'])
+        # currency_name = data['currency_name']
+
+    # min_sum = currency.min if currency.min != 0 else 'Без ограничения'
+    # msg_key = ut.get_send_sum_key(currency.code)
+    # msg_data = await db.get_msg(Key.SELECT_PAY_METHOD)
+    # text = msg_data.text.format(
+    #     currency_name=currency_name,
+    #     min_sum=min_sum,
+    #     min_sum_str=str(min_sum).replace(".", ",")
+    # )
+
+    # await state.set_state(UserStatus.EXCHANGE_SEND_SUM)
+    pay_methods = await db.get_all_pay_method()
+
+    await ut.send_msg(
+        chat_id=cb.message.chat.id,
+        edit_msg=cb.message.message_id,
+        msg_key=Key.SELECT_PAY_METHOD.value,
+        # keyboard=kb.get_cancel_kb()
+        keyboard=kb.get_pay_method_kb(pay_methods)
+    )
+
+
+# выбор способа оплаты
+@dp.callback_query(lambda cb: cb.data.startswith(CB.SEND_SUM.value))
+async def send_sum(cb: CallbackQuery, state: FSMContext):
+    _, method_id_str = cb.data.split(':')
+    method_id = int(method_id_str)
+
+    await state.update_data(data={'pay_method_id': method_id})
+    data = await state.get_data()
+
+    currency = await db.get_currency(currency_id=data['currency_id'])
 
     min_sum = currency.min if currency.min != 0 else 'Без ограничения'
     msg_key = ut.get_send_sum_key(currency.code)
     msg_data = await db.get_msg(msg_key)
     text = msg_data.text.format(
-        currency_name=currency_name,
+        currency_name=data['currency_name'],
         min_sum=min_sum,
         min_sum_str=str(min_sum).replace(".", ",")
     )
-    # text = (f'Введите нужную сумму в {currency_name} или в рублях (RUB) Пример: {min_sum} или {min_sum_str} или 5000\n\n')
 
     await state.set_state(UserStatus.EXCHANGE_SEND_SUM)
+
     await ut.send_msg(
         chat_id=cb.message.chat.id,
         edit_msg=cb.message.message_id,
         msg_data=msg_data,
         text=text,
         keyboard=kb.get_cancel_kb()
-        # keyboard=kb.get_back_kb(CB.EXCHANGE.value)
     )
 
 
@@ -189,12 +220,12 @@ async def send_wallet(cb: CallbackQuery, state: FSMContext):
 # выбор кошелька LevL7S8DNFGQWnRrtjzhEJHRcPBMYCLwWC ltc
 @dp.callback_query(lambda cb: cb.data.startswith(CB.SEND_WALLET.value))
 async def send_wallet(cb: CallbackQuery, state: FSMContext):
-    _, method_str = cb.data.split(':')
-    pay_method_id = int(method_str)
+    # _, method_str = cb.data.split(':')
+    # pay_method_id = int(method_str)
 
     data = await state.get_data()
     await state.set_state(UserStatus.EXCHANGE_SEND_WALLET)
-    await state.update_data(data={'pay_method_id': pay_method_id})
+    # await state.update_data(data={'pay_method_id': pay_method_id})
 
     msg_data = await db.get_msg(Key.SEND_WALLET.value)
 
@@ -205,7 +236,6 @@ async def send_wallet(cb: CallbackQuery, state: FSMContext):
         edit_msg=cb.message.message_id,
         text=text,
         keyboard=kb.get_cancel_kb()
-        # keyboard=kb.get_back_kb(CB.BACK_CHECK_INFO.value)
     )
 
 

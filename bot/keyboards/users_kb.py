@@ -76,21 +76,31 @@ def get_currency_list_kb(currencies: tuple[db.CurrencyRow]) -> InlineKeyboardMar
 
 
 # клавиатура проверки данный
+def get_pay_method_kb(pay_methods: tuple[db.PayMethodRow]) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    for method in pay_methods:
+        kb.button(text=f'{method.name}', callback_data=f'{CB.SEND_SUM.value}:{method.id}')
+    kb.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
+    return kb.adjust(1).as_markup()
+
+
+# клавиатура проверки данный
 def get_main_exchange_kb(
-        pay_methods: tuple[db.PayMethodRow],
-        total_amount: int,
+        bonuses: int,
         promo: db.UsedPromoRow = None
 ) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
-    for method in pay_methods:
-        kb.button(text=f'{method.name} ({total_amount} РУБ)', callback_data=f'{CB.SEND_WALLET.value}:{method.id}')
-
     if promo:
         kb.button(text='ИСП. ПРОМОКОД', callback_data=CB.USE_PROMO.value)
+        adjust = 1, 1, 2
+    else:
+        adjust = 1, 2
 
+    # kb.button(text=f'ИСП. БАЛАНС КОШЕЛЬКА {bonuses} руб.', callback_data=CB.USE_CASHBACK.value)
     kb.button(text=f'ИСП. БАЛАНС КОШЕЛЬКА', callback_data=CB.USE_CASHBACK.value)
+    kb.button(text=f'✅ Согласен', callback_data=f'{CB.SEND_WALLET.value}')
     kb.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
-    return kb.adjust(1).as_markup()
+    return kb.adjust(*adjust).as_markup()
 
 
 # подтвердить оплату

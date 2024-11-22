@@ -1,0 +1,5 @@
+aiogram
+sqlalchemy
+asyncpg
+pytz
+uvloop

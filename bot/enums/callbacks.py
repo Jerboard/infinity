@@ -12,6 +12,7 @@ class CB(str, Enum):
     ADMIN_ANTISPAM = 'admin_antispam'
     INFO = 'info'
     SELECT_PAYMENT = 'select_payment'
+    SEND_SUM = 'ex_send_sum'
     SEND_WALLET = 'send_wallet'
     PAYMENT_ADD = 'payment_add'
     USE_PROMO = 'use_promo'

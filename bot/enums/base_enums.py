@@ -10,6 +10,7 @@ class Key(str, Enum):
     SEND_SUM_LTC = 'send_sum_ltc'
     SEND_SUM_XMR = 'send_sum_xmr'
     SEND_SUM_USDT = 'send_sum_usdt'
+    SELECT_PAY_METHOD = 'select_pay_method'
     EXCHANGE = 'exchange'
     SEND_WALLET = 'send_wallet'
     PAYMENT = 'payment'

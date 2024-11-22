@@ -113,7 +113,7 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
     await state.update_data(**ex_data)
     data = await state.get_data()
 
-    pay_methods = await db.get_all_pay_method()
+    # pay_methods = await db.get_all_pay_method()
 
     msg_data = await db.get_msg(Key.EXCHANGE.value)
     text = msg_data.text.format(
@@ -142,8 +142,7 @@ async def main_exchange(state: FSMContext, del_msg: bool = False):
         edit_msg=edit_msg,
         text=text,
         keyboard=kb.get_main_exchange_kb(
-            pay_methods=pay_methods,
-            total_amount=data['total_amount'],
+            bonuses=data['balance'],
             promo=promo
         )
     )

@@ -24,6 +24,7 @@ class Config:
 
     debug = DEBUG
     bot_id = int(token.split(":")[0])
+    tz = timezone('Europe/Moscow')
     file_google_path = os.path.join('data', 'sheet_key.json')
     db_host = os.getenv('DB_HOST')
     db_port = os.getenv('DB_PORT')
@@ -31,7 +32,6 @@ class Config:
     db_user = os.getenv('POSTGRES_USER')
     db_password = os.getenv('POSTGRES_PASSWORD')
     db_url = f'postgresql+asyncpg://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
-    tz = timezone('Asia/Tashkent')
     api_key_cm = os.getenv('API_KEY_COINMARKET')
     operator_url = os.getenv('OPERATOR')
     batch_size = 3
