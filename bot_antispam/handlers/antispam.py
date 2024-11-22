@@ -85,7 +85,8 @@ async def antispam_send(msg: Message, state: FSMContext):
             await sent.delete()
 
         else:
-
+            name = f'{msg.from_user.full_name} (@{msg.from_user.username})' if msg.from_user.username else msg.from_user.full_name
+            await bot.send_message(chat_id=Config.antispam_chat, text=f'От {name}')
             await ut.send_any_message(
                 msg=msg,
                 chat_id=Config.antispam_chat,
