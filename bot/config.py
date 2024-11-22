@@ -12,6 +12,7 @@ class Config:
         access_chat = os.getenv ("ACCESS_CHAT_TEST")
         bot_link = 'https://t.me/tushchkan_test_4_bot'
         antispam_chat = os.getenv("MANAGER_ID_TEST")
+        antispam_url = 'https://t.me/infinity_support24_bot'
         feedback_chat = int(os.getenv("FEEDBACK_CHAT_TEST"))
         get_table_id = os.getenv ("TABLE_TEST")
     else:
@@ -19,6 +20,7 @@ class Config:
         access_chat = os.getenv ("ACCESS_CHAT_TEST")
         bot_link = 'https://t.me/tushchkan_test_4_bot'
         antispam_chat = os.getenv("MANAGER_ID")
+        antispam_url = 'https://t.me/infinity_support24_bot'
         feedback_chat = int(os.getenv("FEEDBACK_CHAT_TEST"))
         get_table_id = os.getenv("TABLE_TEST")
 

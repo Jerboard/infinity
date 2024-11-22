@@ -24,6 +24,7 @@ def get_start_kb() -> InlineKeyboardMarkup:
     kb.button(text='ПРОДАТЬ', callback_data=CB.SELL.value)
     kb.button(text='ЛИЧНЫЙ КАБИНЕТ', callback_data=CB.ACCOUNT.value)
     kb.button(text='АНТИСПАМ БОТ', callback_data=CB.ANTISPAM.value)
+    kb.button(text='АНТИСПАМ БОТ', url=Config.antispam_url)
     kb.button(text='КОНТАКТЫ', callback_data=CB.INFO.value)
     return kb.adjust(2, 1, 2).as_markup()
 
