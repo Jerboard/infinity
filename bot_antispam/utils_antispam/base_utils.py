@@ -6,7 +6,6 @@ import typing as t
 import db
 from init import bot
 from config import Config
-import utils as ut
 
 
 # отправляет сообщение

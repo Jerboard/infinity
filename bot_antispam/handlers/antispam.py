@@ -8,7 +8,7 @@ from asyncio import sleep
 
 import db
 import keyboards as kb
-import utils as ut
+import utils_antispam as ut
 from config import Config
 from init import dp, bot, log_error
 from enums import CB, UserStatus, Key, Action
@@ -93,3 +93,4 @@ async def antispam_send(msg: Message, state: FSMContext):
                 keyboard=kb.get_antispam_admin_kb(user_id=msg.from_user.id)
             )
             await db.update_last_msg(user_id=msg.from_user.id)
+            await msg.answer('Ваше сообщение отправлено, ожидайте ответа поддержки')

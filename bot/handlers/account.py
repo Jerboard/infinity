@@ -258,7 +258,7 @@ async def take_bonus_end(cb: CallbackQuery, state: FSMContext):
         sum_coin=sum_coin,
         points=data['points'],
         cashback=data['cashback'],
-        message_id=cb.from_user.id
+        message_id=cb.message.message_id
     )
 
     msg_data = await db.get_msg(Key.TAKE_BONUS_END.value)

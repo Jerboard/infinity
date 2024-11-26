@@ -3,6 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 
 import os
+import logging
 
 from datetime import datetime
 from .export_file import export
@@ -195,76 +196,78 @@ def wallets_and_pay_methods_view(request):
 def promo_view(request):
     if not request.user.is_authenticated:
         return redirect('login')
+
+    if request.method == 'POST':
+        data = request.POST
+        # WARNING:root:>>>data: <QueryDict: {'type': ['codes'], 'id': ['13'], 'promo': ['gyyy'], 'rate': ['32'], 'button': ['ok']}>
+        if data['type'] == 'codes':
+            promo = Promo.objects.get(id=data['id'])
+            if data['button'] == 'del':
+                promo.delete()
+            else:
+                try:
+                    promo.promo = data['promo']
+                    promo.rate = data['rate']
+                    # promo.start_date = data['date_start'] if data['date_start'] != '' else None
+                    # promo.end_date = data['date_end'] if data['date_end'] != '' else None
+                    # promo.many = data['count']
+                    is_active = int(data.get('active', 0)) if data.get('active', 0) != 'on' else 1
+                    promo.is_active = is_active
+                    # is_onetime = int(data.get('onetime', 0)) if data.get('onetime', 0) != 'on' else 1
+                    # promo.is_onetime = is_onetime
+                    promo.save()
+                except Exception as ex:
+                    logging.warning(ex)
+
+        elif data.get("type") == 'add':
+            promo = Promo()
+            promo.promo = ''
+            promo.rate = 0
+            promo.start_date = None
+            promo.end_date = None
+            promo.many = 0
+            promo.is_active = 1
+            promo.save()
+
+        elif data['type'] == 'levels':
+            level = CashbackLevel.objects.get(id=data['id'])
+            level.count_users = data['count']
+            level.percent = data['percent'].replace(',', '.')
+            level.save()
+
+        return redirect('promo_setting')
+
     else:
-        if request.method == 'POST':
-            data = request.POST
-            if data['type'] == 'codes':
-                promo = Promo.objects.get(id=data['id'])
-                if data['button'] == 'del':
-                    promo.delete()
-                else:
-                    try:
-                        promo.promo = data['promo']
-                        promo.rate = data['rate']
-                        promo.start_date = data['date_start'] if data['date_start'] != '' else None
-                        promo.end_date = data['date_end'] if data['date_end'] != '' else None
-                        promo.many = data['count']
-                        is_active = int(data.get('active', 0)) if data.get('active', 0) != 'on' else 1
-                        promo.is_active = is_active
-                        is_onetime = int(data.get('onetime', 0)) if data.get('onetime', 0) != 'on' else 1
-                        promo.is_onetime = is_onetime
-                        promo.save()
-                    except:
-                        pass
-
-            elif data.get("type") == 'add':
-                promo = Promo()
-                promo.promo = ''
-                promo.rate = 0
-                promo.start_date = None
-                promo.end_date = None
-                promo.many = 0
-                promo.is_active = 0
-                promo.save()
-
-            elif data['type'] == 'levels':
-                level = CashbackLevel.objects.get(id=data['id'])
-                level.count_users = data['count']
-                level.percent = data['percent'].replace(',', '.')
-                level.save()
-
-            return redirect('promo_setting')
-
-        else:
-            promo = Promo.objects.all()
-            levels = CashbackLevel.objects.all()
-            context = {
-                'pages': page_list,
-                'this_page': page_list[3]['name'],
-                'promo': promo,
-                'levels': levels,
-            }
-            return render(request, 'promo_setting.html', context)
+        promo = Promo.objects.all()
+        levels = CashbackLevel.objects.all()
+        context = {
+            'pages': page_list,
+            'this_page': page_list[3]['name'],
+            'promo': promo,
+            'levels': levels,
+        }
+        return render(request, 'promo_setting.html', context)
 
 
 # Выключатель
 def switch_view(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    else:
-        # file_path = os.path.join('home', 'bot', 'data', 'is_active.txt')
-        file_path = os.path.join('switch', 'is_active.txt')
-        with open(file_path, "r") as file:
-            position = file.read()
-        if request.method == 'POST':
-            data = request.POST
-            position = int(data['position'])
-            with open(file_path, "w") as file:
-                file.write(data['position'])
 
-        context = {'pages': page_list,
-                   'this_page': page_list[4]['name'],
-                   'position': position
-                   }
-        return render(request, 'switch.html', context)
+    file_path = os.path.join('switch', 'is_active.txt')
+
+    if request.method == 'POST':
+        data = request.POST
+
+        with open(file_path, "w") as file:
+            file.write(data['position'])
+
+    with open(file_path, "r") as file:
+        position = int(file.read())
+
+    context = {'pages': page_list,
+               'this_page': page_list[4]['name'],
+               'position': position
+               }
+    return render(request, 'switch.html', context)
 

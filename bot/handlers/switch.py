@@ -1,8 +1,9 @@
 from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.context import FSMContext
 
 import os
 
-from init import dp,bot
+from init import dp, bot, log_error
 
 
 # фильтр сообщений
@@ -21,12 +22,12 @@ async def send_switch_msg(chat_id: int):
 
 
 # тормозит всё если бот отключен
-@dp.message_handler(lambda x: is_bot_active(), content_types='any', state='*')
-async def switch_bot(msg: Message):
+@dp.message(lambda x: is_bot_active())
+async def switch_bot(msg: Message, state: FSMContext):
     await send_switch_msg(msg.from_user.id)
 
 
-@dp.callback_query_handler(lambda x: is_bot_active(), state='*')
-async def cb_switch_bot(cb: CallbackQuery):
+@dp.callback_query(lambda x: is_bot_active())
+async def cb_switch_bot(cb: CallbackQuery, state: FSMContext):
     await send_switch_msg(cb.from_user.id)
 

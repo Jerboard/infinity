@@ -27,15 +27,6 @@ from enums import Key, CB, MainButton,Coin
 #     check = await ut.check_wallet(coin_code=Coin.LTC.value, wallet=msg.text)
 #     await msg.answer(str(check))
 
-'''
-LWttPMKz3YxBDuFRi4K8cRq8cYxkmFfge2
-MPoUJ5MT7zX6UweR2e3kyt4W9yBbaKnRC2
-
-ltc1qvpycwysyf6tr8y2dc79jngsv6eq0fpgu0qr6h5
-
-первые 2 лайткоин 
-последний бтк
-'''
 
 
 # Команда старт

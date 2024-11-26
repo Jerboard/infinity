@@ -71,8 +71,8 @@ def get_currency_list_kb(currencies: tuple[db.CurrencyRow]) -> InlineKeyboardMar
         kb.button(text=f'{currency.name} ({currency.code})', callback_data=f'{CB.SELECT_PAYMENT.value}:{currency.id}')
 
     back_bt = InlineKeyboardBuilder()
-    # back_bt.button(text='🔙 Назад', callback_data=CB.BACK_START.value)
-    back_bt.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
+    back_bt.button(text='🔙 Назад', callback_data=CB.BACK_START.value)
+    # back_bt.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
     return kb.adjust(2).attach(back_bt).as_markup()
 
 
@@ -81,7 +81,8 @@ def get_pay_method_kb(pay_methods: tuple[db.PayMethodRow]) -> InlineKeyboardMark
     kb = InlineKeyboardBuilder()
     for method in pay_methods:
         kb.button(text=f'{method.name}', callback_data=f'{CB.SEND_SUM.value}:{method.id}')
-    kb.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
+    kb.button(text=f'🔙 Назад', callback_data=f'{CB.EXCHANGE.value}')
+    # kb.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
     return kb.adjust(1).as_markup()
 
 
@@ -134,7 +135,7 @@ def get_replace_promo_kb() -> InlineKeyboardMarkup:
 # Подтвердить замену промо
 def get_conf_take_bonus_kb() -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
-    kb.button(text=f'Всё верно', callback_data=f'{CB.TAKE_BONUS_CONF.value}')
+    kb.button(text=f'Подтвердить', callback_data=f'{CB.TAKE_BONUS_CONF.value}')
     kb.button(text=f'🔙 Назад', callback_data=f'{CB.TAKE_BONUS.value}')
     return kb.adjust(1).as_markup()
 

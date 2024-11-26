@@ -51,7 +51,7 @@ async def take_feedback(msg: Message, state: FSMContext):
         parse_mode=None,
         reply_markup=kb.get_feedback_kb()
     )
-    await msg.answer('Благодарим за отзыв и бла-бла-бла')
+    await msg.answer('Команда INFINITY EXCHANGE благодарит Вас за отзыв!\n\nДо новых встреч!🚀')
 
 
 # публикует отзыв
