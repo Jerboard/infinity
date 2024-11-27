@@ -17,12 +17,12 @@ class Config:
         get_table_id = os.getenv ("TABLE_TEST")
     else:
         token = os.getenv("TOKEN")
-        access_chat = os.getenv ("ACCESS_CHAT_TEST")
-        bot_link = 'https://t.me/tushchkan_test_4_bot'
+        access_chat = os.getenv ("ACCESS_CHAT")
+        bot_link = 'https://t.me/Infinity_exchange_bot'
         antispam_chat = os.getenv("MANAGER_ID")
         antispam_url = 'https://t.me/infinity_support24_bot'
-        feedback_chat = int(os.getenv("FEEDBACK_CHAT_TEST"))
-        get_table_id = os.getenv("TABLE_TEST")
+        feedback_chat = int(os.getenv("FEEDBACK_CHAT"))
+        get_table_id = os.getenv("TABLE")
 
     debug = DEBUG
     bot_id = int(token.split(":")[0])
