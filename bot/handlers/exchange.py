@@ -18,6 +18,13 @@ from enums import CB, Key, UserStatus, Action, OrderStatus, InputType
 @dp.callback_query(lambda cb: cb.data.startswith(CB.SELL.value))
 async def russian_rub_inline(cb: CallbackQuery, state: FSMContext):
     await state.clear()
+
+    user = await db.get_user_info(cb.from_user.id)
+    if user.ban:
+        await cb.message.answer(
+            'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity'
+        )
+
     await ut.russian_rub(cb.message, edit_msg=cb.message.message_id)
 
 
@@ -25,6 +32,13 @@ async def russian_rub_inline(cb: CallbackQuery, state: FSMContext):
 @dp.callback_query(lambda cb: cb.data.startswith(CB.EXCHANGE.value))
 async def select_currency_inline(cb: CallbackQuery, state: FSMContext):
     await state.clear()
+
+    user = await db.get_user_info(cb.from_user.id)
+    if user.ban:
+        await cb.message.answer(
+            'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity'
+        )
+
     await ut.select_currency(cb.message, state, edit_msg=cb.message.message_id)
 
 

@@ -121,14 +121,16 @@ async def hand_cashback_orders():
 
             elif order.status == OrderStatus.CANCEL:
                 await db.update_cb_orders(order_id=order.id, status=OrderStatus.FAIL.value)
-                await db.update_user_info(user_id=order.user_id, add_balance=order.sum)
+                # await db.update_user_info(user_id=order.user_id, add_balance=order.sum)
+
+                await db.update_user_info(
+                    user_id=order.user_id,
+                    add_point=order.points,
+                    add_cashback=order.cashback
+                )
+
 
                 text = f'Ваш заказ № {order.id} ОТМЕНЕН.\n'
-
-                # try:
-                #     await bot.delete_message(chat_id=order.user_id, message_id=order.message_id)
-                # except Exception as ex:
-                #     pass
 
                 await send_msg(
                     msg_key=Key.FAIL_ORDER.value,

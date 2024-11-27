@@ -28,7 +28,6 @@ from enums import Key, CB, MainButton,Coin
 #     await msg.answer(str(check))
 
 
-
 # Команда старт
 @dp.message(CommandStart())
 async def com_start(msg: Message, state: FSMContext):
@@ -81,6 +80,13 @@ async def capcha(cb: CallbackQuery, state: FSMContext):
 @dp.callback_query(lambda cb: cb.data.startswith(CB.BACK_START.value))
 async def back_com_start(cb: CallbackQuery, state: FSMContext):
     await state.clear()
+
+    user = await db.get_user_info(cb.from_user.id)
+    if user.ban:
+        await cb.message.answer(
+            'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity'
+        )
+
     # text = 'Выберите из кнопок ниже:'
     await ut.send_msg(
         msg_key=Key.START.value,

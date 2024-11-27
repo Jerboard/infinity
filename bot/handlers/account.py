@@ -19,6 +19,13 @@ from enums import CB, Key, UserStatus, Action, OrderStatus, Coin, MainButton
 @dp.callback_query(lambda cb: cb.data.startswith(CB.ACCOUNT.value))
 async def start_account(cb: CallbackQuery, state: FSMContext):
     await state.clear()
+
+    user = await db.get_user_info(cb.from_user.id)
+    if user.ban:
+        await cb.message.answer(
+            'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity'
+        )
+
     await ut.start_acc_send(cb.message, from_user_id=cb.from_user.id)
 
 
