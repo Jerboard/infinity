@@ -82,7 +82,7 @@ async def add_user_msql(
         username: str,
         first_visit: datetime,
         referrer: int = None,
-        balance: int = None,
+        referral_points: int = None,
         custom_referral_lvl_id: int = None,
         ban: bool = None,
 
@@ -97,7 +97,7 @@ async def add_user_msql(
             first_visit=first_visit,
             last_visit=now,
             referrer=referrer,
-            balance=balance,
+            referral_points=referral_points,
             custom_referral_lvl_id=custom_referral_lvl_id,
             ban=ban,
             ref_code=get_ref_code()

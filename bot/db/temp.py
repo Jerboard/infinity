@@ -5,7 +5,7 @@ from pymysql.cursors import DictCursor
 from .users import add_user_msql
 from .orders import add_order_msql
 from .cb_orders import add_cb_order_msql
-from .checked_wallets import add_wallet
+from .used_promo import add_used_promo
 
 connect_data = {'host': '45.67.56.166',
                 'user': 'infinity_bot',
@@ -52,11 +52,11 @@ def get_cb_orders_data():
 
 
 # поиск среди проверенных кошельков
-def get_checked_wallets_data():
+def get_used_promo_data():
     # return True
     conn = connect()
     cur = conn.cursor(DictCursor)
-    cur.execute('select * from bot_manager_checked_wallets')
+    cur.execute('select * from bot_manager_used_promo')
     result = cur.fetchall()
     cur.close()
     return result
@@ -66,6 +66,7 @@ def get_checked_wallets_data():
 # 'first_visit': datetime.datetime(2023, 6, 16, 7, 6, 57, 48902), 'referrer': None,
 # 'balance': 0, 'custom_refferal_lvl_id': None, 'ban': 0}
 async def move_users():
+    print('move_users')
 
     users = get_user_data()
     for user in users:
@@ -76,7 +77,7 @@ async def move_users():
                 username=user['username'],
                 first_visit=user['first_visit'],
                 referrer=int(user['referrer']) if user['referrer'] else None,
-                balance=user['balance'],
+                referral_points=user['balance'],
                 custom_referral_lvl_id=user['custom_refferal_lvl_id'],
                 ban=bool(int(user['ban'])),
             )
@@ -97,6 +98,8 @@ async def move_users():
 '''
 async def move_orders():
     orders = get_orders_data()
+    print('move_orders')
+
     for order in orders:
         try:
             await add_order_msql(
@@ -133,6 +136,8 @@ async def move_orders():
 '''
 async def move_cb_orders():
     orders = get_cb_orders_data()
+    print('move_cb_orders')
+
     for order in orders:
         try:
             await add_cb_order_msql(
@@ -140,7 +145,7 @@ async def move_cb_orders():
                 status=order['status'],
                 user_id=int(order['user_id']),
                 wallet=order['card'],
-                cashback=order['sum'],
+                points=order['sum'],
             )
         except Exception as ex:
             print(ex)
@@ -150,27 +155,28 @@ async def move_cb_orders():
 {'id': 10457, 'user_id': '5821087520', 'check_time': datetime.datetime(2024, 10, 3, 19, 35, 34, 537088), 
 'coin_code': 'LTC', 'wallet': 'ltc1qyex07vnm6cupysap5y9gt48fyn868uh0tg5t9d'}
 '''
-async def move_wallets():
-    wallets = get_checked_wallets_data()
-    for wallet in wallets:
+async def move_promo():
+    promos = get_used_promo_data()
+    print('promo')
+    for promo in promos:
         try:
-            await add_wallet(
-                user_id=int(wallet['user_id']),
-                code=wallet['coin_code'],
-                wallet=wallet['wallet'],
+            await add_used_promo(
+                user_id=int(promo['user_id']),
+                promo=promo['promo'],
+                rate=0
             )
         except Exception as ex:
             print(ex)
-            print(wallets)
+            print(promo)
 
 
 async def update_db():
     time_start = datetime.now()
     print('start')
 
-    # await move_users()
-    # await move_orders()
-    # await move_cb_orders()
-    # await move_wallets()
+    await move_users()
+    await move_orders()
+    await move_cb_orders()
+    await move_promo()
 
     print(f'time: {datetime.now() - time_start}')

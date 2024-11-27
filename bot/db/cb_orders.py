@@ -78,7 +78,7 @@ async def add_cb_order_msql(
         created_at: datetime,
         user_id: int,
         wallet: str,
-        cashback: int,
+        points: int,
         status: str,
 ) -> int:
     query = OrderCBTable.insert().values(
@@ -86,7 +86,7 @@ async def add_cb_order_msql(
         updated_at=created_at,
         user_id=user_id,
         wallet=wallet,
-        cashback=cashback,
+        points=points,
         status=status,
     )
     async with begin_connection() as conn:
