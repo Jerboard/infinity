@@ -16,7 +16,7 @@ class Config:
         feedback_chat = int(os.getenv("FEEDBACK_CHAT_TEST"))
         get_table_id = os.getenv ("TABLE_TEST")
     else:
-        token = os.getenv("TOKEN_TEST")
+        token = os.getenv("TOKEN")
         access_chat = os.getenv ("ACCESS_CHAT_TEST")
         bot_link = 'https://t.me/tushchkan_test_4_bot'
         antispam_chat = os.getenv("MANAGER_ID")

@@ -36,7 +36,7 @@ services:
       - ../photo:/app/photo
       - ../switch:/app/switch
       - ../logs/exchange_bot:/app/logs
-    restart: unless-stopped
+#    restart: unless-stopped
     depends_on:
       - db
     env_file:
