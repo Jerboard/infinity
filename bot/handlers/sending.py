@@ -2,6 +2,8 @@ from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.enums.content_type import ContentType
 from datetime import datetime
 
+import random
+
 import db
 import keyboards as kb
 from config import Config
@@ -50,9 +52,10 @@ async def sending_message(cb: CallbackQuery):
         await cb.message.delete()
 
     else:
-        sent = await cb.message.answer('⏳')
         users = await db.get_users()
         sending = len(users)
+        sent = await cb.message.answer(f'⏳ Отправлено 0/{sending}')
+        counter = 0
         for user in users:
             try:
                 if cb.message.content_type == ContentType.TEXT:
@@ -81,11 +84,16 @@ async def sending_message(cb: CallbackQuery):
                         reply_markup=ReplyKeyboardRemove()
                     )
 
-            except Exception as ex:
-                sending -= 1
+                counter += 1
+                if random.randint(1, 50) == 1:
+                    await sent.edit_text(f'⏳ Отправлено {counter}/{sending}')
 
-        await bot.edit_message_text(
-            chat_id=sent.chat.id,
-            message_id=sent.message_id,
-            text=f'Отправлено {sending}/{len(users)}'
-        )
+            except Exception as ex:
+                pass
+
+        await sent.edit_text(f'Всего отправлено {counter}/{sending}')
+        # await bot.edit_message_text(
+        #     chat_id=sent.chat.id,
+        #     message_id=sent.message_id,
+        #     text=f'Отправлено {counter}/{len(users)}'
+        # )

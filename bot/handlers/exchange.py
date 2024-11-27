@@ -405,7 +405,7 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
                f'<b>Перевод на:</b> {order.pay_method}\n' \
                f'<b>Сумма рублей:</b> <code>{order.total_amount}</code>'
 
-        await bot.send_message(Config.access_chat, text)
+        await bot.send_message(Config.operator_chat, text)
 
         ut.add_order_row(order=order, row=order.row)
 
