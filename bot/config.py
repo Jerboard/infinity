@@ -15,6 +15,7 @@ class Config:
         operator_chat = os.getenv("OPERATOR_ID_TEST")
         antispam_url = 'https://t.me/infinity_support24_bot'
         feedback_chat = int(os.getenv("FEEDBACK_CHAT_TEST"))
+        feedback_check_chat = int(os.getenv("FEEDBACK_CHECK_CHAT_ID_TEST"))
         get_table_id = os.getenv ("TABLE_TEST")
         api_key_cm = os.getenv('API_KEY_COINMARKET_TEST')
     else:
@@ -24,6 +25,7 @@ class Config:
         antispam_chat = os.getenv("MANAGER_ID")
         operator_chat = os.getenv("OPERATOR_ID")
         antispam_url = 'https://t.me/infinity_support24_bot'
+        feedback_check_chat = int(os.getenv("FEEDBACK_CHECK_CHAT_ID"))
         feedback_chat = int(os.getenv("FEEDBACK_CHAT"))
         get_table_id = os.getenv("TABLE")
         api_key_cm = os.getenv('API_KEY_COINMARKET_TEST')

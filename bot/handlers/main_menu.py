@@ -17,11 +17,11 @@ from enums import Key, CB, MainButton,Coin
 #         print(msg.chat.id)
 #
 #
-@dp.channel_post()
-async def temp(msg: Message):
-    print(msg.chat.title)
-    print(msg.chat.id)
-    await bot.send_message(chat_id=524275902, text=f'{msg.chat.title} {msg.chat.id}')
+# @dp.channel_post()
+# async def temp(msg: Message):
+#     print(msg.chat.title)
+#     print(msg.chat.id)
+#     await bot.send_message(chat_id=524275902, text=f'{msg.chat.title} {msg.chat.id}')
 
 
 # Команда старт

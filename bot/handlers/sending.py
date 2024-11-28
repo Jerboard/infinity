@@ -1,5 +1,6 @@
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from aiogram.enums.content_type import ContentType
+from aiogram.enums.chat_type import ChatType
 from datetime import datetime
 
 import random
@@ -12,16 +13,18 @@ from enums import CB, Action
 
 
 # филтр админов
-def admin_filter(user_id: int):
+def admin_filter(msg: Message):
+    if msg.chat.type != ChatType.PRIVATE:
+        return False
     if Config.debug:
         admins = [524275902, 1879617805, 2028268703]
     else:
         admins = [1879617805, 2028268703]
-    return user_id in admins
+    return msg.from_user.id in admins
 
 
 # приём сообщения
-@dp.message(lambda msg: admin_filter(msg.from_user.id))
+@dp.message(lambda msg: admin_filter(msg))
 async def sending_1(msg: Message):
     await msg.delete()
 
