@@ -50,9 +50,13 @@ async def acc_promo(msg: Message, state: FSMContext):
 
     promo_data = await db.get_promo(promo=msg.text)
     if promo_data:
-        used_promo = await db.get_used_promo(promo=msg.text, user_id=msg.from_user.id)
+        if promo_data.is_onetime:
+            used_promo = await db.get_used_promo(promo=msg.text)
+        else:
+            used_promo = await db.get_used_promo(promo=msg.text, user_id=msg.from_user.id)
+
         if used_promo:
-            await ut.send_time_message(chat_id=msg.chat.id, text='❗️ Вы уже использовали этот промокод')
+            await ut.send_time_message(chat_id=msg.chat.id, text='❗️ Промокод уже использован')
             return
 
         old_promo = await db.get_used_promo(user_id=msg.from_user.id, used=False)

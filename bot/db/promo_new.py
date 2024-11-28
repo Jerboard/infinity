@@ -11,10 +11,10 @@ class PromoRow(t.Protocol):
     id: int
     created_at: datetime
     updated_at: datetime
-    # user_id: int
     rate: int
     promo: str
     is_active: bool
+    is_onetime: bool
 
 
 PromoTable: sa.Table = sa.Table(
@@ -23,11 +23,10 @@ PromoTable: sa.Table = sa.Table(
     sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
     sa.Column('created_at', sa.DateTime),
     sa.Column('updated_at', sa.DateTime),
-    # sa.Column('user_id', sa.BigInteger),
     sa.Column('rate', sa.Integer),
     sa.Column('promo', sa.String(255)),
     sa.Column('is_active', sa.Boolean, default=True),
-
+    sa.Column('is_onetime', sa.Boolean, default=False),
 )
 
 

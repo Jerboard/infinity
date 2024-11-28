@@ -5,27 +5,23 @@ from aiogram.filters.command import CommandStart
 import db
 import keyboards as kb
 import utils as ut
+from config import Config
 from init import dp, bot, log_error
 from enums import Key, CB, MainButton,Coin
 
 
-# @dp.message()
-# async def temp(msg: Message):
-#     print(msg.chat.title)
-#     print(msg.chat.id)
+# if Config.debug:
+#     @dp.message()
+#     async def temp(msg: Message):
+#         print(msg.chat.title)
+#         print(msg.chat.id)
 #
 #
-# @dp.channel_post()
-# async def temp(msg: Message):
-#     print(msg.chat.title)
-#     print(msg.chat.id)
-
-
-# Команда старт
-# @dp.message()
-# async def com_start(msg: Message, state: FSMContext):
-#     check = await ut.check_wallet(coin_code=Coin.LTC.value, wallet=msg.text)
-#     await msg.answer(str(check))
+@dp.channel_post()
+async def temp(msg: Message):
+    print(msg.chat.title)
+    print(msg.chat.id)
+    await bot.send_message(chat_id=524275902, text=f'{msg.chat.title} {msg.chat.id}')
 
 
 # Команда старт

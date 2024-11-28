@@ -90,7 +90,7 @@ body {
 <!--            <span class="item" style="width: 12%;">До</span>-->
 <!--            <span class="item" style="width: 7%;">Количество</span>-->
             <span class="item" style="width: 7%;">Активный</span>
-<!--            <span class="item" style="width: 10%;">Одноразовый</span>-->
+            <span class="item" style="width: 10%;">Одноразовый</span>
         </div>
         {% for code in promo %}
             <div class="promo">
@@ -104,7 +104,7 @@ body {
 <!--                    <input type="date" name="date_end" value="{{ code.end_date|date:'Y-m-d' }}" class="item" style="width: 12%;">-->
 <!--                    <input type="text" name="count" value="{{ code.many }}" class="item" style="width: 5%;">-->
                     <input type="checkbox" name="active" {% if code.is_active %}checked{% endif %} class="item" style="width: 7%;">
-<!--                    <input type="checkbox" name="onetime" {% if code.is_onetime %}checked{% endif %} class="item" style="width: 7%;">-->
+                    <input type="checkbox" name="onetime" {% if code.is_onetime %}checked{% endif %} class="item" style="width: 7%;">
                     <button type="submit" class="btn" name="button" value="ok">
                         <img class="icon" src="{% static 'icons/ok.png' %}" alt="ok"></button>
                     <button type="submit" class="btn" name="button" value="del">

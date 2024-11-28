@@ -213,8 +213,7 @@ def promo_view(request):
                     # promo.many = data['count']
                     is_active = int(data.get('active', 0)) if data.get('active', 0) != 'on' else 1
                     promo.is_active = is_active
-                    # is_onetime = int(data.get('onetime', 0)) if data.get('onetime', 0) != 'on' else 1
-                    # promo.is_onetime = is_onetime
+                    promo.is_onetime = int(data.get('onetime', 0)) if data.get('onetime', 0) != 'on' else 1
                     promo.save()
                 except Exception as ex:
                     logging.warning(ex)

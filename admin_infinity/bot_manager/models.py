@@ -186,6 +186,7 @@ class Promo(models.Model):
     rate = models.IntegerField('Скидка', null=True, blank=True)
     promo = models.CharField('Промокод', max_length=255, null=True, blank=True)
     is_active = models.BooleanField('Активен', default=True)
+    is_onetime = models.BooleanField('Одноразовый', default=False)
 
     objects: models.Manager = models.Manager()
 
