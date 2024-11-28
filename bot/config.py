@@ -16,6 +16,7 @@ class Config:
         antispam_url = 'https://t.me/infinity_support24_bot'
         feedback_chat = int(os.getenv("FEEDBACK_CHAT_TEST"))
         get_table_id = os.getenv ("TABLE_TEST")
+        api_key_cm = os.getenv('API_KEY_COINMARKET_TEST')
     else:
         token = os.getenv("TOKEN")
         access_chat = os.getenv ("ACCESS_CHAT")
@@ -25,6 +26,7 @@ class Config:
         antispam_url = 'https://t.me/infinity_support24_bot'
         feedback_chat = int(os.getenv("FEEDBACK_CHAT"))
         get_table_id = os.getenv("TABLE")
+        api_key_cm = os.getenv('API_KEY_COINMARKET_TEST')
 
     debug = DEBUG
     bot_id = int(token.split(":")[0])
@@ -36,7 +38,6 @@ class Config:
     db_user = os.getenv('POSTGRES_USER')
     db_password = os.getenv('POSTGRES_PASSWORD')
     db_url = f'postgresql+asyncpg://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
-    api_key_cm = os.getenv('API_KEY_COINMARKET')
     operator_url = os.getenv('OPERATOR')
     batch_size = 3
     channel = os.getenv('CHANNEL')

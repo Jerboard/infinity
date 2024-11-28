@@ -8,8 +8,9 @@ from init import bot, log_error
 
 
 async def main() -> None:
-    await bot.delete_webhook (drop_pending_updates=True)
-    await dp.start_polling(bot)
+    if not Config.debug:
+        await bot.delete_webhook (drop_pending_updates=True)
+        await dp.start_polling(bot)
 
 
 if __name__ == "__main__":

@@ -19,12 +19,14 @@ async def update_currency_rate():
     }
     headers = {
       'Accepts': 'application/json',
-      'X-CMC_PRO_API_KEY': Config.api_key_cm,
+      # 'X-CMC_PRO_API_KEY': Config.api_key_cm,
+      'X-CMC_PRO_API_KEY': '6209075d-e14c-482b-8fa0-a674f9fb5be0',
     }
 
     async with httpx.AsyncClient() as client:
         response = await client.get(url, headers=headers, params=parameters)
         response_json = response.json()
+        # print(f'response_json: {response_json}')
         exchange_rates = response_json['data']
 
     for symbol, data in exchange_rates.items ():
