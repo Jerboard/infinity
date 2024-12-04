@@ -28,7 +28,7 @@ class Config:
         feedback_check_chat = int(os.getenv("FEEDBACK_CHECK_CHAT_ID"))
         feedback_chat = int(os.getenv("FEEDBACK_CHAT"))
         get_table_id = os.getenv("TABLE")
-        api_key_cm = os.getenv('API_KEY_COINMARKET_TEST')
+        api_key_cm = os.getenv('API_KEY_COINMARKET')
 
     debug = DEBUG
     bot_id = int(token.split(":")[0])

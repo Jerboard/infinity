@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db.models import Sum, FloatField
-from django.db.models.functions import Cast
+from django.db.models import Count
 from django.utils.html import mark_safe
 
 
@@ -14,7 +14,7 @@ from .models import User, Order, CashbackLevel, Currency, PayMethod, Promo, Cash
 @admin.register(User)
 class ViewUserTable(admin.ModelAdmin):
     list_display = ['user_id', 'full_name',  'username', 'last_visit', 'referrer',
-                    'custom_referral_lvl_id', 'balance', 'used_points_count', 'total_points_count',
+                    'custom_referral_lvl', 'balance', 'used_points_count', 'total_points_count',
                     'count_invited_users']
     search_fields = ['user_id', 'username', 'referrer']
     ordering = ['-last_visit']
@@ -23,12 +23,17 @@ class ViewUserTable(admin.ModelAdmin):
     def count_invited_users(self, obj):
         count_users = User.objects.filter(referrer=obj.user_id).count()
 
-        referral_level = CashbackLevel.objects.filter(count_users__lte=count_users).order_by('-count_users').first()
-        if not referral_level:
-            referral_level = 1
+        if obj.custom_referral_lvl:
+            referral_level = obj.custom_referral_lvl
+
+        else:
+            referral_level = CashbackLevel.objects.filter(count_users__lte=count_users).order_by('-count_users').first()
+            if not referral_level:
+                referral_level = 1
         return f'Ур. {referral_level} Пригл. {count_users}'
 
     count_invited_users.short_description = 'Приглашенных'
+    count_invited_users.admin_order_field = 'count_invited_users'
 
     def balance(self, obj):
         referral_points = obj.referral_points or 0
@@ -36,6 +41,7 @@ class ViewUserTable(admin.ModelAdmin):
         return str(referral_points + cashback)
 
     balance.short_description = 'Баланс'
+    balance.admin_order_field = 'balance'
 
     def used_points_count(self, obj):
         total_points = Order.objects.filter(user_id=obj.user_id, status='successful').aggregate(total=Sum('used_points'))[
@@ -56,12 +62,14 @@ class ViewUserTable(admin.ModelAdmin):
         return str(total_points + total_cashback + cashback)
 
     used_points_count.short_description = 'Баллов потрачено'
+    used_points_count.admin_order_field = 'used_points_count'
 
     def total_points_count(self, obj):
         used_points = self.used_points_count(obj)
         return str(int(used_points) + obj.referral_points + obj.cashback)
 
     total_points_count.short_description = 'Всего баллов'
+    total_points_count.admin_order_field = 'total_points_count'
 
 
 @admin.register(Order)
