@@ -128,7 +128,7 @@ def old_orders_view(request):
             return redirect('closed_orders')
 
         else:
-            orders = Order.objects.select_related('user').all().order_by('-id')[:50]
+            orders = Order.objects.select_related('user').all().order_by('-id')[:200]
 
             context = {
                 'pages': page_list,
