@@ -13,12 +13,30 @@ from .models import User, Order, CashbackLevel, Currency, PayMethod, Promo, Cash
 # dQ6tWhJ5
 @admin.register(User)
 class ViewUserTable(admin.ModelAdmin):
-    list_display = ['user_id', 'full_name',  'username', 'last_visit', 'referrer',
-                    'custom_referral_lvl', 'balance', 'used_points_count', 'total_points_count',
-                    'count_invited_users']
+    list_display = [
+        'user_id',
+        'full_name',
+        'username',
+        'last_visit',
+        'referrer',
+        'custom_referral_lvl',
+        'referral_points',
+        'cashback',
+        'balance',
+        'used_points_count',
+        'total_points_count',
+        'count_invited_users'
+    ]
     search_fields = ['user_id', 'username', 'referrer']
     ordering = ['-last_visit']
     readonly_fields = ['first_visit', 'last_visit']
+
+    # def get_queryset(self, request):
+    #     # Добавляем аннотированное поле count_invited_users
+    #     queryset = super().get_queryset(request)
+    #     return queryset.annotate(
+    #         count_invited_users=Count('invited_users')
+    #     )
 
     def count_invited_users(self, obj):
         count_users = User.objects.filter(referrer=obj.user_id).count()
@@ -33,7 +51,7 @@ class ViewUserTable(admin.ModelAdmin):
         return f'Ур. {referral_level} Пригл. {count_users}'
 
     count_invited_users.short_description = 'Приглашенных'
-    count_invited_users.admin_order_field = 'count_invited_users'
+    # count_invited_users.admin_order_field = 'user_id'
 
     def balance(self, obj):
         referral_points = obj.referral_points or 0
@@ -41,7 +59,7 @@ class ViewUserTable(admin.ModelAdmin):
         return str(referral_points + cashback)
 
     balance.short_description = 'Баланс'
-    balance.admin_order_field = 'balance'
+    # balance.admin_order_field = 'balance'
 
     def used_points_count(self, obj):
         total_points = Order.objects.filter(user_id=obj.user_id, status='successful').aggregate(total=Sum('used_points'))[
@@ -62,21 +80,31 @@ class ViewUserTable(admin.ModelAdmin):
         return str(total_points + total_cashback + cashback)
 
     used_points_count.short_description = 'Баллов потрачено'
-    used_points_count.admin_order_field = 'used_points_count'
+    # used_points_count.admin_order_field = 'used_points_count'
 
     def total_points_count(self, obj):
         used_points = self.used_points_count(obj)
         return str(int(used_points) + obj.referral_points + obj.cashback)
 
     total_points_count.short_description = 'Всего баллов'
-    total_points_count.admin_order_field = 'total_points_count'
+    # total_points_count.admin_order_field = 'total_points_count'
 
 
 @admin.register(Order)
 class ViewOrderTable(admin.ModelAdmin):
-    list_display = ['id', 'user_id', 'coin', 'pay_method', 'used_points', 'amount', 'exchange_rate',
-                    'display_profit']
+    list_display = [
+        'id',
+        'user_id',
+        'coin',
+        'status',
+        'pay_method',
+        'used_points',
+        'amount',
+        'exchange_rate',
+        'display_profit'
+    ]
     search_fields = ['user_id']
+    readonly_fields = ['created_at', 'updated_at']
 
     def display_profit(self, obj):
         return round(obj.profit, 2) if obj.profit is not None else 0

@@ -60,7 +60,7 @@ async def test_wallet_valid():
             exceptions.append(order.coin)
 
     all_orders = len(orders) - len(trash_orders_id)
-    print('---')
+    # print('---')
     # print(exceptions)
     print(f'{counter}/{all_orders}')
     print(f'{round((counter / all_orders) * 100, 2)} %')

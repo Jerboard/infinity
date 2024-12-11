@@ -75,6 +75,11 @@ async def del_order(order: db.OrderRow):
     msg_data = await db.get_msg(Key.FAIL_ORDER.value)
     text = msg_data.text.format(order_id=order.id)
 
+    try:
+        await bot.delete_message(chat_id=order.user_id, message_id=order.message_id)
+    except Exception as ex:
+        log_error(ex)
+
     await send_msg(
         msg_data=msg_data,
         chat_id=order.user_id,

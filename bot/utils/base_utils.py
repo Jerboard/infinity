@@ -83,14 +83,14 @@ def amount_calculator(
     buy_rate = buy_rate or 0
     profit = (coin_sum * infinity_rate) - (coin_sum * buy_rate)  # прибыль
 
-    pay_string = f'К ОПЛАТЕ {round(total_amount)}Р'
+    pay_string = f'📍 К ОПЛАТЕ {round(total_amount)} RUB 📍'
 
     if promo_rate:
         discount = profit * (promo_rate / 100)
         total_amount -= discount
         profit -= discount
 
-        pay_string = f'<s>{pay_string}</s>\nК ОПЛАТЕ С УЧЕТОМ ПРОМОКОДА: {round(total_amount)} р.'
+        pay_string = f'<s>{pay_string.replace("📍", "")}</s>\n📍 К ОПЛАТЕ С УЧЕТОМ ПРОМОКОДА: {round(total_amount)} р. 📍'
 
     else:
         discount = 0
@@ -125,7 +125,7 @@ def amount_calculator(
         if profit < 0:
             profit = 0
 
-        pay_string = f'<s>{pay_string}</s>\nК ОПЛАТЕ С УЧЕТОМ БАЛАНСА: {round(total_amount)}р.'
+        pay_string = f'<s>{pay_string.replace("📍", "")}</s>\n📍 К ОПЛАТЕ С УЧЕТОМ БАЛАНСА: {round(total_amount)}р. 📍'
 
     if profit > 0:
         cashback = profit * (cashback_rate / 100)

@@ -8,7 +8,7 @@ from handlers import dp
 from config import Config
 from init import set_main_menu, bot, log_error
 from db.base import init_models
-from utils.scheduler_utils import scheduler_start_async, hand_orders, hand_cashback_orders
+from utils.scheduler_utils import scheduler_start_async, hand_orders, hand_cashback_orders, del_old_orders
 from utils.coin_utils import update_currency_rate
 
 
@@ -17,6 +17,7 @@ async def main() -> None:
     await init_models()
     await set_main_menu()
     if Config.debug:
+        await del_old_orders()
         await hand_orders()
         await hand_cashback_orders()
     else:

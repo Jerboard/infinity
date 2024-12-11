@@ -54,7 +54,7 @@ async def com_start(msg: Message, state: FSMContext):
 @dp.callback_query(lambda cb: cb.data.startswith(CB.CAPCHA.value))
 async def capcha(cb: CallbackQuery, state: FSMContext):
     _, suc, ref_code = cb.data.split(':')
-    log_error(f'{cb.data}', with_traceback=False)
+    # log_error(f'{cb.data}', with_traceback=False)
     await cb.message.delete()
     if suc == '1':
         referrer = await db.get_user_info(ref_code=ref_code)

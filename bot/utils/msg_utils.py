@@ -233,7 +233,7 @@ async def russian_rub(msg: Message, edit_msg: int = None):
 # старт обмена
 async def select_currency(msg: Message, state: FSMContext, edit_msg: int = None):
     await state.clear()
-    check_orders = await db.get_orders(user_id=msg.from_user.id, check=True)
+    check_orders = await db.get_orders(user_id=msg.chat.id, check=True)
 
     if check_orders:
         text = 'У вас ещё осталась незакрытая заявка'

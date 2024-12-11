@@ -4,7 +4,7 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import StateFilter
 
 from asyncio import sleep
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import db
 import keyboards as kb
@@ -261,40 +261,8 @@ async def check_wallet(msg: Message, state: FSMContext):
     data = await state.get_data()
 
     if not ut.check_valid_wallet(coin=data['currency_code'], wallet=msg.text):
-        # await msg.answer('❌ Некорректный адрес кошелька')
-
-        # text = f'<b>Укажи {data["currency_name"]}-Кошелек:</b>'
         await ut.send_time_message(chat_id=msg.chat.id, text='❌ Некорректный адрес кошелька', msg_ids=[msg.message_id])
-        # await sleep(3)
-        # await msg.delete()
-        # await ut.send_msg(
-        #     msg_key=Key.SEND_WALLET.value,
-        #     chat_id=msg.chat.id,
-        #     # edit_msg=data['message_id'],
-        #     text=text,
-        #     keyboard=kb.get_cancel_kb()
-        # )
         return
-
-    # checked_wallet = await db.get_wallet(code=data['currency_code'], wallet=msg.text)
-    # if not checked_wallet:
-    #     check = await ut.check_wallet(coin_code=data['currency_code'], wallet=msg.text)
-    #     if check:
-    #         if not Config.debug:
-    #             await db.add_wallet(user_id=msg.from_user.id, code=data['currency_code'], wallet=msg.text)
-    #
-    #     else:
-    #         await msg.answer('❌ Некорректный адрес кошелька')
-    #
-    #         text = f'<b>Укажи {data["currency_name"]}-Кошелек:</b>'
-    #         await ut.send_msg(
-    #             msg_key=Key.SEND_WALLET.value,
-    #             chat_id=msg.chat.id,
-    #             edit_msg=data['message_id'],
-    #             text=text,
-    #             keyboard=kb.get_back_kb(CB.SELECT_PAYMENT.value)
-    #         )
-    #         return
 
     await state.update_data(data={'wallet': msg.text})
 
@@ -302,16 +270,7 @@ async def check_wallet(msg: Message, state: FSMContext):
         await db.update_used_promo(promo_id=data['promo_id'], used=True)
 
     # списываем баллы
-    use_points, use_cashback = 0, 0
     if data.get('used_balance'):
-        # if data['total_amount'] == 1:
-        #     use_points = data['referral_points']
-        #     use_cashback = data['used_balance'] - data['referral_points']
-        #
-        # else:
-        #     use_points = data['referral_points']
-        #     use_cashback = data['cashback']
-
         await db.update_user_info(
             user_id=msg.from_user.id,
             add_point=0 - data['use_points'],
@@ -338,7 +297,7 @@ async def check_wallet(msg: Message, state: FSMContext):
         used_points=data['use_points'],
         used_cashback=data['use_cashback'],
         total_amount=data['total_amount'],
-        message_id=data['message_id'],
+        # message_id=data['message_id'],
         promo_used_id=data.get('promo_id', 0),
         commission=data['commission'],
         profit=data['profit'],
@@ -365,7 +324,7 @@ async def check_wallet(msg: Message, state: FSMContext):
     # добавляем в таблицу
     order = await db.get_order(order_id)
     row = ut.add_order_row(order)
-    await db.update_order(order_id=order_id, row=row)
+    await db.update_order(order_id=order_id, row=row, message_id=sent.message_id)
 
 
 # ожидание оплаты
@@ -379,6 +338,14 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
         await ut.del_order(order)
 
     else:
+        order = await db.get_order(order_id)
+        thirty_minutes_ago = datetime.now() - timedelta(minutes=Config.order_live_time)
+        # if order.created_at < thirty_minutes_ago and not Config.debug:
+        if order.created_at < thirty_minutes_ago:
+            await cb.message.answer('❌ Заказ устарел. Реквизиты более не действительны.')
+            await ut.del_order(order)
+            return
+
         await db.update_order(order_id=order_id, status=OrderStatus.NEW.value)
         order = await db.get_order(order_id)
 

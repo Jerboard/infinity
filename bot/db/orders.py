@@ -92,7 +92,7 @@ async def add_order(
         used_points: int,
         used_cashback: int,
         total_amount: int,
-        message_id: int,
+        # message_id: int,
         promo_used_id: int,
         commission: int,
         profit: int,
@@ -117,7 +117,7 @@ async def add_order(
         used_points=used_points,
         used_cashback=used_cashback,
         total_amount=total_amount,
-        message_id=message_id,
+        # message_id=message_id,
         promo_used_id=promo_used_id,
         commission=commission,
         profit=profit,
@@ -214,10 +214,8 @@ async def get_orders(
         ))
 
     if old_orders:
-        if Config.debug:
-            thirty_minutes_ago = datetime.now() - timedelta(minutes=1)
-        else:
-            thirty_minutes_ago = datetime.now() - timedelta(minutes=30)
+        thirty_minutes_ago = datetime.now() - timedelta(minutes=Config.order_live_time)
+
         query = query.where(
             sa.or_(
                 OrderTable.c.status == OrderStatus.CANCEL.value,
@@ -259,6 +257,7 @@ async def update_order(
         add_ref_points: int = None,
         add_cashback: int = None,
         row: int = None,
+        message_id: int = None,
 ) -> None:
     query = OrderTable.update().where(OrderTable.c.id == order_id).values(updated_at=datetime.now())
 
@@ -276,6 +275,9 @@ async def update_order(
 
     if row:
         query = query.values(row=row)
+
+    if message_id:
+        query = query.values(message_id=message_id)
 
     async with begin_connection() as conn:
         await conn.execute(query)

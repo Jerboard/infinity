@@ -182,7 +182,7 @@ def get_antispam_admin_kb(user_id: int, on: bool = True) -> InlineKeyboardMarkup
 def get_info_kb():
     kb = InlineKeyboardBuilder()
     kb.button(text='КАНАЛ', url='https://t.me/infinity_ex_channel')
-    kb.button(text='ЧАТ', url='https://t.me/+BmFoERnJl_JmOWUy')
+    kb.button(text='ЧАТ', url='https://t.me/+nhqLfHn7ues5YjQ6')
     kb.button(text='ОТЗЫВЫ', url='https://t.me/infinity_ex_comment')
     kb.button(text='МЕНЕДЖЕР', url='https://t.me/manager_Infinity')
     kb.button(text='ОПЕРАТОР', url='https://t.me/operator_Infinity')
