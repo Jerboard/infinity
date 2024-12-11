@@ -319,12 +319,14 @@ async def check_wallet(msg: Message, state: FSMContext):
         text=text,
         keyboard=kb.get_payment_conf_kb(order_id)
     )
+    await db.update_order(order_id=order_id, message_id=sent.message_id)
+
     await state.clear()
 
     # добавляем в таблицу
     order = await db.get_order(order_id)
     row = ut.add_order_row(order)
-    await db.update_order(order_id=order_id, row=row, message_id=sent.message_id)
+    await db.update_order(order_id=order_id, row=row)
 
 
 # ожидание оплаты
