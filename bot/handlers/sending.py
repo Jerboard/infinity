@@ -66,6 +66,7 @@ async def sending_message(cb: CallbackQuery):
                         chat_id=user.user_id,
                         text=cb.message.text,
                         entities=cb.message.entities,
+                        parse_mode=None,
                         reply_markup=ReplyKeyboardRemove()
                     )
 
@@ -75,15 +76,17 @@ async def sending_message(cb: CallbackQuery):
                         photo=cb.message.photo[-1].file_id,
                         caption=cb.message.caption,
                         caption_entities=cb.message.caption_entities,
+                        parse_mode=None,
                         reply_markup=ReplyKeyboardRemove()
                     )
 
-                elif cb.message.content_type == ContentType:
+                elif cb.message.content_type == ContentType.VIDEO:
                     await bot.send_video(
                         chat_id=user.user_id,
                         video=cb.message.animation.file_id,
                         caption=cb.message.caption,
                         caption_entities=cb.message.caption_entities,
+                        parse_mode=None,
                         reply_markup=ReplyKeyboardRemove()
                     )
 
