@@ -29,13 +29,14 @@ async def sending_1(msg: Message):
     await msg.delete()
 
     if msg.content_type == ContentType.TEXT:
-        await msg.answer(text=msg.text, entities=msg.entities, reply_markup=kb.get_sending_kb())
+        await msg.answer(text=msg.text, entities=msg.entities, parse_mode=None, reply_markup=kb.get_sending_kb())
 
     elif msg.content_type == ContentType.PHOTO:
         await msg.answer_photo(
             photo=msg.photo[-1].file_id,
             caption=msg.caption,
             caption_entities=msg.caption_entities,
+            parse_mode=None,
             reply_markup=kb.get_sending_kb())
 
     elif msg.content_type == ContentType.VIDEO:
@@ -43,6 +44,7 @@ async def sending_1(msg: Message):
             video=msg.video.file_id,
             caption=msg.caption,
             caption_entities=msg.caption_entities,
+            parse_mode=None,
             reply_markup=kb.get_sending_kb()
         )
 

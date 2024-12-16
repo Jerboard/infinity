@@ -38,7 +38,6 @@ class User(models.Model):
     referrer = models.BigIntegerField('Реферер', null=True, blank=True)
     referral_points = models.IntegerField('Реф. баллы', default=0, null=True, blank=True)
     cashback = models.IntegerField('Кешбек', default=0, null=True, blank=True)
-    # custom_referral_lvl_id = models.IntegerField('Уровень рефералки', null=True, blank=True)
     custom_referral_lvl = models.ForeignKey(
         CashbackLevel,
         on_delete=models.SET_NULL,
@@ -94,7 +93,7 @@ class Order(models.Model):
     profit = models.FloatField('Прибыль', null=True, blank=True)
     referrer = models.BigIntegerField('ID реферрера', null=True, blank=True)
     promo_used_id = models.IntegerField('ID промокода', null=True, blank=True)
-    add_ref_points = models.IntegerField('Начислено балов', null=True, blank=True)
+    add_ref_points = models.IntegerField('Начислено баллов', null=True, blank=True)
     add_cashback = models.IntegerField('Начислено кешбека', null=True, blank=True)
     # user_key = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='orders')
 

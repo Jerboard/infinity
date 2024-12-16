@@ -121,6 +121,8 @@ body {
             <span class="item" style="width: 5%; overflow: hidden;">Комиссия</span>
             <span class="item" style="width: 5%; overflow: hidden;">Кешбэк</span>
             <span class="item" style="width: 5%; overflow: hidden;">Прибыль</span>
+            <span class="item" style="width: 5%; overflow: hidden;">Исп. баллов</span>
+            <span class="item" style="width: 5%; overflow: hidden;">Исп. кешбек</span>
         </div>
         {% for order in orders %}
         <div class="order-block">
@@ -144,6 +146,8 @@ body {
             <span class="item" style="width: 5%; overflow: hidden;">{{ order.commission|default:"-" }}</span>
             <span class="item" style="width: 5%; overflow: hidden;">{{ order.cashback|default:"-" }}</span>
             <span class="item" style="width: 5%; overflow: hidden;">{{ order.profit|default:"-" }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.used_points|default:"-" }}</span>
+            <span class="item" style="width: 5%; overflow: hidden;">{{ order.used_cashback|default:"-" }}</span>
         </div>
         {% endfor %}
     </div>

@@ -94,7 +94,7 @@ class ViewUserTable(admin.ModelAdmin):
 class ViewOrderTable(admin.ModelAdmin):
     list_display = [
         'id',
-        'user_id',
+        'user',
         'coin',
         'status',
         'pay_method',
@@ -103,7 +103,7 @@ class ViewOrderTable(admin.ModelAdmin):
         'exchange_rate',
         'display_profit'
     ]
-    search_fields = ['user_id']
+    search_fields = ['user__user_id', 'id']
     readonly_fields = ['created_at', 'updated_at']
 
     def display_profit(self, obj):
