@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
+from django.utils.timezone import make_aware
 
 import os
 import logging
@@ -74,69 +75,112 @@ def new_orders_view(request):
         return render(request, 'new_orders.html', context)
 
 
+    '''
+    type: orders_filter
+from: 
+to: 2024-12-18
+user: 524275902
+coin: 
+wallet: 
+promo: 
+hash: 
+button: filter
+
+type: orders_filter
+from: 
+to: 2024-12-18
+user: 
+coin: btc
+wallet: 
+promo: 
+hash: 
+button: filter
+    '''
+
+
 # закрытые заказы
 def old_orders_view(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    else:
-        if request.method == 'POST':
-            data = request.POST
-            # print(f'>>>>>data\t{data}')
-            if data['button'] == 'refresh':
-                return redirect('closed_orders')
 
-            orders = Order.objects.all()
-            dateFrom = ''
-            if data['from'] != '':
-                dateFrom = datetime.strptime(data['from'], "%Y-%m-%d")
-                orders = orders.filter(time__gt=data['from'])
-            if data['to'] != '':
-                orders = orders.filter(time__lt=data['to'])
-            if data['user'] != '':
-                if data['user'].isdigit() == True:
-                    orders = orders.filter(user_id=data['user'])
-                else:
-                    orders = orders.filter(name_user=data['user'])
-            if data['coin'] != '':
-                orders = orders.filter(coin=data['coin'].upper())
-            if data['wallet'] != '':
-                orders = orders.filter(wallet=data['wallet'])
-            if data['promo'] != '':
-                orders = orders.filter(promo=data['promo'])
-            if data['hash'] != '':
-                orders = orders.filter(hash=data['hash'])
+    if request.method == 'POST':
+        data: dict = request.POST
+        print('data >>>')
+        for k, v in data.items():
+            print(f'{k}: {v}')
 
-            if data['button'] == 'filter':
-                context = {
-                    'pages': page_list,
-                    'this_page': page_list[1]['name'],
-                    'orders': orders,
-                    'today': datetime.now().date(),
-                    'fFrom': dateFrom,
-                    'fUser': data['user'],
-                    'fCoin': data['coin'],
-                    'fWallet': data['wallet'],
-                    'fPromo': data['promo'],
-                    'fHash': data['hash']
-                }
-
-                return render(request, 'closed_orders.html', context)
-
-            if data['button'] == 'export':
-                export(orders)
-
+        if data['button'] == 'refresh':
             return redirect('closed_orders')
 
-        else:
-            orders = Order.objects.select_related('user').all().order_by('-id')[:200]
+        orders = Order.objects.all().order_by('-id')
+        dateFrom = ''
+        dateTo = ''
+        if data['from'] != '':
+            # dateFrom = datetime.strptime(data['from'], "%Y-%m-%d")
+            naive_date_from = datetime.strptime(data['from'], "%Y-%m-%d")
+            dateFrom = make_aware(naive_date_from)
+            orders = orders.filter(created_at__gt=dateFrom)
 
+        if data['to'] != '':
+            naive_date_to = datetime.strptime(data['to'], "%Y-%m-%d")
+            dateTo = make_aware(naive_date_to)
+            orders = orders.filter(created_at__lt=dateTo)
+            # orders = orders.filter(created_at__lt=data['to'])
+
+        if data['user'] != '':
+            if data['user'].isdigit():
+                orders = orders.filter(user_id=data['user'])
+            else:
+                orders = orders.filter(name_user=data['user'])
+
+        if data['coin'] != '':
+            coin_code = data['coin'].upper()
+            orders = orders.filter(coin=coin_code)
+
+        if data['wallet'] != '':
+            orders = orders.filter(wallet=data['wallet'])
+
+        if data['promo'] != '':
+            orders = orders.filter(promo=data['promo'])
+
+        if data['hash'] != '':
+            orders = orders.filter(hash=data['hash'])
+
+        if data['button'] == 'filter':
             context = {
                 'pages': page_list,
                 'this_page': page_list[1]['name'],
-                'orders': orders,
-                'today': datetime.now().date()
+                'orders': orders[:200],
+                'today': dateTo or datetime.now().date(),
+                'fFrom': dateFrom,
+                'fUser': data['user'],
+                'fCoin': data['coin'],
+                'fWallet': data['wallet'],
+                'fPromo': data['promo'],
+                'fHash': data['hash']
             }
+
+            print(f'context >>>>>\n{type(context["today"])}\n{type(context["fFrom"])}')
+            for k, v in context.items():
+                print(f'{k}: {v}')
+
             return render(request, 'closed_orders.html', context)
+
+        if data['button'] == 'export':
+            export(orders)
+
+        return redirect('closed_orders')
+
+    else:
+        orders = Order.objects.select_related('user').all().order_by('-id')[:200]
+
+        context = {
+            'pages': page_list,
+            'this_page': page_list[1]['name'],
+            'orders': orders,
+            'today': datetime.now().date()
+        }
+        return render(request, 'closed_orders.html', context)
 
 
 # кошельки и способы оплаты

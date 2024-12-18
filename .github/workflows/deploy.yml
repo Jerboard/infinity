@@ -1,16 +1,22 @@
 name: Infinity update
 
 on:
-  push:
-    branches:
-      - main
+  schedule:
+    - cron: '0 1 * * *'  # Ежедневно в 1:00 UTC
 
 jobs:
   deploy:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: Deploy via SSH
+    - name: Check for new commits
+      run: |
+        git fetch origin main
+        NEW_COMMITS=$(git rev-list HEAD..origin/main --count)
+        echo "new_commits=$NEW_COMMITS" >> $GITHUB_ENV
+
+    - name: Deploy if new commits
+      if: env.new_commits != '0'
       uses: appleboy/ssh-action@v0.1.5
       with:
         host: 90.156.253.208
@@ -20,4 +26,4 @@ jobs:
           cd /home/infinity/docker
           git pull origin main
           docker-compose down
-          docker-compose up -d
+          docker-compose up -d          
