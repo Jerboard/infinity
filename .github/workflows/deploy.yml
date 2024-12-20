@@ -24,7 +24,7 @@ jobs:
         username: root
         key: ${{ secrets.SSH_KEY }}
         script: |
-#          cd /home/infinity/docker
-#          git pull origin main
+          cd /home/infinity/docker
+          git pull origin main
           docker-compose down
           docker-compose up -d          
