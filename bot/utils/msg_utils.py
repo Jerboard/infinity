@@ -8,7 +8,7 @@ import typing as t
 
 import db
 import keyboards as kb
-from init import bot
+from init import bot, log_error
 from config import Config
 from data import capcha_list
 import utils as ut
@@ -55,39 +55,50 @@ async def send_msg(
         edit_msg: int = None,
         keyboard: t.Union[InlineKeyboardMarkup, ReplyKeyboardMarkup] = None
 ) -> Message:
-    if not msg_data:
-        msg_data = await db.get_msg(msg_key)
+    for attempt in range(0, 3):
+        try:
+            if not msg_data:
+                msg_data = await db.get_msg(msg_key)
 
-    if msg_data.photo_id and msg_data.bot_id == Config.bot_id:
-        photo_id = msg_data.photo_id
-        update = False
-    else:
-        photo_id = FSInputFile(msg_data.photo_path)
-        update = True
+            if msg_data.photo_id and msg_data.bot_id == Config.bot_id:
+                photo_id = msg_data.photo_id
+                update = False
+            else:
+                photo_id = FSInputFile(msg_data.photo_path)
+                update = True
 
-    text = parse_text(text) if text else parse_text(msg_data.text)
+            text = parse_text(text) if text else parse_text(msg_data.text)
 
-    if edit_msg:
-        photo = InputMediaPhoto(media=photo_id, caption=text)
-        sent = await bot.edit_message_media(
-            chat_id=chat_id,
-            message_id=edit_msg,
-            media=photo,
-            reply_markup=keyboard
-        )
+            if edit_msg:
+                photo = InputMediaPhoto(media=photo_id, caption=text)
+                sent = await bot.edit_message_media(
+                    chat_id=chat_id,
+                    message_id=edit_msg,
+                    media=photo,
+                    reply_markup=keyboard
+                )
 
-    else:
-        sent = await bot.send_photo(
-            chat_id=chat_id,
-            photo=photo_id,
-            caption=text,
-            reply_markup=keyboard
-        )
+            else:
+                sent = await bot.send_photo(
+                    chat_id=chat_id,
+                    photo=photo_id,
+                    caption=text,
+                    reply_markup=keyboard
+                )
 
-    if update:
-        await db.update_msg(msg_data.id, photo_id=sent.photo[-1].file_id, bot_id=Config.bot_id)
+            if update:
+                await db.update_msg(msg_data.id, photo_id=sent.photo[-1].file_id, bot_id=Config.bot_id)
 
-    return sent
+            return sent
+
+        except Exception as ex:
+            if attempt == 3:
+                # Логируем ошибку, если исчерпали попытки
+                log_error(f"Error sending msg for user: {chat_id}", with_traceback=False)
+                log_error(ex)
+            else:
+                # Можно добавить задержку между попытками, если необходимо
+                await sleep(1)
 
 
 async def main_exchange(state: FSMContext, del_msg: bool = False):

@@ -1,4 +1,5 @@
 django
+django-unfold
 pillow
 psycopg2
 python-decouple

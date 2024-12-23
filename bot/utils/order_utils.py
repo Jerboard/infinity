@@ -25,6 +25,7 @@ async def done_order(order: db.OrderRow):
 
     msg_data = await db.get_msg(Key.SUC_ORDER.value)
     text = msg_data.text.format(order_id=order.id, order_hash=order.hash)
+
     await send_msg(
         msg_data=msg_data,
         chat_id=order.user_id,

@@ -11,7 +11,7 @@ jobs:
     steps:
     - name: Check for new commits
       run: |
-        cd /home/infinity/docker
+        cd /home/infinity
         git fetch origin main
         NEW_COMMITS=$(git rev-list HEAD..origin/main --count)
         echo "new_commits=$NEW_COMMITS" >> $GITHUB_ENV
@@ -24,6 +24,7 @@ jobs:
         username: root
         key: ${{ secrets.SSH_KEY }}
         script: |
+          ls
           cd /home/infinity/docker
           git pull origin main
           docker-compose down
