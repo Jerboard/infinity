@@ -1,31 +1,29 @@
-name: Infinity update
+name: Update Code on Server
 
 on:
   schedule:
     - cron: '0 1 * * *'  # Ежедневно в 1:00 UTC
 
 jobs:
-  deploy:
-    runs-on: ubuntu-22.04
+  update-code:
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Check for new commits
-      run: |
-        cd /home/infinity
-        git fetch origin main
-        NEW_COMMITS=$(git rev-list HEAD..origin/main --count)
-        echo "new_commits=$NEW_COMMITS" >> $GITHUB_ENV
-
-    - name: Deploy if new commits
-      if: env.new_commits != '0'
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: 90.156.253.208
-        username: root
-        key: ${{ secrets.SSH_KEY }}
-        script: |
-          ls
-          cd /home/infinity/docker
-          git pull origin main
-          docker-compose down
-          docker-compose up -d          
+      - name: Deploy Code to Server
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: 90.156.253.208
+          username: root
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /home/infinity/docker
+            git fetch origin main
+            NEW_COMMITS=$(git rev-list HEAD..origin/main --count)
+            if [ "$NEW_COMMITS" -ne 0 ]; then
+              echo "Обновляю"
+              git pull origin main
+              docker-compose down
+              docker-compose up -d
+            else
+              echo "Новых изменений нет. Завершаем."
+            fi
