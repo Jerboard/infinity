@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.12.0/dist/cdn.min.js" defer></script>
+
+<!--<link rel="stylesheet" href="{% static 'unfold/css/unfold.css' %}">-->
+<!--<script src="{% static 'unfold/js/unfold.js' %}"></script>-->
+    <link rel="stylesheet" href="{% static 'unfold/css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'unfold/css/simplebar.css' %}">
+
+    <!-- Подключение JavaScript -->
+<!--    <script src="{% static 'unfold/js/alpine.anchor.js' %}"></script>-->
+<!--    <script src="{% static 'unfold/js/alpine.js' %}"></script>-->
+<!--    <script src="{% static 'unfold/js/alpine.persist.js' %}"></script>-->
+<!--    <script src="{% static 'unfold/js/alpine.sort.js' %}"></script>-->
+<!--    <script src="{% static 'unfold/js/app.js' %}"></script>-->
+<!--    <script src="{% static 'unfold/js/chart.js' %}"></script>-->
+<!--    <script src="{% static 'unfold/js/htmx.js' %}"></script>-->
+<!--    <script src="{% static 'unfold/js/select2.init.js' %}"></script>-->
+<!--    <script src="{% static 'unfold/js/simplebar.js' %}"></script>-->
+{% endblock %}

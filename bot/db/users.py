@@ -38,7 +38,7 @@ UserTable: sa.Table = sa.Table(
     sa.Column('balance', sa.Integer, default=0),
     sa.Column('referral_points', sa.Integer, default=0),
     sa.Column('cashback', sa.Integer, default=0),
-    sa.Column('custom_referral_lvl_id', sa.Integer, default=0),
+    sa.Column('custom_referral_lvl_id', sa.Integer, default=None),
     sa.Column('ban', sa.Boolean, default=False),
     sa.Column('ref_code', sa.String(255)),
 )

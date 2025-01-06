@@ -75,29 +75,6 @@ def new_orders_view(request):
         return render(request, 'new_orders.html', context)
 
 
-    '''
-    type: orders_filter
-from: 
-to: 2024-12-18
-user: 524275902
-coin: 
-wallet: 
-promo: 
-hash: 
-button: filter
-
-type: orders_filter
-from: 
-to: 2024-12-18
-user: 
-coin: btc
-wallet: 
-promo: 
-hash: 
-button: filter
-    '''
-
-
 # закрытые заказы
 def old_orders_view(request):
     if not request.user.is_authenticated:

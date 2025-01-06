@@ -56,11 +56,14 @@ async def take_feedback(msg: Message, state: FSMContext):
 # публикует отзыв
 @dp.callback_query(lambda cb: cb.data.startswith(CB.PUBLISH_FEEDBACK.value))
 async def publish_feedback(cb: CallbackQuery, state: FSMContext):
-    await bot.delete_message(chat_id=cb.message.chat.id, message_id=cb.message.message_id)
-
     await bot.send_message(
         chat_id=Config.feedback_chat,
         text=cb.message.text,
         entities=cb.message.entities,
         parse_mode=None
     )
+    try:
+        await bot.delete_message(chat_id=cb.message.chat.id, message_id=cb.message.message_id)
+    except Exception as ex:
+        await cb.message.edit_reply_markup(reply_markup=None)
+
