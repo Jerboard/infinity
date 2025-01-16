@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.db.models import Sum, FloatField
 from django.utils.html import mark_safe
 from django.utils.functional import cached_property
+from unfold.admin import ModelAdmin
 
 from admin_infinity.settings import DEBUG
 from .models import Msg
@@ -9,8 +10,9 @@ from .models import User, Order, CashbackLevel, Currency, PayMethod, Promo, Cash
 
 import logging
 
+
 @admin.register(User)
-class ViewUserTable(admin.ModelAdmin):
+class ViewUserTable(ModelAdmin):
     list_display = [
         'user_id',
         'full_name',
@@ -156,7 +158,7 @@ class ViewUserTable(admin.ModelAdmin):
 
 
 @admin.register(Order)
-class ViewOrderTable(admin.ModelAdmin):
+class ViewOrderTable(ModelAdmin):
     list_display = [
         'id',
         'user',
@@ -178,13 +180,13 @@ class ViewOrderTable(admin.ModelAdmin):
 
 
 @admin.register(CashbackLevel)
-class RefLvlTable(admin.ModelAdmin):
+class RefLvlTable(ModelAdmin):
     list_display = ['id', 'count_users', 'percent']
 
 
 # админка новости
 @admin.register(Msg)
-class ViewAdminMsg(admin.ModelAdmin):
+class ViewAdminMsg(ModelAdmin):
     if DEBUG:
         list_display = ['key', 'comment', 'text', 'cover_image_preview', 'custom_order']
         readonly_fields = ['updated_at', 'cover_image_preview_in', 'photo_id']
@@ -212,7 +214,7 @@ class ViewAdminMsg(admin.ModelAdmin):
 
 # Валюты
 @admin.register(Currency)
-class ViewAdminMsg(admin.ModelAdmin):
+class ViewAdminMsg(ModelAdmin):
     list_display = ['code', 'rate', 'ratio', 'commission', 'buy_price', 'is_active']
     readonly_fields = ['created_at', 'updated_at']
     list_editable = ['is_active']
@@ -220,20 +222,20 @@ class ViewAdminMsg(admin.ModelAdmin):
 
 # способы оплаты
 @admin.register(PayMethod)
-class ViewAdminMsg(admin.ModelAdmin):
+class ViewAdminMsg(ModelAdmin):
     list_display = ['name', 'card', 'is_active']
     list_editable = ['is_active']
 
 
 # способы оплаты
 @admin.register(Promo)
-class ViewAdminMsg(admin.ModelAdmin):
+class ViewAdminMsg(ModelAdmin):
     list_display = ['promo', 'rate', 'created_at', 'is_active', 'is_onetime']
     readonly_fields = ['created_at']
 
 
 # способы оплаты
 @admin.register(Info)
-class ViewAdminMsg(admin.ModelAdmin):
+class ViewAdminMsg(ModelAdmin):
     list_display = ['cashback']
     readonly_fields = ['update_at']
