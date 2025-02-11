@@ -2,7 +2,7 @@
 services:
   db:
     image: postgres:16
-    container_name: db_infinity
+    container_name: db_infinity_test
     volumes:
       - ../data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -10,16 +10,16 @@ services:
       - .env
 
 
-  pgadmin:
-    image: elestio/pgadmin
-    container_name: pgadmin_infinity
-#    ports:
-#      - "8080:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    restart: unless-stopped
-    env_file:
-      - .env
+#  pgadmin:
+#    image: elestio/pgadmin
+#    container_name: pgadmin_infinity_test
+##    ports:
+##      - "8080:80"
+#    volumes:
+#      - pgadmin_data:/var/lib/pgadmin
+#    restart: unless-stopped
+#    env_file:
+#      - .env
 
 
   bot:
@@ -28,7 +28,7 @@ services:
       dockerfile: docker/dockerfiles/DockerfileBot
       args:
         - --no-cache
-    container_name: bot_infinity
+    container_name: bot_infinity_test
     volumes:
       - ../bot:/app
       - ../photo:/app/photo
@@ -66,7 +66,7 @@ services:
       dockerfile: docker/dockerfiles/DockerfileAdmin
       args:
         - --no-cache
-    container_name: web_infinity
+    container_name: web_infinity_test
     volumes:
       - ../admin_infinity:/app
       - ../photo:/app/media/photo
@@ -84,7 +84,7 @@ services:
 
   nginx:
     image: nginx:latest
-    container_name: nginx_infinity
+    container_name: nginx_infinity_test
     ports:
       - "81:80"
     volumes:
@@ -102,7 +102,7 @@ services:
 
   redis:
     image: redis:latest
-    container_name: redis_infinity
+    container_name: redis_infinity_test
 
 
 volumes:
