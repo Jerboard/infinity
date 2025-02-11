@@ -15,7 +15,9 @@ urlpatterns = [
     path('promo_setting', views.promo_view, name='promo_setting'),
     path('switch', views.switch_view, name='switch'),
     path('admin/', admin.site.urls),
-    path("ckeditor5/", include('django_ckeditor_5.urls'))
+    path("ckeditor5/", include('django_ckeditor_5.urls')),
+    path('api/v1/', include('api_1.urls')),
+
 ]
 
 

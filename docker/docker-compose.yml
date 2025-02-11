@@ -13,8 +13,8 @@ services:
   pgadmin:
     image: elestio/pgadmin
     container_name: pgadmin_infinity
-    ports:
-      - "8080:80"
+#    ports:
+#      - "8080:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     restart: unless-stopped
@@ -41,24 +41,24 @@ services:
       - .env
 
 
-  bot_antispam:
-    build:
-      context: ..
-      dockerfile: docker/dockerfiles/DockerfileAntispam
-      args:
-        - --no-cache
-    container_name: bot_antispam
-    volumes:
-      - ../bot_antispam:/app
-      - ../bot/db:/app/db
-      - ../bot/enums:/app/enums
-      - ../photo:/app/photo
-      - ../logs/bot_antispam:/app/logs
-    restart: unless-stopped
-    depends_on:
-      - db
-    env_file:
-      - .env
+#  bot_antispam:
+#    build:
+#      context: ..
+#      dockerfile: docker/dockerfiles/DockerfileAntispam
+#      args:
+#        - --no-cache
+#    container_name: bot_antispam
+#    volumes:
+#      - ../bot_antispam:/app
+#      - ../bot/db:/app/db
+#      - ../bot/enums:/app/enums
+#      - ../photo:/app/photo
+#      - ../logs/bot_antispam:/app/logs
+#    restart: unless-stopped
+#    depends_on:
+#      - db
+#    env_file:
+#      - .env
 
   web:
     build:
@@ -75,7 +75,7 @@ services:
 
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8001:8000"
     depends_on:
       - db
     env_file:
@@ -86,8 +86,7 @@ services:
     image: nginx:latest
     container_name: nginx_infinity
     ports:
-      - "80:80"
-      - "443:443"
+      - "81:80"
     volumes:
       - ../nginx/nginx.conf:/etc/nginx/nginx.conf
       - ../nginx/conf.d/base.conf:/etc/nginx/conf.d/base.conf

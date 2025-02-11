@@ -95,6 +95,7 @@ class Order(models.Model):
     promo_used_id = models.IntegerField('ID промокода', null=True, blank=True)
     add_ref_points = models.IntegerField('Начислено баллов', null=True, blank=True)
     add_cashback = models.IntegerField('Начислено кешбека', null=True, blank=True)
+    request_id = models.IntegerField('ID запроса реквизитов', null=True, blank=True)
     # user_key = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь', related_name='orders')
 
     objects: models.Manager = models.Manager()

@@ -82,9 +82,9 @@ def old_orders_view(request):
 
     if request.method == 'POST':
         data: dict = request.POST
-        print('data >>>')
-        for k, v in data.items():
-            print(f'{k}: {v}')
+        # print('data >>>')
+        # for k, v in data.items():
+        #     print(f'{k}: {v}')
 
         if data['button'] == 'refresh':
             return redirect('closed_orders')
