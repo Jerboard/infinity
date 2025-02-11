@@ -15,6 +15,7 @@ class OrderRow(t.Protocol):
     user_id: int
     status: str
     coin: str
+    pay_method_id: int
     pay_method: str
     card: str
     coin_sum: float
@@ -39,6 +40,7 @@ class OrderRow(t.Protocol):
     add_ref_points: int
     add_cashback: int
     row: int
+    request_id: int
 
 
 OrderTable: sa.Table = sa.Table(
@@ -50,6 +52,7 @@ OrderTable: sa.Table = sa.Table(
     sa.Column('user_id', sa.BigInteger),
     sa.Column('status', sa.String(255)),
     sa.Column('coin', sa.String(255)),
+    sa.Column('pay_method_id', sa.Integer),
     sa.Column('pay_method', sa.String(255)),
     sa.Column('card', sa.String(255)),
     sa.Column('coin_sum', sa.Float()),
@@ -73,6 +76,7 @@ OrderTable: sa.Table = sa.Table(
     sa.Column('add_ref_points', sa.Integer, default=0),
     sa.Column('add_cashback', sa.Integer, default=0),
     sa.Column('row', sa.Integer),
+    sa.Column('request_id', sa.Integer, default=0),
 )
 
 
@@ -80,6 +84,7 @@ OrderTable: sa.Table = sa.Table(
 async def add_order(
         user_id: int,
         coin: str,
+        pay_method_id: int,
         pay_method: str,
         card: str,
         coin_sum: float,
@@ -97,6 +102,7 @@ async def add_order(
         commission: int,
         profit: int,
         cashback: int,
+        request_id: int
 ) -> int:
     now = datetime.now()
     query = OrderTable.insert().values(
@@ -105,6 +111,7 @@ async def add_order(
         status=OrderStatus.NOT_CONF.value,
         user_id=user_id,
         coin=coin,
+        pay_method_id=pay_method_id,
         pay_method=pay_method,
         card=card,
         coin_sum=coin_sum,
@@ -122,59 +129,7 @@ async def add_order(
         commission=commission,
         profit=profit,
         cashback=cashback,
-    )
-    async with begin_connection() as conn:
-        result = await conn.execute(query)
-
-    return result.inserted_primary_key[0]
-
-
-# добавляет заказ обновление бд
-async def add_order_msql(
-        created_at: datetime,
-        user_id: int,
-        status: str,
-        coin: str,
-        pay_method: str,
-        coin_sum: float,
-        wallet: str,
-        promo: str,
-        promo_rate: int,
-        exchange_rate: int,
-        percent: float,
-        amount: int,
-        hash: str,
-        used_cashback: int,
-        total_amount: int,
-        profit: int,
-        promo_used_id: int,
-        commission: int,
-        referrer: int,
-        used_points: int,
-) -> int:
-    # now = datetime.now()
-    query = OrderTable.insert().values(
-        created_at=created_at,
-        updated_at=created_at,
-        status=status,
-        user_id=user_id,
-        coin=coin,
-        pay_method=pay_method,
-        coin_sum=coin_sum,
-        wallet=wallet,
-        promo=promo,
-        promo_rate=promo_rate,
-        exchange_rate=exchange_rate,
-        percent=percent,
-        amount=amount,
-        used_cashback=used_cashback,
-        used_points=used_points,
-        profit=profit,
-        total_amount=total_amount,
-        promo_used_id=promo_used_id,
-        commission=commission,
-        hash=hash,
-        referrer=referrer,
+        request_id=request_id,
     )
     async with begin_connection() as conn:
         result = await conn.execute(query)

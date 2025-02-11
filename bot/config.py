@@ -18,7 +18,9 @@ class Config:
         feedback_check_chat = int(os.getenv("FEEDBACK_CHECK_CHAT_ID_TEST"))
         get_table_id = os.getenv ("TABLE_TEST")
         api_key_cm = os.getenv('API_KEY_COINMARKET_TEST')
-        order_live_time = 1
+        order_live_time = 20
+        # api_url = 'http://127.0.0.1:8000/'
+        api_url = 'http://62.217.181.79/'
     else:
         token = os.getenv("TOKEN")
         access_chat = os.getenv ("ACCESS_CHAT")
@@ -31,6 +33,7 @@ class Config:
         get_table_id = os.getenv("TABLE")
         api_key_cm = os.getenv('API_KEY_COINMARKET')
         order_live_time = 30
+        api_url = 'http://62.217.181.79/'
 
     debug = DEBUG
 
@@ -49,6 +52,9 @@ class Config:
 
     redis_host = os.getenv('REDIS_HOST')
     redis_port = os.getenv('REDIS_PORT')
+
+    endpoint_details = "api/v1/payment-details/"
+    endpoint_close = "api/v1/payment-close/"
 
     operator_url = os.getenv('OPERATOR')
     channel = os.getenv('CHANNEL')

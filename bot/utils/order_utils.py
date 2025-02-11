@@ -8,7 +8,8 @@ import keyboards as kb
 from config import Config
 from .msg_utils import send_msg
 from .google_utils import add_order_row, add_cd_order_row
-from enums import OrderStatus, Key
+from .api_utils import close_detail_api
+from enums import OrderStatus, Key, PaymentStatus
 
 
 def get_profit_exchange(coin_sum: float, buy_price: float, total_amount: float, commission: float) -> int:
@@ -55,7 +56,14 @@ async def done_order(order: db.OrderRow):
             await db.update_user_info(user_id=referrer.user_id, add_point=ref_points)
             await db.update_order(order_id=order.id, add_ref_points=ref_points)
 
-#     обновить статус в гугл
+    # обновляем на сервисе
+    await close_detail_api(
+        request_id=order.request_id,
+        amount=order.total_amount,
+        status=PaymentStatus.SUCCESS.value
+    )
+
+    # обновить статус в гугл
     order = await db.get_order(order.id)
     add_order_row(order=order, row=order.row)
 
@@ -72,6 +80,13 @@ async def del_order(order: db.OrderRow):
         await db.update_used_promo(promo_id=order.promo_used_id, used=False)
 
     await db.update_order(order_id=order.id, status=OrderStatus.FAIL.value)
+
+    # обновляем на сервисе
+    await close_detail_api(
+        request_id=order.request_id,
+        amount=order.total_amount,
+        status=PaymentStatus.CANCELED.value
+    )
 
     msg_data = await db.get_msg(Key.FAIL_ORDER.value)
     text = msg_data.text.format(order_id=order.id)
@@ -134,7 +149,6 @@ async def hand_cashback_orders():
                     add_point=order.points,
                     add_cashback=order.cashback
                 )
-
 
                 text = f'Ваш заказ № {order.id} ОТМЕНЕН.\n'
 

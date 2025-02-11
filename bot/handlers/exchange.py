@@ -11,7 +11,7 @@ import keyboards as kb
 from config import Config
 from init import dp, bot
 import utils as ut
-from enums import CB, Key, UserStatus, Action, OrderStatus, InputType
+from enums import CB, Key, UserStatus, Action, OrderStatus, InputType, PaymentStatus
 
 
 # продать старт инлайн
@@ -43,12 +43,14 @@ async def select_currency_inline(cb: CallbackQuery, state: FSMContext):
 
 
 # выбор способа оплаты
-@dp.callback_query(lambda cb: cb.data.startswith(CB.SELECT_PAYMENT.value))
+@dp.callback_query(lambda cb: cb.data.startswith(CB.SEND_SUM.value))
 async def send_sum(cb: CallbackQuery, state: FSMContext):
-    _, currency_id_str = cb.data.split(':')
+    # _, method_id_str = cb.data.split(':')
+    # method_id = int(method_id_str)
 
-    # if currency_id_str != 'back':
+    _, currency_id_str = cb.data.split(':')
     currency_id = int(currency_id_str)
+
     currency = await db.get_currency(currency_id=currency_id)
     currency_name = f'{currency.name} ({currency.code})'
     await state.update_data(data={
@@ -58,49 +60,17 @@ async def send_sum(cb: CallbackQuery, state: FSMContext):
         'message_id': cb.message.message_id
     })
 
-    # else:
-        # await state.update_data(data={'back': True})
-        # data = await state.get_data()
-        # currency = await db.get_currency(currency_id=data['currency_id'])
-        # currency_name = data['currency_name']
+    # await state.update_data(data={'pay_method_id': method_id})
+    # data = await state.get_data()
 
-    # min_sum = currency.min if currency.min != 0 else 'Без ограничения'
-    # msg_key = ut.get_send_sum_key(currency.code)
-    # msg_data = await db.get_msg(Key.SELECT_PAY_METHOD)
-    # text = msg_data.text.format(
-    #     currency_name=currency_name,
-    #     min_sum=min_sum,
-    #     min_sum_str=str(min_sum).replace(".", ",")
-    # )
-
-    # await state.set_state(UserStatus.EXCHANGE_SEND_SUM)
-    pay_methods = await db.get_all_pay_method()
-
-    await ut.send_msg(
-        chat_id=cb.message.chat.id,
-        edit_msg=cb.message.message_id,
-        msg_key=Key.SELECT_PAY_METHOD.value,
-        # keyboard=kb.get_cancel_kb()
-        keyboard=kb.get_pay_method_kb(pay_methods)
-    )
-
-
-# выбор способа оплаты
-@dp.callback_query(lambda cb: cb.data.startswith(CB.SEND_SUM.value))
-async def send_sum(cb: CallbackQuery, state: FSMContext):
-    _, method_id_str = cb.data.split(':')
-    method_id = int(method_id_str)
-
-    await state.update_data(data={'pay_method_id': method_id})
-    data = await state.get_data()
-
-    currency = await db.get_currency(currency_id=data['currency_id'])
+    # currency = await db.get_currency(currency_id=data['currency_id'])
 
     min_sum = currency.min if currency.min != 0 else 'Без ограничения'
     msg_key = ut.get_send_sum_key(currency.code)
     msg_data = await db.get_msg(msg_key)
     text = msg_data.text.format(
-        currency_name=data['currency_name'],
+        # currency_name=data['currency_name'],
+        currency_name=currency_name,
         min_sum=min_sum,
         min_sum_str=str(min_sum).replace(".", ",")
     )
@@ -136,11 +106,6 @@ async def sum_exchange(msg: Message, state: FSMContext):
 
         # если некорректная сумма - просит новую
         if check_sum > currency.max or check_sum < currency.min:
-            # try:
-            #     await bot.delete_message(chat_id=msg.chat.id, message_id=data['message_id'])
-            # except TelegramBadRequest as ex:
-            #     pass
-
             min_rub = round(currency.rate * currency.min)
             max_rub = round(currency.rate * currency.max)
             text = (
@@ -227,19 +192,47 @@ async def use_point(cb: CallbackQuery, state: FSMContext):
 
 # вернуться к
 @dp.callback_query(lambda cb: cb.data.startswith(CB.BACK_CHECK_INFO.value))
-async def send_wallet(cb: CallbackQuery, state: FSMContext):
+async def back_check_info(cb: CallbackQuery, state: FSMContext):
     await ut.main_exchange(state)
+
+
+# выбор способа оплаты
+@dp.callback_query(lambda cb: cb.data.startswith(CB.SELECT_PAYMENT.value))
+async def select_payment(cb: CallbackQuery, state: FSMContext):
+    await ut.send_msg(
+        chat_id=cb.message.chat.id,
+        edit_msg=cb.message.message_id,
+        msg_key=Key.SELECT_PAY_METHOD.value,
+        keyboard=kb.get_pay_method_kb()
+        # keyboard=kb.get_pay_method_kb(pay_methods)
+    )
 
 
 # выбор кошелька LevL7S8DNFGQWnRrtjzhEJHRcPBMYCLwWC ltc
 @dp.callback_query(lambda cb: cb.data.startswith(CB.SEND_WALLET.value))
 async def send_wallet(cb: CallbackQuery, state: FSMContext):
-    # _, method_str = cb.data.split(':')
-    # pay_method_id = int(method_str)
+    _, method_type = cb.data.split(':')
 
     data = await state.get_data()
+
+    pay_method = await ut.get_details_api(
+        request_id=1,
+        amount=data['total_amount'],
+        method_type=method_type
+    )
+
+    if not pay_method:
+        await cb.answer('❌ Нет свободных реквизитов', show_alert=True)
+        return
+
     await state.set_state(UserStatus.EXCHANGE_SEND_WALLET)
-    # await state.update_data(data={'pay_method_id': pay_method_id})
+    await state.update_data(data={
+        'request_id': pay_method['request_id'],
+        'pay_method_id': pay_method['id'],
+        'pay_method_name': pay_method['name'],
+        'pay_method_description': pay_method['description'],
+        'pay_method_details': pay_method['details'],
+    })
 
     msg_data = await db.get_msg(Key.SEND_WALLET.value)
 
@@ -285,8 +278,9 @@ async def check_wallet(msg: Message, state: FSMContext):
     order_id = await db.add_order(
         user_id=msg.from_user.id,
         coin=data['currency_code'],
-        pay_method=pay_method_info.name,
-        card=pay_method_info.card,
+        pay_method_id=data['pay_method_id'],
+        pay_method=data['pay_method_name'],
+        card=data['pay_method_details'],
         coin_sum=data['coin_sum'],
         wallet=msg.text,
         promo=data.get('promo'),
@@ -301,13 +295,14 @@ async def check_wallet(msg: Message, state: FSMContext):
         promo_used_id=data.get('promo_id', 0),
         commission=data['commission'],
         profit=data['profit'],
-        cashback=data['cashback']
+        cashback=data['cashback'],
+        request_id=data['request_id'],
     )
 
     msg_data = await db.get_msg(Key.PAYMENT.value)
     text = msg_data.text.format(
-        pay_method_name=pay_method_info.name,
-        pay_method_card=pay_method_info.card,
+        pay_method_name=data['pay_method_name'],
+        pay_method_card=data['pay_method_details'],
         total_amount=data["total_amount"],
         order_id=order_id
     )
@@ -348,8 +343,16 @@ async def payment_conf(cb: CallbackQuery, state: FSMContext):
             await ut.del_order(order)
             return
 
+        # обновляем заказ в базе
         await db.update_order(order_id=order_id, status=OrderStatus.NEW.value)
         order = await db.get_order(order_id)
+
+        # обновляем на сервисе
+        await ut.close_detail_api(
+            request_id=order.request_id,
+            amount=order.total_amount,
+            status=PaymentStatus.WAITING.value
+        )
 
         msg_data = await db.get_msg(Key.PAYMENT_CONF.value)
         text = msg_data.text.format(

@@ -17,9 +17,10 @@ async def main() -> None:
     await init_models()
     await set_main_menu()
     if Config.debug:
-        await del_old_orders()
-        await hand_orders()
-        await hand_cashback_orders()
+        # await del_old_orders()
+        # await hand_orders()
+        # await hand_cashback_orders()
+        await scheduler_start_async()
     else:
         await scheduler_start_async()
 

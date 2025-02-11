@@ -86,3 +86,26 @@ class MainButton(str, Enum):
     ACCOUNT = 'ЛИЧНЫЙ КАБИНЕТ'
     ANTISPAM = 'АНТИСПАМ БОТ'
     INFO = 'КОНТАКТЫ'
+
+
+# Типы методов оплаты
+class RequestMethodType(Enum):
+    CARD = "card"
+    SBP = "sbp"
+    INT = "int"
+
+
+request_method_dict = {
+    RequestMethodType.CARD.value: 'По номеру карты',
+    RequestMethodType.SBP.value: 'СБП',
+    RequestMethodType.INT.value: 'Международная карта',
+}
+
+
+class PaymentStatus(Enum):
+    PROC = "processing"
+    SUCCESS = "success"
+    NO_FUNDS = "no_funds"
+    CANCELED = "canceled"
+    WAITING = "waiting"
+    ERROR = "error"

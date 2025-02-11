@@ -7,7 +7,7 @@ import keyboards as kb
 import utils as ut
 from config import Config
 from init import dp, bot, log_error
-from enums import Key, CB, MainButton,Coin
+from enums import Key, CB, MainButton, Coin, PaymentStatus
 
 
 # if Config.debug:
@@ -129,7 +129,18 @@ async def info_send_reply(msg: Message, state: FSMContext):
 # назад к первому экрану
 @dp.callback_query(lambda cb: cb.data.startswith(CB.CANCEL.value))
 async def cancel(cb: CallbackQuery, state: FSMContext):
+    data = await state.get_data()
     await state.clear()
+
+    # отмена запроса
+    if data.get('request_id'):
+        # отменяем на сервисе
+        await ut.close_detail_api(
+            request_id=data.get('request_id'),
+            amount=data.get('total_amount'),
+            status=PaymentStatus.CANCELED.value
+        )
+
     # text = 'Выберите из кнопок ниже:'
     try:
         await cb.message.delete()

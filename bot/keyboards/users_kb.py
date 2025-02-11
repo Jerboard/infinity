@@ -2,7 +2,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardMarkup
 
 import db
 from config import Config
-from enums import CB, Action
+from enums import CB, Action, request_method_dict
 
 
 # Клавиатура с капчой
@@ -68,7 +68,9 @@ def get_sell_kb() -> InlineKeyboardMarkup:
 def get_currency_list_kb(currencies: tuple[db.CurrencyRow]) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     for currency in currencies:
-        kb.button(text=f'{currency.name} ({currency.code})', callback_data=f'{CB.SELECT_PAYMENT.value}:{currency.id}')
+        # для старой версии
+        # kb.button(text=f'{currency.name} ({currency.code})', callback_data=f'{CB.SELECT_PAYMENT.value}:{currency.id}')
+        kb.button(text=f'{currency.name} ({currency.code})', callback_data=f'{CB.SEND_SUM.value}:{currency.id}')
 
     back_bt = InlineKeyboardBuilder()
     back_bt.button(text='🔙 Назад', callback_data=CB.BACK_START.value)
@@ -76,11 +78,23 @@ def get_currency_list_kb(currencies: tuple[db.CurrencyRow]) -> InlineKeyboardMar
     return kb.adjust(2).attach(back_bt).as_markup()
 
 
+# клавиатура проверки данный СТАРАЯ
+# def get_pay_method_kb(pay_methods: tuple[db.PayMethodRow]) -> InlineKeyboardMarkup:
+#     kb = InlineKeyboardBuilder()
+#     for method in pay_methods:
+#         kb.button(text=f'{method.name}', callback_data=f'{CB.SEND_SUM.value}:{method.id}')
+#     kb.button(text=f'🔙 Назад', callback_data=f'{CB.EXCHANGE.value}')
+#     # kb.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
+#     return kb.adjust(1).as_markup()
+
+
 # клавиатура проверки данный
-def get_pay_method_kb(pay_methods: tuple[db.PayMethodRow]) -> InlineKeyboardMarkup:
+def get_pay_method_kb() -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
-    for method in pay_methods:
-        kb.button(text=f'{method.name}', callback_data=f'{CB.SEND_SUM.value}:{method.id}')
+    for k, v in request_method_dict.items():
+        # kb.button(text=f'{v}', callback_data=f'{CB.SEND_SUM.value}:{k}')
+        kb.button(text=f'{v}', callback_data=f'{CB.SEND_WALLET.value}:{k}')
+
     kb.button(text=f'🔙 Назад', callback_data=f'{CB.EXCHANGE.value}')
     # kb.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
     return kb.adjust(1).as_markup()
@@ -100,7 +114,8 @@ def get_main_exchange_kb(
 
     # kb.button(text=f'ИСП. БАЛАНС КОШЕЛЬКА {bonuses} руб.', callback_data=CB.USE_CASHBACK.value)
     kb.button(text=f'ИСП. БАЛАНС КОШЕЛЬКА', callback_data=CB.USE_CASHBACK.value)
-    kb.button(text=f'✅ Согласен', callback_data=f'{CB.SEND_WALLET.value}')
+    # kb.button(text=f'✅ Согласен', callback_data=f'{CB.SEND_WALLET.value}')
+    kb.button(text=f'✅ Согласен', callback_data=f'{CB.SELECT_PAYMENT.value}')
     kb.button(text=f'❌ Отмена', callback_data=f'{CB.CANCEL.value}')
     return kb.adjust(*adjust).as_markup()
 

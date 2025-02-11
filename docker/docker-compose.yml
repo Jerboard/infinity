@@ -3,8 +3,6 @@ services:
   db:
     image: postgres:16
     container_name: db_infinity
-    ports:
-      - "5432:5432"
     volumes:
       - ../data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -106,13 +104,10 @@ services:
   redis:
     image: redis:latest
     container_name: redis_infinity
-    ports:
-      - "6379:6379"
 
 
 volumes:
   pgadmin_data:
-#  postgres_data:
   static_value:
   media_value:
 
