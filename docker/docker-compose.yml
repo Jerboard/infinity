@@ -10,16 +10,16 @@ services:
       - .env
 
 
-#  pgadmin:
-#    image: elestio/pgadmin
-#    container_name: pgadmin_infinity_test
-##    ports:
-##      - "8080:80"
-#    volumes:
-#      - pgadmin_data:/var/lib/pgadmin
-#    restart: unless-stopped
-#    env_file:
-#      - .env
+  pgadmin:
+    image: elestio/pgadmin
+    container_name: pgadmin_infinity_test
+#    ports:
+#      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
+    env_file:
+      - .env
 
 
   bot:
