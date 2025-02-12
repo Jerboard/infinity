@@ -2,7 +2,7 @@
 services:
   db:
     image: postgres:16
-    container_name: db_infinity_test
+    container_name: db_infinity
     volumes:
       - ../data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -28,7 +28,7 @@ services:
       dockerfile: docker/dockerfiles/DockerfileBot
       args:
         - --no-cache
-    container_name: bot_infinity_test
+    container_name: bot_infinity
     volumes:
       - ../bot:/app
       - ../photo:/app/photo
@@ -66,7 +66,7 @@ services:
       dockerfile: docker/dockerfiles/DockerfileAdmin
       args:
         - --no-cache
-    container_name: web_infinity_test
+    container_name: web_infinity
     volumes:
       - ../admin_infinity:/app
       - ../photo:/app/media/photo
@@ -75,7 +75,7 @@ services:
 
     restart: unless-stopped
     ports:
-      - "8001:8000"
+      - "8000:8000"
     depends_on:
       - db
     env_file:
@@ -84,9 +84,9 @@ services:
 
   nginx:
     image: nginx:latest
-    container_name: nginx_infinity_test
+    container_name: nginx_infinity
     ports:
-      - "81:80"
+      - "80:80"
     volumes:
       - ../nginx/nginx.conf:/etc/nginx/nginx.conf
       - ../nginx/conf.d/base.conf:/etc/nginx/conf.d/base.conf
@@ -102,7 +102,7 @@ services:
 
   redis:
     image: redis:latest
-    container_name: redis_infinity_test
+    container_name: redis_infinity
 
 
 volumes:
