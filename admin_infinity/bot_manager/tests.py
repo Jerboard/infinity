@@ -15,21 +15,22 @@ import random
 
 # Выполняем POST-запрос
 def start_test():
-    url = 'http://127.0.0.1:8001/'
+    url = 'http://45.12.72.23/'
+    # url = 'http://127.0.0.1:8001/'
     endpoint = 'api/v1/order-status/'
     url += endpoint
 
     payload = {
         # 'status': PaymentStatus.CANCELED.value,
         'status': PaymentStatus.SUCCESS.value,
-        'request_id': 15,
-        'hash_request': 'ntest'
+        'request_id': 42,
+        'hash_request': 'test_asd'
     }
 
     print(url)
     print(payload)
     response = requests.post(url, json=payload)
-    print(response.text)
+    print(response.status_code)
     r = response.json()
     if r['success']:
         print(r)

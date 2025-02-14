@@ -72,6 +72,7 @@ services:
       - ../photo:/app/media/photo
       - ../switch:/app/switch
       - ../logs/django:/app/logs
+      - ../bot/enums:/app/enums
 
     restart: unless-stopped
     ports:
