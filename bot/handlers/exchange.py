@@ -190,6 +190,14 @@ async def sum_exchange(msg: Message, state: FSMContext):
 async def use_promo(cb: CallbackQuery, state: FSMContext):
     data = await state.get_data()
 
+    if data.get('profit', 0) <= 0:
+        await cb.answer('Невозможно применить промокод, обратитесь к @operator_infinity', show_alert=True)
+        return
+
+    if data.get('profit', 0) <= 0:
+        await cb.answer('Невозможно применить промокод, обратитесь к @operator_infinity', show_alert=True)
+        return
+
     if data.get('used_promo'):
         await cb.answer('ПРОМОКОД УЖЕ ПРИМЕНЕН', show_alert=True)
         return
