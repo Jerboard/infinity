@@ -24,6 +24,7 @@ async def russian_rub_inline(cb: CallbackQuery, state: FSMContext):
         await cb.message.answer(
             'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity'
         )
+        return
 
     await ut.russian_rub(cb.message, edit_msg=cb.message.message_id)
 
@@ -38,6 +39,7 @@ async def select_currency_inline(cb: CallbackQuery, state: FSMContext):
         await cb.message.answer(
             'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity'
         )
+        return
 
     await ut.select_currency(cb.message, state, edit_msg=cb.message.message_id)
 

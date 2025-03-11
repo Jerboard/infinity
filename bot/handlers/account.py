@@ -25,6 +25,7 @@ async def start_account(cb: CallbackQuery, state: FSMContext):
         await cb.message.answer(
             'Ваш аккаунт заблокирован - по вопросам можете обратиться к  @manager_Infinity'
         )
+        return
 
     await ut.start_acc_send(cb.message, from_user_id=cb.from_user.id)
 
